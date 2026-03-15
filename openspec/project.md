@@ -76,6 +76,7 @@ This backend must follow a modular monolith architecture.
 
 - single VPS
 - Dokploy
+- Docker compose
 - backend API
 - worker
 - PostgreSQL
@@ -103,6 +104,7 @@ This backend must follow a modular monolith architecture.
 - Use Pydantic schemas for request and response models.
 - Design endpoints by business capability, not by raw table CRUD.
 - Make the codebase easy to extend and test.
+- use uv as the python project management tool
 
 ## API Domains
 
