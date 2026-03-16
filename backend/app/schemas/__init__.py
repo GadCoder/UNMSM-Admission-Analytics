@@ -9,6 +9,15 @@ from app.schemas.processes import (
     AdmissionProcessListItemResponse,
     AdmissionProcessOverviewResponse,
 )
+from app.schemas.results import (
+    PaginatedResultsResponse,
+    ResultAcademicAreaContextResponse,
+    ResultFacultyContextResponse,
+    ResultItemResponse,
+    ResultMajorContextResponse,
+    ResultProcessContextResponse,
+    ResultsSearchParams,
+)
 
 __all__ = [
     "AcademicAreaResponse",
@@ -18,4 +27,11 @@ __all__ = [
     "AdmissionProcessDetailResponse",
     "AdmissionProcessListItemResponse",
     "AdmissionProcessOverviewResponse",
+    "ResultProcessContextResponse",
+    "ResultMajorContextResponse",
+    "ResultFacultyContextResponse",
+    "ResultAcademicAreaContextResponse",
+    "ResultItemResponse",
+    "PaginatedResultsResponse",
+    "ResultsSearchParams",
 ]
