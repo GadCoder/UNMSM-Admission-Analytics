@@ -1,6 +1,7 @@
 import os
 import tempfile
 import unittest
+from decimal import Decimal
 
 from fastapi.testclient import TestClient
 from sqlalchemy import create_engine
@@ -11,6 +12,7 @@ os.environ.setdefault("DATABASE_URL", "sqlite+pysqlite:///:memory:")
 from app.core.db import Base, get_db_session
 from app.main import create_app
 from app.models.academic import AcademicArea, Faculty, Major
+from app.models.admission import AdmissionProcess, AdmissionResult
 
 
 class AcademicStructureEndpointTests(unittest.TestCase):
@@ -68,6 +70,64 @@ class AcademicStructureEndpointTests(unittest.TestCase):
                 is_active=False,
             )
 
+            process_2024_i = AdmissionProcess(id=1, year=2024, cycle="I", label="2024-I")
+            process_2024_ii = AdmissionProcess(id=2, year=2024, cycle="II", label="2024-II")
+
+            results = [
+                AdmissionResult(
+                    id=1,
+                    admission_process_id=1,
+                    major_id=101,
+                    candidate_code="M001",
+                    candidate_lastnames="ALFA",
+                    candidate_names="A",
+                    score=Decimal("500.0"),
+                    merit_rank=5,
+                    observation_raw=None,
+                    is_admitted=False,
+                    row_number=1,
+                ),
+                AdmissionResult(
+                    id=2,
+                    admission_process_id=1,
+                    major_id=101,
+                    candidate_code="M002",
+                    candidate_lastnames="BETA",
+                    candidate_names="B",
+                    score=Decimal("700.0"),
+                    merit_rank=3,
+                    observation_raw=None,
+                    is_admitted=True,
+                    row_number=2,
+                ),
+                AdmissionResult(
+                    id=3,
+                    admission_process_id=1,
+                    major_id=101,
+                    candidate_code="M003",
+                    candidate_lastnames="GAMMA",
+                    candidate_names="C",
+                    score=Decimal("900.0"),
+                    merit_rank=1,
+                    observation_raw=None,
+                    is_admitted=True,
+                    row_number=3,
+                ),
+                AdmissionResult(
+                    id=4,
+                    admission_process_id=2,
+                    major_id=101,
+                    candidate_code="M004",
+                    candidate_lastnames="DELTA",
+                    candidate_names="D",
+                    score=Decimal("800.0"),
+                    merit_rank=2,
+                    observation_raw=None,
+                    is_admitted=True,
+                    row_number=1,
+                ),
+            ]
+
             session.add_all(
                 [
                     area_sciences,
@@ -78,6 +138,9 @@ class AcademicStructureEndpointTests(unittest.TestCase):
                     major_nursing,
                     major_civil,
                     major_history,
+                    process_2024_i,
+                    process_2024_ii,
+                    *results,
                 ]
             )
             session.commit()
@@ -185,6 +248,48 @@ class AcademicStructureEndpointTests(unittest.TestCase):
 
         missing_response = self.client.get("/majors/999")
         self.assertEqual(missing_response.status_code, 404)
+
+    def test_major_analytics_returns_metrics_and_respects_process_filter(self) -> None:
+        response = self.client.get("/majors/101/analytics")
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["major"]["id"], 101)
+        self.assertEqual(payload["filters"]["process_id"], None)
+        self.assertEqual(payload["metrics"]["applicants"], 4)
+        self.assertEqual(payload["metrics"]["admitted"], 3)
+        self.assertAlmostEqual(payload["metrics"]["acceptance_rate"], 0.75, places=6)
+        self.assertEqual(payload["metrics"]["min_score"], 500.0)
+        self.assertEqual(payload["metrics"]["max_score"], 900.0)
+        self.assertEqual(payload["metrics"]["cutoff_score"], 700.0)
+        self.assertAlmostEqual(payload["metrics"]["median_score"], 750.0, places=6)
+
+        response_scoped = self.client.get("/majors/101/analytics?process_id=1")
+        self.assertEqual(response_scoped.status_code, 200)
+        scoped = response_scoped.json()
+        self.assertEqual(scoped["filters"]["process_id"], 1)
+        self.assertEqual(scoped["metrics"]["applicants"], 3)
+        self.assertEqual(scoped["metrics"]["admitted"], 2)
+        self.assertAlmostEqual(scoped["metrics"]["median_score"], 700.0, places=6)
+        self.assertEqual(scoped["metrics"]["cutoff_score"], 700.0)
+
+    def test_major_analytics_returns_404_when_major_missing(self) -> None:
+        response = self.client.get("/majors/999/analytics")
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()["detail"], "Major not found")
+
+    def test_major_analytics_returns_empty_metrics_when_scope_has_no_data(self) -> None:
+        response = self.client.get("/majors/102/analytics")
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["major"]["id"], 102)
+        self.assertEqual(payload["metrics"]["applicants"], 0)
+        self.assertEqual(payload["metrics"]["admitted"], 0)
+        self.assertIsNone(payload["metrics"]["acceptance_rate"])
+        self.assertIsNone(payload["metrics"]["max_score"])
+        self.assertIsNone(payload["metrics"]["min_score"])
+        self.assertIsNone(payload["metrics"]["avg_score"])
+        self.assertIsNone(payload["metrics"]["median_score"])
+        self.assertIsNone(payload["metrics"]["cutoff_score"])
 
 
 if __name__ == "__main__":
