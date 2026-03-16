@@ -15,6 +15,13 @@ from app.schemas.major_analytics import (
     MajorAnalyticsMetricsResponse,
     MajorAnalyticsResponse,
 )
+from app.schemas.rankings import (
+    MajorRankingItemResponse,
+    MajorRankingsParams,
+    MajorRankingsResponse,
+    RankingMetric,
+    RankingSortOrder,
+)
 from app.schemas.results import (
     PaginatedResultsResponse,
     ResultAcademicAreaContextResponse,
@@ -37,6 +44,11 @@ __all__ = [
     "MajorAnalyticsFiltersResponse",
     "MajorAnalyticsMajorResponse",
     "MajorAnalyticsResponse",
+    "RankingMetric",
+    "RankingSortOrder",
+    "MajorRankingsParams",
+    "MajorRankingItemResponse",
+    "MajorRankingsResponse",
     "ResultProcessContextResponse",
     "ResultMajorContextResponse",
     "ResultFacultyContextResponse",
