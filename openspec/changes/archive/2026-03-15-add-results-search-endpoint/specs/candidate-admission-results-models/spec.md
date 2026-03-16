@@ -1,26 +1,4 @@
-## ADDED Requirements
-
-### Requirement: Candidate-level admission result fact model
-The system SHALL store one result row per candidate, major, and admission process combination.
-
-#### Scenario: Result links to process and major
-- **WHEN** an admission result is persisted
-- **THEN** it includes non-null foreign keys to `AdmissionProcess` and `Major`
-
-#### Scenario: Result uniqueness per candidate-major-process
-- **WHEN** results are persisted
-- **THEN** `(admission_process_id, major_id, candidate_code)` is unique
-
-### Requirement: Normalized admission outcome and traceability
-The system MUST normalize admission outcome while preserving source traceability fields.
-
-#### Scenario: Admission outcome is boolean
-- **WHEN** result rows are stored
-- **THEN** `is_admitted` is persisted as a boolean field
-
-#### Scenario: Source traceability fields are preserved
-- **WHEN** result rows are stored
-- **THEN** `observation_raw` and `row_number` are stored to trace source CSV context
+## MODIFIED Requirements
 
 ### Requirement: Result query support for common filters
 The system SHALL support filtering results by academic hierarchy, process, candidate code, candidate name, score range, and admission status through model structure and indexes.
@@ -41,6 +19,8 @@ The system SHALL support filtering results by academic hierarchy, process, candi
 - **WHEN** querying results with a candidate name string
 - **THEN** case-insensitive partial matching over normalized candidate lastnames and names is supported
 
+## ADDED Requirements
+
 ### Requirement: Result search supports paginated retrieval
 The system SHALL support paginated retrieval of admission results for raw exploration workloads.
 
@@ -54,10 +34,3 @@ The system MUST support deterministic sorting only for approved result fields.
 #### Scenario: Sorting allowlist is enforced
 - **WHEN** a sort field is requested
 - **THEN** sorting is applied only if the field is in the supported allowlist
-
-### Requirement: Result lifecycle fields
-The system SHALL include timestamps on admission result records.
-
-#### Scenario: Admission result table includes timestamps
-- **WHEN** the result table is defined
-- **THEN** it includes `created_at` and `updated_at`
