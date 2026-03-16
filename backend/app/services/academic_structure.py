@@ -7,6 +7,12 @@ from app.schemas.academic_structure import (
     HierarchyContextResponse,
     MajorResponse,
 )
+from app.schemas.major_analytics import (
+    MajorAnalyticsFiltersResponse,
+    MajorAnalyticsMajorResponse,
+    MajorAnalyticsMetricsResponse,
+    MajorAnalyticsResponse,
+)
 
 
 class AcademicStructureService:
@@ -51,6 +57,33 @@ class AcademicStructureService:
         if major is None:
             return None
         return self._to_major_response(major)
+
+    def get_major_analytics(self, db: Session, major_id: int, process_id: int | None = None) -> MajorAnalyticsResponse | None:
+        major = self.repository.get_major_by_id(db, major_id)
+        if major is None:
+            return None
+
+        analytics = self.repository.get_major_analytics(db, major_id=major_id, process_id=process_id)
+        return MajorAnalyticsResponse(
+            major=MajorAnalyticsMajorResponse(
+                id=major.id,
+                name=major.name,
+                slug=major.slug,
+                faculty=HierarchyContextResponse.model_validate(major.faculty),
+                academic_area=HierarchyContextResponse.model_validate(major.faculty.academic_area),
+            ),
+            filters=MajorAnalyticsFiltersResponse(process_id=process_id),
+            metrics=MajorAnalyticsMetricsResponse(
+                applicants=analytics.applicants,
+                admitted=analytics.admitted,
+                acceptance_rate=analytics.acceptance_rate,
+                max_score=float(analytics.max_score) if analytics.max_score is not None else None,
+                min_score=float(analytics.min_score) if analytics.min_score is not None else None,
+                avg_score=analytics.avg_score,
+                median_score=float(analytics.median_score) if analytics.median_score is not None else None,
+                cutoff_score=float(analytics.cutoff_score) if analytics.cutoff_score is not None else None,
+            ),
+        )
 
     def _to_faculty_response(self, faculty) -> FacultyResponse:
         return FacultyResponse(

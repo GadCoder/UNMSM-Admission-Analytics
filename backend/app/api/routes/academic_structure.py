@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 
 from app.core.db import get_db_session
 from app.schemas.academic_structure import AcademicAreaResponse, FacultyResponse, MajorResponse
+from app.schemas.major_analytics import MajorAnalyticsResponse
 from app.services.academic_structure import AcademicStructureService
 
 router = APIRouter(tags=["academic-structure"])
@@ -77,3 +78,20 @@ def get_major(
     if major is None:
         raise HTTPException(status_code=404, detail="Major not found")
     return major
+
+
+@router.get(
+    "/majors/{major_id}/analytics",
+    response_model=MajorAnalyticsResponse,
+    summary="Get major analytics",
+)
+def get_major_analytics(
+    major_id: int,
+    process_id: int | None = Query(default=None),
+    db: Session = Depends(get_db_session),
+    service: AcademicStructureService = Depends(get_academic_structure_service),
+) -> MajorAnalyticsResponse:
+    analytics = service.get_major_analytics(db, major_id=major_id, process_id=process_id)
+    if analytics is None:
+        raise HTTPException(status_code=404, detail="Major not found")
+    return analytics
