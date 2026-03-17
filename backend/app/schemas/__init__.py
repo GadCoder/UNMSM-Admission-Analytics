@@ -23,6 +23,7 @@ from app.schemas.major_trends import (
     SUPPORTED_TREND_METRICS,
     TrendMetricName,
 )
+from app.schemas.imports import ImportErrorItemResponse, ResultsImportSummaryResponse
 from app.schemas.rankings import (
     MajorRankingItemResponse,
     MajorRankingsParams,
@@ -70,4 +71,6 @@ __all__ = [
     "ResultItemResponse",
     "PaginatedResultsResponse",
     "ResultsSearchParams",
+    "ImportErrorItemResponse",
+    "ResultsImportSummaryResponse",
 ]

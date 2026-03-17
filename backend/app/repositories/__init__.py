@@ -6,6 +6,7 @@ from app.repositories.academic_structure import (
 from app.repositories.processes import ProcessOverviewMetrics, ProcessesRepository
 from app.repositories.rankings import MajorRankingRow, RankingsRepository
 from app.repositories.results import ResultSearchRow, ResultsRepository
+from app.repositories.imports import AdmissionResultInsertPayload, ResultsImportRepository
 
 __all__ = [
     "AcademicStructureRepository",
@@ -17,4 +18,6 @@ __all__ = [
     "MajorRankingRow",
     "ResultsRepository",
     "ResultSearchRow",
+    "ResultsImportRepository",
+    "AdmissionResultInsertPayload",
 ]
