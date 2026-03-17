@@ -72,8 +72,22 @@ class AcademicStructureEndpointTests(unittest.TestCase):
 
             process_2024_i = AdmissionProcess(id=1, year=2024, cycle="I", label="2024-I")
             process_2024_ii = AdmissionProcess(id=2, year=2024, cycle="II", label="2024-II")
+            process_2023_ii = AdmissionProcess(id=3, year=2023, cycle="II", label="2023-II")
 
             results = [
+                AdmissionResult(
+                    id=0,
+                    admission_process_id=3,
+                    major_id=101,
+                    candidate_code="M000",
+                    candidate_lastnames="OMEGA",
+                    candidate_names="Z",
+                    score=Decimal("600.0"),
+                    merit_rank=4,
+                    observation_raw=None,
+                    is_admitted=False,
+                    row_number=1,
+                ),
                 AdmissionResult(
                     id=1,
                     admission_process_id=1,
@@ -126,6 +140,19 @@ class AcademicStructureEndpointTests(unittest.TestCase):
                     is_admitted=True,
                     row_number=1,
                 ),
+                AdmissionResult(
+                    id=5,
+                    admission_process_id=2,
+                    major_id=101,
+                    candidate_code="M005",
+                    candidate_lastnames="EPSILON",
+                    candidate_names="E",
+                    score=Decimal("700.0"),
+                    merit_rank=3,
+                    observation_raw=None,
+                    is_admitted=False,
+                    row_number=2,
+                ),
             ]
 
             session.add_all(
@@ -140,6 +167,7 @@ class AcademicStructureEndpointTests(unittest.TestCase):
                     major_history,
                     process_2024_i,
                     process_2024_ii,
+                    process_2023_ii,
                     *results,
                 ]
             )
@@ -255,13 +283,13 @@ class AcademicStructureEndpointTests(unittest.TestCase):
         payload = response.json()
         self.assertEqual(payload["major"]["id"], 101)
         self.assertEqual(payload["filters"]["process_id"], None)
-        self.assertEqual(payload["metrics"]["applicants"], 4)
+        self.assertEqual(payload["metrics"]["applicants"], 6)
         self.assertEqual(payload["metrics"]["admitted"], 3)
-        self.assertAlmostEqual(payload["metrics"]["acceptance_rate"], 0.75, places=6)
+        self.assertAlmostEqual(payload["metrics"]["acceptance_rate"], 0.5, places=6)
         self.assertEqual(payload["metrics"]["min_score"], 500.0)
         self.assertEqual(payload["metrics"]["max_score"], 900.0)
         self.assertEqual(payload["metrics"]["cutoff_score"], 700.0)
-        self.assertAlmostEqual(payload["metrics"]["median_score"], 750.0, places=6)
+        self.assertAlmostEqual(payload["metrics"]["median_score"], 700.0, places=6)
 
         response_scoped = self.client.get("/majors/101/analytics?process_id=1")
         self.assertEqual(response_scoped.status_code, 200)
@@ -290,6 +318,81 @@ class AcademicStructureEndpointTests(unittest.TestCase):
         self.assertIsNone(payload["metrics"]["avg_score"])
         self.assertIsNone(payload["metrics"]["median_score"])
         self.assertIsNone(payload["metrics"]["cutoff_score"])
+
+    def test_major_trends_returns_hierarchy_context_and_history(self) -> None:
+        response = self.client.get("/majors/101/trends")
+        self.assertEqual(response.status_code, 200)
+
+        payload = response.json()
+        self.assertEqual(payload["major"]["id"], 101)
+        self.assertEqual(payload["major"]["faculty"]["id"], 11)
+        self.assertEqual(payload["major"]["academic_area"]["id"], 1)
+        self.assertEqual(
+            payload["metrics"],
+            [
+                "applicants",
+                "admitted",
+                "acceptance_rate",
+                "max_score",
+                "min_score",
+                "avg_score",
+                "median_score",
+                "cutoff_score",
+            ],
+        )
+        self.assertEqual(len(payload["history"]), 3)
+        self.assertIn("process", payload["history"][0])
+        self.assertIn("metrics", payload["history"][0])
+
+    def test_major_trends_returns_404_when_major_missing(self) -> None:
+        response = self.client.get("/majors/999/trends")
+        self.assertEqual(response.status_code, 404)
+        self.assertEqual(response.json()["detail"], "Major not found")
+
+    def test_major_trends_are_ordered_chronologically(self) -> None:
+        response = self.client.get("/majors/101/trends")
+        self.assertEqual(response.status_code, 200)
+
+        labels = [item["process"]["label"] for item in response.json()["history"]]
+        self.assertEqual(labels, ["2023-II", "2024-I", "2024-II"])
+
+    def test_major_trends_metrics_filter_and_validation(self) -> None:
+        response_default = self.client.get("/majors/101/trends")
+        self.assertEqual(response_default.status_code, 200)
+        default_metrics = response_default.json()["history"][0]["metrics"]
+        self.assertIn("applicants", default_metrics)
+        self.assertIn("cutoff_score", default_metrics)
+        self.assertIn("median_score", default_metrics)
+
+        response_filtered = self.client.get("/majors/101/trends?metrics=applicants,cutoff_score")
+        self.assertEqual(response_filtered.status_code, 200)
+        filtered_payload = response_filtered.json()
+        self.assertEqual(filtered_payload["metrics"], ["applicants", "cutoff_score"])
+        self.assertEqual(
+            sorted(filtered_payload["history"][0]["metrics"].keys()),
+            ["applicants", "cutoff_score"],
+        )
+
+        response_invalid = self.client.get("/majors/101/trends?metrics=applicants,unknown")
+        self.assertEqual(response_invalid.status_code, 422)
+
+    def test_major_trends_metric_semantics_match_analytics(self) -> None:
+        analytics_response = self.client.get("/majors/101/analytics")
+        trends_response = self.client.get("/majors/101/trends")
+        self.assertEqual(analytics_response.status_code, 200)
+        self.assertEqual(trends_response.status_code, 200)
+
+        analytics_metrics = analytics_response.json()["metrics"]
+        history = trends_response.json()["history"]
+
+        total_applicants = sum(item["metrics"]["applicants"] for item in history)
+        total_admitted = sum(item["metrics"]["admitted"] for item in history)
+        self.assertEqual(total_applicants, analytics_metrics["applicants"])
+        self.assertEqual(total_admitted, analytics_metrics["admitted"])
+
+        # For process 2023-II only non-admitted rows exist, so cutoff must be null.
+        history_by_label = {item["process"]["label"]: item for item in history}
+        self.assertIsNone(history_by_label["2023-II"]["metrics"]["cutoff_score"])
 
 
 if __name__ == "__main__":

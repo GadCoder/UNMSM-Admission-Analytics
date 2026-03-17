@@ -1,6 +1,6 @@
 from sqlalchemy.orm import Session
 
-from app.repositories.academic_structure import AcademicStructureRepository
+from app.repositories.academic_structure import AcademicStructureRepository, MajorTrendAggregation
 from app.schemas.academic_structure import (
     AcademicAreaResponse,
     FacultyResponse,
@@ -12,6 +12,14 @@ from app.schemas.major_analytics import (
     MajorAnalyticsMajorResponse,
     MajorAnalyticsMetricsResponse,
     MajorAnalyticsResponse,
+)
+from app.schemas.major_trends import (
+    SUPPORTED_TREND_METRICS,
+    MajorTrendsHistoryItemResponse,
+    MajorTrendsMajorResponse,
+    MajorTrendsProcessResponse,
+    MajorTrendsResponse,
+    TrendMetricName,
 )
 
 
@@ -85,6 +93,44 @@ class AcademicStructureService:
             ),
         )
 
+    def get_major_trends(
+        self,
+        db: Session,
+        major_id: int,
+        metrics: list[TrendMetricName] | None = None,
+    ) -> MajorTrendsResponse | None:
+        major = self.repository.get_major_with_hierarchy(db, major_id)
+        if major is None:
+            return None
+
+        selected_metrics = metrics or list(SUPPORTED_TREND_METRICS)
+        trend_rows = self.repository.list_major_trends(db, major_id=major_id)
+
+        history = [
+            MajorTrendsHistoryItemResponse(
+                process=MajorTrendsProcessResponse(
+                    id=row.process_id,
+                    year=row.process_year,
+                    cycle=row.process_cycle,
+                    label=row.process_label,
+                ),
+                metrics=self._build_major_trend_metrics(row, selected_metrics),
+            )
+            for row in trend_rows
+        ]
+
+        return MajorTrendsResponse(
+            major=MajorTrendsMajorResponse(
+                id=major.id,
+                name=major.name,
+                slug=major.slug,
+                faculty=HierarchyContextResponse.model_validate(major.faculty),
+                academic_area=HierarchyContextResponse.model_validate(major.faculty.academic_area),
+            ),
+            metrics=selected_metrics,
+            history=history,
+        )
+
     def _to_faculty_response(self, faculty) -> FacultyResponse:
         return FacultyResponse(
             id=faculty.id,
@@ -103,3 +149,20 @@ class AcademicStructureService:
             faculty=HierarchyContextResponse.model_validate(major.faculty),
             academic_area=HierarchyContextResponse.model_validate(major.faculty.academic_area),
         )
+
+    def _build_major_trend_metrics(
+        self,
+        row: MajorTrendAggregation,
+        selected_metrics: list[TrendMetricName],
+    ) -> dict[TrendMetricName, float | int | None]:
+        metric_values: dict[TrendMetricName, float | int | None] = {
+            "applicants": row.applicants,
+            "admitted": row.admitted,
+            "acceptance_rate": row.acceptance_rate,
+            "max_score": float(row.max_score) if row.max_score is not None else None,
+            "min_score": float(row.min_score) if row.min_score is not None else None,
+            "avg_score": row.avg_score,
+            "median_score": float(row.median_score) if row.median_score is not None else None,
+            "cutoff_score": float(row.cutoff_score) if row.cutoff_score is not None else None,
+        }
+        return {metric: metric_values[metric] for metric in selected_metrics}

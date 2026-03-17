@@ -15,6 +15,14 @@ from app.schemas.major_analytics import (
     MajorAnalyticsMetricsResponse,
     MajorAnalyticsResponse,
 )
+from app.schemas.major_trends import (
+    MajorTrendsHistoryItemResponse,
+    MajorTrendsMajorResponse,
+    MajorTrendsProcessResponse,
+    MajorTrendsResponse,
+    SUPPORTED_TREND_METRICS,
+    TrendMetricName,
+)
 from app.schemas.rankings import (
     MajorRankingItemResponse,
     MajorRankingsParams,
@@ -44,6 +52,12 @@ __all__ = [
     "MajorAnalyticsFiltersResponse",
     "MajorAnalyticsMajorResponse",
     "MajorAnalyticsResponse",
+    "TrendMetricName",
+    "SUPPORTED_TREND_METRICS",
+    "MajorTrendsProcessResponse",
+    "MajorTrendsMajorResponse",
+    "MajorTrendsHistoryItemResponse",
+    "MajorTrendsResponse",
     "RankingMetric",
     "RankingSortOrder",
     "MajorRankingsParams",
