@@ -21,11 +21,18 @@ from app.schemas.major_trends import (
     MajorTrendsResponse,
     TrendMetricName,
 )
+from app.services.cache import CacheService, get_cache_service
+from app.services.cache_keys import major_analytics_cache_key, major_trends_cache_key
 
 
 class AcademicStructureService:
-    def __init__(self, repository: AcademicStructureRepository | None = None) -> None:
+    def __init__(
+        self,
+        repository: AcademicStructureRepository | None = None,
+        cache_service: CacheService | None = None,
+    ) -> None:
         self.repository = repository or AcademicStructureRepository()
+        self.cache_service = cache_service or get_cache_service()
 
     def list_areas(self, db: Session) -> list[AcademicAreaResponse]:
         areas = self.repository.list_areas(db)
@@ -67,12 +74,23 @@ class AcademicStructureService:
         return self._to_major_response(major)
 
     def get_major_analytics(self, db: Session, major_id: int, process_id: int | None = None) -> MajorAnalyticsResponse | None:
+        cache_key = major_analytics_cache_key(major_id=major_id, process_id=process_id)
+        try:
+            cached = self.cache_service.get_json(cache_key)
+        except Exception:  # noqa: BLE001
+            cached = None
+        if isinstance(cached, dict):
+            try:
+                return MajorAnalyticsResponse.model_validate(cached)
+            except Exception:  # noqa: BLE001
+                pass
+
         major = self.repository.get_major_by_id(db, major_id)
         if major is None:
             return None
 
         analytics = self.repository.get_major_analytics(db, major_id=major_id, process_id=process_id)
-        return MajorAnalyticsResponse(
+        response = MajorAnalyticsResponse(
             major=MajorAnalyticsMajorResponse(
                 id=major.id,
                 name=major.name,
@@ -92,6 +110,11 @@ class AcademicStructureService:
                 cutoff_score=float(analytics.cutoff_score) if analytics.cutoff_score is not None else None,
             ),
         )
+        try:
+            self.cache_service.set_json(cache_key, response.model_dump(mode="json"))
+        except Exception:  # noqa: BLE001
+            pass
+        return response
 
     def get_major_trends(
         self,
@@ -99,6 +122,17 @@ class AcademicStructureService:
         major_id: int,
         metrics: list[TrendMetricName] | None = None,
     ) -> MajorTrendsResponse | None:
+        cache_key = major_trends_cache_key(major_id=major_id, metrics=metrics)
+        try:
+            cached = self.cache_service.get_json(cache_key)
+        except Exception:  # noqa: BLE001
+            cached = None
+        if isinstance(cached, dict):
+            try:
+                return MajorTrendsResponse.model_validate(cached)
+            except Exception:  # noqa: BLE001
+                pass
+
         major = self.repository.get_major_with_hierarchy(db, major_id)
         if major is None:
             return None
@@ -119,7 +153,7 @@ class AcademicStructureService:
             for row in trend_rows
         ]
 
-        return MajorTrendsResponse(
+        response = MajorTrendsResponse(
             major=MajorTrendsMajorResponse(
                 id=major.id,
                 name=major.name,
@@ -130,6 +164,11 @@ class AcademicStructureService:
             metrics=selected_metrics,
             history=history,
         )
+        try:
+            self.cache_service.set_json(cache_key, response.model_dump(mode="json"))
+        except Exception:  # noqa: BLE001
+            pass
+        return response
 
     def _to_faculty_response(self, faculty) -> FacultyResponse:
         return FacultyResponse(

@@ -5,16 +5,39 @@ from sqlalchemy.orm import Session
 from app.repositories.rankings import MajorRankingRow, RankingsRepository
 from app.schemas.academic_structure import HierarchyContextResponse
 from app.schemas.rankings import MajorRankingItemResponse, MajorRankingsParams, MajorRankingsResponse
+from app.services.cache import CacheService, get_cache_service
+from app.services.cache_keys import rankings_majors_cache_key
 
 
 class RankingsService:
-    def __init__(self, repository: RankingsRepository | None = None) -> None:
+    def __init__(
+        self,
+        repository: RankingsRepository | None = None,
+        cache_service: CacheService | None = None,
+    ) -> None:
         self.repository = repository or RankingsRepository()
+        self.cache_service = cache_service or get_cache_service()
 
     def list_major_rankings(self, db: Session, params: MajorRankingsParams) -> MajorRankingsResponse:
+        cache_key = rankings_majors_cache_key(params)
+        try:
+            cached = self.cache_service.get_json(cache_key)
+        except Exception:  # noqa: BLE001
+            cached = None
+        if isinstance(cached, dict):
+            try:
+                return MajorRankingsResponse.model_validate(cached)
+            except Exception:  # noqa: BLE001
+                pass
+
         rows = self.repository.list_major_rankings(db, params)
         items = [self._to_item_response(row, rank=index + 1) for index, row in enumerate(rows)]
-        return MajorRankingsResponse(items=items)
+        response = MajorRankingsResponse(items=items)
+        try:
+            self.cache_service.set_json(cache_key, response.model_dump(mode="json"))
+        except Exception:  # noqa: BLE001
+            pass
+        return response
 
     def _to_item_response(self, row: MajorRankingRow, rank: int) -> MajorRankingItemResponse:
         return MajorRankingItemResponse(

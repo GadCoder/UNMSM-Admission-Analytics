@@ -17,6 +17,9 @@ class Settings(BaseSettings):
     debug: bool = Field(default=False)
 
     database_url: str = Field(..., description="SQLAlchemy database URL")
+    valkey_url: str = Field(default="redis://localhost:6379/0")
+    cache_enabled: bool = Field(default=False)
+    cache_default_ttl_seconds: int = Field(default=3600, ge=1)
 
 
 @lru_cache
