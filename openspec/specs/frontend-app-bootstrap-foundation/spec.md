@@ -25,11 +25,15 @@ The system SHALL configure Lexend as the global frontend font so that all render
 - **THEN** the route content uses the globally configured Lexend font stack
 
 ### Requirement: Root Providers and Routing
-The system SHALL configure routing and TanStack Query at the application root through centralized provider composition.
+The system SHALL configure routing and TanStack Query at the application root through centralized provider composition and support shell-wrapped multi-page route composition.
 
 #### Scenario: Placeholder route resolves
 - **WHEN** a user navigates to the base application route
 - **THEN** the router resolves a placeholder page successfully under the root provider tree
+
+#### Scenario: Shell-managed route tree is supported
+- **WHEN** the frontend registers shell-managed routes
+- **THEN** the root routing composition supports rendering shared layout wrappers with nested child page routes
 
 ### Requirement: Centralized API Client Boundary
 The system SHALL provide a centralized API client module built on a dedicated HTTP client library, using environment-based backend base URL configuration for outbound REST communication.
