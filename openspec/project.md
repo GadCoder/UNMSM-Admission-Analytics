@@ -6,19 +6,58 @@ This project is a university admission analytics web application for UNMSM.
 
 The system ingests and normalizes historical admission results collected from CSV files starting from 2024. The platform allows users to explore admission data by academic area, faculty, major, and admission process.
 
-The backend is the source of truth for all business logic and analytics. The system is read-heavy and analytics-oriented.
+The backend is the source of truth for business logic and analytics, and the frontend provides a navigable analytics UI shell and reusable design system. The system is read-heavy and analytics-oriented.
 
 ## Product Goals
 
-The backend must support:
+The product must support:
 
 - browsing academic structure
 - browsing admission processes
 - searching candidate-level admission results
-- computing analytics for majors, faculties, academic areas, and processes
-- comparing majors
-- generating rankings
-- exposing historical trends
+- analytics and rankings for admission entities
+- historical trend exploration
+- comparison workflows
+- robust CSV ingestion and normalization
+
+## Current Implementation Snapshot
+
+Documentation linkage:
+
+- Backend endpoint contract snapshot: `backend/ENDPOINTS_REPORT.md`
+- Keep this section aligned with `backend/ENDPOINTS_REPORT.md` whenever endpoint capabilities change.
+
+### Backend implemented
+
+- health check endpoint
+- academic structure read APIs (areas, faculties, majors, details)
+- admission process read APIs (list, detail, overview)
+- candidate results search API with filtering, sorting, and pagination
+- major analytics API and major trends API (with metric allowlist)
+- major rankings API (metric-based ranking with hierarchy filters)
+- admission results CSV import API with file-level and row-level validation summaries
+- repository + service separation across implemented domains
+- Valkey cache foundation with cache key strategy and selective caching in process overview, major analytics, major trends, and rankings
+- automated endpoint and cache service tests
+
+### Frontend implemented
+
+- React + TypeScript + Vite app bootstrap
+- app shell with sidebar/topbar layout and routing
+- navigation routes: dashboard, explore, compare, rankings, results, trends, showcase
+- reusable design system primitives/components (cards, tables, charts, filters, layout blocks)
+- global filter feature model with URL-param serialization/parsing
+- process and academic area filter options loaded from backend APIs
+- API client foundation and system health check integration utility
+
+### Not implemented yet
+
+- backend dashboard endpoint/domain
+- backend exports workflow
+- backend faculty/area analytics endpoints
+- backend major comparison endpoint
+- worker-driven async processing flows
+- frontend pages wired end-to-end to all production backend analytics endpoints
 
 ## Domain Model
 
@@ -65,12 +104,18 @@ This backend must follow a modular monolith architecture.
 - Python
 - FastAPI
 - PostgreSQL
-- Redis
+- Valkey/Redis
 - Alembic
 - Pydantic
-- SQLAlchemy or SQLModel
-- S3-compatible object storage
-- background worker backed by Redis queue
+- SQLAlchemy
+- React
+- TypeScript
+- Vite
+- Tailwind CSS
+- TanStack Query
+- Axios
+- S3-compatible object storage (planned)
+- background worker backed by Valkey/Redis queue (planned)
 
 ### Deployment shape
 
@@ -108,19 +153,31 @@ This backend must follow a modular monolith architecture.
 
 ## API Domains
 
-Main route groups:
+Current backend route groups:
 
 - /health
-- /dashboard
-- /processes
 - /areas
 - /faculties
 - /majors
-- /rankings
-- /trends
+- /processes
 - /results
+- /rankings
 - /imports
-- /exports
+
+Notes:
+
+- trends are currently exposed under `/majors/{major_id}/trends`
+- `/dashboard` and `/exports` are not implemented yet
+
+Current frontend route groups:
+
+- /dashboard
+- /explore
+- /compare
+- /rankings
+- /results
+- /trends
+- /showcase
 
 ## V1 Functional Scope
 
@@ -131,19 +188,26 @@ Main route groups:
 - list majors
 - filter faculties by area
 - filter majors by faculty
+- get area, faculty, and major details by id
+- major analytics endpoint
+- major trends endpoint with metric filtering
 
 ### Admission processes
 
 - list admission processes
+- retrieve process detail
 - retrieve process overview
 
 ### Analytics
 
 - major analytics
-- faculty analytics
-- area analytics
 - rankings
 - trends
+
+Deferred in V1:
+
+- faculty analytics
+- area analytics
 - major comparison
 
 ### Raw results
@@ -153,16 +217,19 @@ Main route groups:
 
 ### Imports
 
-- register source CSV files
-- create import batches
 - parse and ingest CSV rows
 - normalize status values
 - insert rows into PostgreSQL
+- return import summary with row-level errors
 
 ### Exports
 
 - export results to CSV
 - support async large exports later
+
+Current status:
+
+- not implemented yet
 
 ## Non-Goals for V1
 
@@ -196,6 +263,8 @@ Do not cache everything by default.
 
 ## Implementation Priorities
 
+Completed:
+
 1. bootstrap backend foundation
 2. database config and base project structure
 3. core domain models
@@ -203,11 +272,21 @@ Do not cache everything by default.
 5. academic structure endpoints
 6. admission process endpoints
 7. raw results search endpoint
-8. analytics services
-9. rankings and trends
-10. import workflow
-11. Redis integration
-12. export workflow
+8. major analytics service
+9. major rankings and trends endpoints
+10. CSV import workflow
+11. frontend app bootstrap foundation
+12. frontend app shell layout and navigation
+13. frontend design-system foundation
+14. frontend global filter system foundation
+
+Next:
+
+15. complete Valkey caching rollout policy for production configuration
+16. export workflow
+17. dashboard-oriented aggregations
+18. faculty/area analytics and major comparison APIs
+19. connect frontend analytics pages to live backend datasets end-to-end
 
 ## Coding Preferences
 
