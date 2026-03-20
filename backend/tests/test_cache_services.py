@@ -16,15 +16,21 @@ from app.schemas.rankings import MajorRankingsParams
 from app.services.academic_structure import AcademicStructureService
 from app.services.cache import CacheService
 from app.services.cache_keys import (
+    dashboard_applicants_trend_cache_key,
+    dashboard_cutoff_trend_cache_key,
+    dashboard_overview_cache_key,
+    dashboard_rankings_cache_key,
     major_analytics_cache_key,
     major_trends_cache_key,
     process_overview_cache_key,
     rankings_majors_cache_key,
 )
+from app.services.dashboard import DashboardService
 from app.services.imports import ResultsImportService
 from app.services.processes import ProcessesService
 from app.services.rankings import RankingsService
 from app.services.results import ResultsService
+from app.schemas.dashboard import DashboardRankingsParams, DashboardScopedParams, DashboardTrendParams
 
 
 class FakeCacheService:
@@ -156,6 +162,26 @@ class CacheServicesTests(unittest.TestCase):
             "rankings:majors:process:1:metric:cutoff_score:sort:desc:area:all:faculty:all:limit:10",
         )
 
+        overview_params = DashboardScopedParams(process_id=1, academic_area_id=None, faculty_id=10)
+        rankings_params = DashboardRankingsParams(process_id=1, academic_area_id=1, faculty_id=None, limit=5)
+        trend_params = DashboardTrendParams(academic_area_id=None, faculty_id=10)
+        self.assertEqual(
+            dashboard_overview_cache_key(overview_params),
+            "dashboard:overview:process:1:area:all:faculty:10",
+        )
+        self.assertEqual(
+            dashboard_rankings_cache_key(rankings_params),
+            "dashboard:rankings:process:1:area:1:faculty:all:limit:5",
+        )
+        self.assertEqual(
+            dashboard_applicants_trend_cache_key(trend_params),
+            "dashboard:trends:applicants:area:all:faculty:10",
+        )
+        self.assertEqual(
+            dashboard_cutoff_trend_cache_key(trend_params),
+            "dashboard:trends:cutoff:area:all:faculty:10",
+        )
+
     def test_process_overview_cache_hit_and_miss(self) -> None:
         cache = FakeCacheService()
         service = ProcessesService(cache_service=cache)
@@ -204,11 +230,36 @@ class CacheServicesTests(unittest.TestCase):
         self.assertEqual(rankings_cache.get_calls, 2)
         self.assertEqual(rankings_cache.set_calls, 1)
 
+    def test_dashboard_cache_hit_and_miss(self) -> None:
+        cache = FakeCacheService()
+        service = DashboardService(cache_service=cache)
+        scoped = DashboardScopedParams(process_id=1)
+        rankings_params = DashboardRankingsParams(process_id=1, limit=2)
+        trend_params = DashboardTrendParams()
+
+        with self.session_factory() as session:
+            first_overview = service.get_overview(session, scoped)
+            second_overview = service.get_overview(session, scoped)
+            first_rankings = service.get_rankings(session, rankings_params)
+            second_rankings = service.get_rankings(session, rankings_params)
+            first_applicants = service.get_applicants_trend(session, trend_params)
+            second_applicants = service.get_applicants_trend(session, trend_params)
+            first_cutoff = service.get_cutoff_trend(session, trend_params)
+            second_cutoff = service.get_cutoff_trend(session, trend_params)
+
+        self.assertEqual(first_overview.model_dump(), second_overview.model_dump())
+        self.assertEqual(first_rankings.model_dump(), second_rankings.model_dump())
+        self.assertEqual(first_applicants.model_dump(), second_applicants.model_dump())
+        self.assertEqual(first_cutoff.model_dump(), second_cutoff.model_dump())
+        self.assertEqual(cache.get_calls, 8)
+        self.assertEqual(cache.set_calls, 4)
+
     def test_cache_failure_fallback_and_non_cached_services(self) -> None:
         failing_cache = FakeCacheService(fail_get=True, fail_set=True)
         processes_service = ProcessesService(cache_service=failing_cache)
         academic_service = AcademicStructureService(cache_service=failing_cache)
         rankings_service = RankingsService(cache_service=failing_cache)
+        dashboard_service = DashboardService(cache_service=failing_cache)
 
         with self.session_factory() as session:
             overview = processes_service.get_process_overview(session, 1)
@@ -218,11 +269,19 @@ class CacheServicesTests(unittest.TestCase):
                 session,
                 MajorRankingsParams(process_id=1, metric="applicants"),
             )
+            dashboard_overview = dashboard_service.get_overview(session, DashboardScopedParams(process_id=1))
+            dashboard_rankings = dashboard_service.get_rankings(session, DashboardRankingsParams(process_id=1))
+            dashboard_applicants_trend = dashboard_service.get_applicants_trend(session, DashboardTrendParams())
+            dashboard_cutoff_trend = dashboard_service.get_cutoff_trend(session, DashboardTrendParams())
 
         self.assertEqual(overview.total_applicants, 3)
         self.assertIsNotNone(analytics)
         self.assertIsNotNone(trends)
         self.assertGreaterEqual(len(rankings.items), 1)
+        self.assertEqual(dashboard_overview.metrics.total_applicants, 3)
+        self.assertGreaterEqual(len(dashboard_rankings.most_competitive), 1)
+        self.assertGreaterEqual(len(dashboard_applicants_trend.items), 1)
+        self.assertGreaterEqual(len(dashboard_cutoff_trend.items), 1)
 
         # Ensure out-of-scope services remain uncached.
         self.assertFalse(hasattr(ResultsService(), "cache_service"))

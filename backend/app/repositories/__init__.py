@@ -3,6 +3,13 @@ from app.repositories.academic_structure import (
     MajorAnalyticsAggregation,
     MajorTrendAggregation,
 )
+from app.repositories.dashboard import (
+    DashboardApplicantsTrendRow,
+    DashboardCutoffTrendRow,
+    DashboardOverviewAggregation,
+    DashboardRankingRow,
+    DashboardRepository,
+)
 from app.repositories.processes import ProcessOverviewMetrics, ProcessesRepository
 from app.repositories.rankings import MajorRankingRow, RankingsRepository
 from app.repositories.results import ResultSearchRow, ResultsRepository
@@ -12,6 +19,11 @@ __all__ = [
     "AcademicStructureRepository",
     "MajorAnalyticsAggregation",
     "MajorTrendAggregation",
+    "DashboardRepository",
+    "DashboardOverviewAggregation",
+    "DashboardRankingRow",
+    "DashboardApplicantsTrendRow",
+    "DashboardCutoffTrendRow",
     "ProcessesRepository",
     "ProcessOverviewMetrics",
     "RankingsRepository",

@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+from app.schemas.dashboard import DashboardRankingsParams, DashboardScopedParams, DashboardTrendParams
 from app.schemas.major_trends import TrendMetricName
 from app.schemas.rankings import MajorRankingsParams
 
@@ -34,3 +35,27 @@ def rankings_majors_cache_key(params: MajorRankingsParams) -> str:
         f"faculty:{faculty}:"
         f"limit:{limit}"
     )
+
+
+def dashboard_overview_cache_key(params: DashboardScopedParams) -> str:
+    area = str(params.academic_area_id) if params.academic_area_id is not None else "all"
+    faculty = str(params.faculty_id) if params.faculty_id is not None else "all"
+    return f"dashboard:overview:process:{params.process_id}:area:{area}:faculty:{faculty}"
+
+
+def dashboard_rankings_cache_key(params: DashboardRankingsParams) -> str:
+    area = str(params.academic_area_id) if params.academic_area_id is not None else "all"
+    faculty = str(params.faculty_id) if params.faculty_id is not None else "all"
+    return f"dashboard:rankings:process:{params.process_id}:area:{area}:faculty:{faculty}:limit:{params.limit}"
+
+
+def dashboard_applicants_trend_cache_key(params: DashboardTrendParams) -> str:
+    area = str(params.academic_area_id) if params.academic_area_id is not None else "all"
+    faculty = str(params.faculty_id) if params.faculty_id is not None else "all"
+    return f"dashboard:trends:applicants:area:{area}:faculty:{faculty}"
+
+
+def dashboard_cutoff_trend_cache_key(params: DashboardTrendParams) -> str:
+    area = str(params.academic_area_id) if params.academic_area_id is not None else "all"
+    faculty = str(params.faculty_id) if params.faculty_id is not None else "all"
+    return f"dashboard:trends:cutoff:area:{area}:faculty:{faculty}"
