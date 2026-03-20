@@ -35,9 +35,10 @@ Documentation linkage:
 - candidate results search API with filtering, sorting, and pagination
 - major analytics API and major trends API (with metric allowlist)
 - major rankings API (metric-based ranking with hierarchy filters)
+- dashboard aggregate API domain (`/dashboard/overview`, `/dashboard/rankings`, `/dashboard/trends/applicants`, `/dashboard/trends/cutoff`)
 - admission results CSV import API with file-level and row-level validation summaries
 - repository + service separation across implemented domains
-- Valkey cache foundation with cache key strategy and selective caching in process overview, major analytics, major trends, and rankings
+- Valkey cache foundation with cache key strategy and selective caching in process overview, major analytics, major trends, rankings, and dashboard aggregates
 - automated endpoint and cache service tests
 
 ### Frontend implemented
@@ -52,7 +53,6 @@ Documentation linkage:
 
 ### Not implemented yet
 
-- backend dashboard endpoint/domain
 - backend exports workflow
 - backend faculty/area analytics endpoints
 - backend major comparison endpoint
@@ -162,12 +162,13 @@ Current backend route groups:
 - /processes
 - /results
 - /rankings
+- /dashboard
 - /imports
 
 Notes:
 
 - trends are currently exposed under `/majors/{major_id}/trends`
-- `/dashboard` and `/exports` are not implemented yet
+- `/exports` is not implemented yet
 
 Current frontend route groups:
 
@@ -203,6 +204,7 @@ Current frontend route groups:
 - major analytics
 - rankings
 - trends
+- dashboard aggregates
 
 Deferred in V1:
 

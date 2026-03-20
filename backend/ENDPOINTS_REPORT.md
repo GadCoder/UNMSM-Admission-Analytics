@@ -26,6 +26,10 @@ Auth at route layer: none configured
 | GET | `/processes` | List admission processes | None | `200` | - |
 | GET | `/processes/{process_id}` | Get process by ID | `process_id` (path, int) | `200` | `404` not found |
 | GET | `/processes/{process_id}/overview` | Process-level aggregates | `process_id` (path, int) | `200` | `404` not found |
+| GET | `/dashboard/overview` | Dashboard KPI aggregates | `process_id` (required), optional `academic_area_id`, `faculty_id` | `200` | `404` unknown process/hierarchy id, `422` invalid hierarchy combo |
+| GET | `/dashboard/rankings` | Dashboard dual rankings | `process_id` (required), optional `academic_area_id`, `faculty_id`, `limit` | `200` | `404` unknown process/hierarchy id, `422` validation errors |
+| GET | `/dashboard/trends/applicants` | Applicants trend over processes | optional `academic_area_id`, `faculty_id` | `200` | `404` unknown hierarchy id, `422` invalid hierarchy combo |
+| GET | `/dashboard/trends/cutoff` | Aggregate cutoff trend over processes | optional `academic_area_id`, `faculty_id` | `200` | `404` unknown hierarchy id, `422` invalid hierarchy combo |
 | GET | `/results` | Search admission results | Rich filters + paging + sorting (see below) | `200` | `422` validation errors |
 | GET | `/rankings/majors` | Rank majors by metric | `process_id` (required), `metric` (required), optional hierarchy/sort/limit | `200` | `422` validation errors |
 | POST | `/imports/results` | Import results CSV | Multipart form: `process_id` + `file` | `200` | `400` file validation, `404` unknown process, `422` form validation |
@@ -68,6 +72,29 @@ Auth at route layer: none configured
   - `academic_area_id` (int)
   - `faculty_id` (int)
   - `limit` (default `50`, min `1`, max `100`)
+
+### `GET /dashboard/overview`
+
+- Required:
+  - `process_id` (int)
+- Optional:
+  - `academic_area_id` (int)
+  - `faculty_id` (int)
+
+### `GET /dashboard/rankings`
+
+- Required:
+  - `process_id` (int)
+- Optional:
+  - `academic_area_id` (int)
+  - `faculty_id` (int)
+  - `limit` (default `10`, min `1`, max `100`)
+
+### `GET /dashboard/trends/applicants` and `GET /dashboard/trends/cutoff`
+
+- Optional:
+  - `academic_area_id` (int)
+  - `faculty_id` (int)
 
 ## Notes
 
