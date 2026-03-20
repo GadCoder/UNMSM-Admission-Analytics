@@ -6,6 +6,7 @@ import { DashboardPage } from '../pages/dashboard-page'
 import { ExplorePage } from '../pages/explore-page'
 import { RankingsPage } from '../pages/rankings-page'
 import { ResultsPage } from '../pages/results-page'
+import { ShowcasePage } from '../pages/showcase-page'
 import { TrendsPage } from '../pages/trends-page'
 
 export function AppRouter() {
@@ -20,6 +21,7 @@ export function AppRouter() {
         <Route path="/rankings" element={<RankingsPage />} />
         <Route path="/results" element={<ResultsPage />} />
         <Route path="/trends" element={<TrendsPage />} />
+        <Route path="/showcase" element={<ShowcasePage />} />
       </Route>
 
       <Route path="*" element={<Navigate to="/dashboard" replace />} />

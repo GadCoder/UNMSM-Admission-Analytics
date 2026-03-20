@@ -1,0 +1,22 @@
+:root {
+  --ds-color-primary: #8f5658;
+  --ds-color-primary-dark: #6f4043;
+  --ds-color-primary-light: #b97b7d;
+  --ds-color-background: #faf8f7;
+  --ds-color-surface: #ffffff;
+  --ds-color-text-primary: #2d2223;
+  --ds-color-text-secondary: #6e5e5f;
+  --ds-color-success: #2e8b57;
+  --ds-color-warning: #c58a2b;
+  --ds-color-danger: #c54b4b;
+
+  --ds-radius-card: 12px;
+  --ds-shadow-soft: 0 4px 20px rgba(0, 0, 0, 0.05);
+
+  --ds-space-1: 4px;
+  --ds-space-2: 8px;
+  --ds-space-3: 12px;
+  --ds-space-4: 16px;
+  --ds-space-6: 24px;
+  --ds-space-8: 32px;
+}
