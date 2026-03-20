@@ -1,12 +1,13 @@
 import { Outlet } from 'react-router-dom'
 
+import { Container } from '../components/design-system'
 import { Sidebar } from './sidebar'
 import { Topbar } from './topbar'
 
 export function AppLayout() {
   return (
     <div className="min-h-screen bg-background text-textPrimary">
-      <div className="mx-auto flex min-h-screen w-full max-w-[1600px]">
+      <Container className="flex min-h-screen !px-0">
         <Sidebar />
 
         <div className="flex min-h-screen min-w-0 flex-1 flex-col">
@@ -15,7 +16,7 @@ export function AppLayout() {
             <Outlet />
           </main>
         </div>
-      </div>
+      </Container>
     </div>
   )
 }
