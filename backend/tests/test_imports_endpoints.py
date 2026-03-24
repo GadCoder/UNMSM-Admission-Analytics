@@ -20,15 +20,25 @@ class ImportsEndpointTests(unittest.TestCase):
         cls.tempdir = tempfile.TemporaryDirectory()
         cls.db_path = f"{cls.tempdir.name}/test.db"
         cls.engine = create_engine(f"sqlite+pysqlite:///{cls.db_path}", future=True)
-        cls.session_factory = sessionmaker(bind=cls.engine, autoflush=False, autocommit=False, future=True)
+        cls.session_factory = sessionmaker(
+            bind=cls.engine, autoflush=False, autocommit=False, future=True
+        )
 
         Base.metadata.create_all(bind=cls.engine)
 
         with cls.session_factory() as session:
             area = AcademicArea(id=1, name="Engineering", slug="engineering")
             faculty = Faculty(id=10, name="Systems", slug="systems", academic_area_id=1)
-            major_software = Major(id=100, name="INGENIERÍA DE SOFTWARE", slug="software", faculty_id=10, is_active=True)
-            major_networks = Major(id=101, name="REDES", slug="networks", faculty_id=10, is_active=True)
+            major_software = Major(
+                id=100,
+                name="INGENIERÍA DE SOFTWARE",
+                slug="software",
+                faculty_id=10,
+                is_active=True,
+            )
+            major_networks = Major(
+                id=101, name="REDES", slug="networks", faculty_id=10, is_active=True
+            )
             process = AdmissionProcess(id=1, year=2024, cycle="I", label="2024-I")
 
             session.add_all([area, faculty, major_software, major_networks, process])
@@ -45,6 +55,15 @@ class ImportsEndpointTests(unittest.TestCase):
 
         app.dependency_overrides[get_db_session] = override_get_db_session
         cls.client = TestClient(app)
+        login = cls.client.post(
+            "/auth/admin/login",
+            json={
+                "username": os.environ.get("ADMIN_USERNAME", "admin"),
+                "password": os.environ.get("ADMIN_PASSWORD", "admin123"),
+            },
+        )
+        assert login.status_code == 200
+        cls.auth_headers = {"Authorization": f"Bearer {login.json()['access_token']}"}
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -64,6 +83,7 @@ class ImportsEndpointTests(unittest.TestCase):
             "/imports/results",
             data={"process_id": "1"},
             files={"file": ("results.csv", csv_content.encode("utf-8"), "text/csv")},
+            headers=self.auth_headers,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -98,10 +118,15 @@ class ImportsEndpointTests(unittest.TestCase):
         missing_columns_response = self.client.post(
             "/imports/results",
             data={"process_id": "1"},
-            files={"file": ("bad.csv", missing_columns_csv.encode("utf-8"), "text/csv")},
+            files={
+                "file": ("bad.csv", missing_columns_csv.encode("utf-8"), "text/csv")
+            },
+            headers=self.auth_headers,
         )
         self.assertEqual(missing_columns_response.status_code, 400)
-        self.assertIn("missing required columns", missing_columns_response.json()["detail"])
+        self.assertIn(
+            "missing required columns", missing_columns_response.json()["detail"]
+        )
 
         valid_csv = "\n".join(
             [
@@ -113,9 +138,12 @@ class ImportsEndpointTests(unittest.TestCase):
             "/imports/results",
             data={"process_id": "999"},
             files={"file": ("results.csv", valid_csv.encode("utf-8"), "text/csv")},
+            headers=self.auth_headers,
         )
         self.assertEqual(unknown_process_response.status_code, 404)
-        self.assertEqual(unknown_process_response.json()["detail"], "Admission process not found")
+        self.assertEqual(
+            unknown_process_response.json()["detail"], "Admission process not found"
+        )
 
     def test_import_results_row_level_failures(self) -> None:
         csv_content = "\n".join(
@@ -133,6 +161,7 @@ class ImportsEndpointTests(unittest.TestCase):
             "/imports/results",
             data={"process_id": "1"},
             files={"file": ("mixed.csv", csv_content.encode("utf-8"), "text/csv")},
+            headers=self.auth_headers,
         )
 
         self.assertEqual(response.status_code, 200)
@@ -160,6 +189,7 @@ class ImportsEndpointTests(unittest.TestCase):
             "/imports/results",
             data={"process_id": "1"},
             files={"file": ("norm.csv", csv_content.encode("utf-8"), "text/csv")},
+            headers=self.auth_headers,
         )
         self.assertEqual(response.status_code, 200)
 
@@ -178,6 +208,36 @@ class ImportsEndpointTests(unittest.TestCase):
             self.assertIsNone(rows[0].merit_rank)
             self.assertIsNone(rows[1].merit_rank)
             self.assertIsNone(rows[2].merit_rank)
+
+    def test_import_results_sets_zero_score_for_absent_rows(self) -> None:
+        csv_content = "\n".join(
+            [
+                "code,lastnames,names,major,score,merit,observation,modality",
+                "3001,DIEZ,AUSENTE CASE,INGENIERÍA DE SOFTWARE,,,AUSENTE,EBR",
+                "3002,ONCE,MISSING SCORE,INGENIERÍA DE SOFTWARE,,,,EBR",
+            ]
+        )
+        response = self.client.post(
+            "/imports/results",
+            data={"process_id": "1"},
+            files={"file": ("absent.csv", csv_content.encode("utf-8"), "text/csv")},
+            headers=self.auth_headers,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        payload = response.json()
+        self.assertEqual(payload["total_rows"], 2)
+        self.assertEqual(payload["imported_rows"], 1)
+        self.assertEqual(payload["failed_rows"], 1)
+
+        with self.session_factory() as session:
+            row = session.scalar(
+                select(AdmissionResult).where(AdmissionResult.candidate_code == "3001")
+            )
+            self.assertIsNotNone(row)
+            assert row is not None
+            self.assertEqual(float(row.score), 0.0)
+            self.assertFalse(row.is_admitted)
 
 
 if __name__ == "__main__":
