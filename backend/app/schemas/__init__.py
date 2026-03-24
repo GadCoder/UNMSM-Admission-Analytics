@@ -4,6 +4,21 @@ from app.schemas.academic_structure import (
     HierarchyContextResponse,
     MajorResponse,
 )
+from app.schemas.admin import (
+    AdminAdmissionProcessCreateRequest,
+    AdminAdmissionProcessResponse,
+    AdminAdmissionProcessUpdateRequest,
+    AdminAcademicAreaCreateRequest,
+    AdminAcademicAreaResponse,
+    AdminAcademicAreaUpdateRequest,
+    AdminFacultyCreateRequest,
+    AdminFacultyResponse,
+    AdminFacultyUpdateRequest,
+    AdminMajorCreateRequest,
+    AdminMajorResponse,
+    AdminMajorUpdateRequest,
+)
+from app.schemas.auth import AdminLoginRequest, AdminTokenResponse, AuthenticatedAdmin
 from app.schemas.processes import (
     AdmissionProcessDetailResponse,
     AdmissionProcessListItemResponse,
@@ -23,7 +38,15 @@ from app.schemas.major_trends import (
     SUPPORTED_TREND_METRICS,
     TrendMetricName,
 )
-from app.schemas.imports import ImportErrorItemResponse, ResultsImportSummaryResponse
+from app.schemas.imports import (
+    BulkImportBatchCreateFileRequest,
+    BulkImportBatchCreateResponse,
+    BulkImportBatchItemResponse,
+    BulkImportBatchItemsResponse,
+    BulkImportBatchStatusResponse,
+    ImportErrorItemResponse,
+    ResultsImportSummaryResponse,
+)
 from app.schemas.rankings import (
     MajorRankingItemResponse,
     MajorRankingsParams,
@@ -57,6 +80,21 @@ from app.schemas.results import (
 
 __all__ = [
     "AcademicAreaResponse",
+    "AdminLoginRequest",
+    "AdminTokenResponse",
+    "AuthenticatedAdmin",
+    "AdminAdmissionProcessCreateRequest",
+    "AdminAdmissionProcessUpdateRequest",
+    "AdminAdmissionProcessResponse",
+    "AdminAcademicAreaCreateRequest",
+    "AdminAcademicAreaUpdateRequest",
+    "AdminAcademicAreaResponse",
+    "AdminFacultyCreateRequest",
+    "AdminFacultyUpdateRequest",
+    "AdminFacultyResponse",
+    "AdminMajorCreateRequest",
+    "AdminMajorUpdateRequest",
+    "AdminMajorResponse",
     "FacultyResponse",
     "HierarchyContextResponse",
     "MajorResponse",
@@ -99,4 +137,9 @@ __all__ = [
     "ResultsSearchParams",
     "ImportErrorItemResponse",
     "ResultsImportSummaryResponse",
+    "BulkImportBatchCreateFileRequest",
+    "BulkImportBatchCreateResponse",
+    "BulkImportBatchStatusResponse",
+    "BulkImportBatchItemResponse",
+    "BulkImportBatchItemsResponse",
 ]

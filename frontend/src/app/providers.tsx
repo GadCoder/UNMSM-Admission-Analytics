@@ -2,6 +2,7 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { BrowserRouter } from 'react-router-dom'
 
 import type { PropsWithChildren } from 'react'
+import { AdminAuthProvider } from '../features/admin-auth/model/admin-auth-context'
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,7 +17,9 @@ const queryClient = new QueryClient({
 export function AppProviders({ children }: PropsWithChildren) {
   return (
     <QueryClientProvider client={queryClient}>
-      <BrowserRouter>{children}</BrowserRouter>
+      <AdminAuthProvider>
+        <BrowserRouter>{children}</BrowserRouter>
+      </AdminAuthProvider>
     </QueryClientProvider>
   )
 }

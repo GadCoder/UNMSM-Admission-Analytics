@@ -12,3 +12,11 @@ export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
   { label: 'Results', path: '/results', short: 'RS' },
   { label: 'Trends', path: '/trends', short: 'TR' },
 ]
+
+export const ADMIN_NAV_ITEMS: PrimaryNavItem[] = [
+  { label: 'Admin Processes', path: '/admin/processes', short: 'AP' },
+  { label: 'Admin Imports', path: '/admin/imports', short: 'AI' },
+  { label: 'Admin Areas', path: '/admin/areas', short: 'AA' },
+  { label: 'Admin Faculties', path: '/admin/faculties', short: 'AF' },
+  { label: 'Admin Majors', path: '/admin/majors', short: 'AM' },
+]
