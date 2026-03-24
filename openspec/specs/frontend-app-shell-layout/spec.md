@@ -11,11 +11,15 @@ The system SHALL provide a reusable application shell composed of sidebar, top b
 - **THEN** the sidebar, top bar, and main content container are rendered in a consistent layout structure
 
 ### Requirement: Sidebar Primary Navigation
-The system SHALL render sidebar navigation entries for Dashboard, Explore, Compare, Rankings, Results, and Trends.
+The system SHALL render sidebar navigation entries for Dashboard, Explore, Compare, Rankings, Results, Trends, and Admin.
 
 #### Scenario: Sidebar navigation options are available
 - **WHEN** the shell is displayed
 - **THEN** the sidebar shows all primary navigation sections with keyboard-accessible interactive elements
+
+#### Scenario: Admin navigation visibility follows auth state
+- **WHEN** the current user is not authenticated as admin
+- **THEN** the Admin navigation entry is hidden or disabled according to auth policy
 
 ### Requirement: Route-Aware Active Navigation State
 The system SHALL visually highlight the active sidebar navigation item based on the current route.
@@ -39,11 +43,15 @@ The system SHALL expose a main content slot where child route views render insid
 - **THEN** the route's page content renders inside the shell content area without replacing sidebar/top bar
 
 ### Requirement: Shell Route Readiness with Placeholders
-The system SHALL provide placeholder page views for `/dashboard`, `/explore`, `/compare`, `/rankings`, `/results`, and `/trends` routed inside the shell.
+The system SHALL provide route readiness for `/dashboard`, `/explore`, `/compare`, `/rankings`, `/results`, `/trends`, and `/admin/*` routed inside the shell.
 
 #### Scenario: Placeholder routes resolve
 - **WHEN** a user navigates to any initial shell route
 - **THEN** the corresponding placeholder page renders within the shell layout
+
+#### Scenario: Admin shell routes resolve for authenticated admin
+- **WHEN** an authenticated admin navigates to an admin route
+- **THEN** the corresponding admin page renders within the shell layout
 
 ### Requirement: Design-System-Aligned Shell Styling
 The system SHALL style shell surfaces, spacing, typography, and hierarchy in alignment with `openspec/design-system.md`.
@@ -58,4 +66,3 @@ The system SHALL provide keyboard-accessible navigation controls, visible focus 
 #### Scenario: Keyboard navigation feedback is visible
 - **WHEN** a user navigates shell controls via keyboard
 - **THEN** interactive elements are reachable and display visible focus indication
-
