@@ -7,6 +7,7 @@ import type { FilterOption } from './filter-option-types'
 type AcademicAreaResponse = {
   id: number
   name: string
+  slug: string
 }
 
 type UseAcademicAreaOptionsResult = {
@@ -22,6 +23,7 @@ async function fetchAcademicAreaOptions(): Promise<FilterOption[]> {
   return response.data.map((areaItem) => ({
     value: String(areaItem.id),
     label: areaItem.name,
+    slug: areaItem.slug,
   }))
 }
 

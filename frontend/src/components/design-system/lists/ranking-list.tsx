@@ -2,6 +2,7 @@ type RankingItem = {
   id: string
   label: string
   value: string
+  description?: string
   progress?: number
 }
 
@@ -16,6 +17,7 @@ export function RankingList({ items }: { items: RankingItem[] }) {
             </p>
             <span className="text-sm font-semibold text-primaryDark">{item.value}</span>
           </div>
+          {item.description ? <p className="mt-1 text-xs text-textSecondary">{item.description}</p> : null}
           {typeof item.progress === 'number' ? (
             <div className="mt-2 h-2 rounded-full bg-primary/10">
               <div className="h-full rounded-full bg-primary" style={{ width: `${item.progress}%` }} />
