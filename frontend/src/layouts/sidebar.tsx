@@ -1,5 +1,5 @@
 import { Sidebar as DesignSystemSidebar, type SidebarNavGroup } from '../components/design-system'
-import { ADMIN_NAV_ITEMS, PRIMARY_NAV_ITEMS } from './navigation'
+import { PRIMARY_NAV_ITEMS } from './navigation'
 
 const navGroups: SidebarNavGroup[] = [
   {
@@ -9,10 +9,6 @@ const navGroups: SidebarNavGroup[] = [
   {
     label: 'Analytics Views',
     items: PRIMARY_NAV_ITEMS.slice(3),
-  },
-  {
-    label: 'Admin Views',
-    items: ADMIN_NAV_ITEMS,
   },
 ]
 
