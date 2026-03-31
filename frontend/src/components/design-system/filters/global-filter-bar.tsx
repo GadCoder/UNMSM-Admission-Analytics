@@ -33,6 +33,7 @@ export function GlobalFilterBar({
   return (
     <section className="rounded-card border border-primary/15 bg-surface p-4 shadow-soft md:p-5" aria-label="Global filters">
       <div className="flex flex-col gap-3 md:flex-row md:items-end md:gap-4">
+        <Select label="Year" value={year} options={yearOptions} placeholder="All years" onChange={(event) => onYearChange(event.target.value)} />
         <Select
           label="Process"
           value={processId}
@@ -41,7 +42,6 @@ export function GlobalFilterBar({
           disabled={processDisabled}
           onChange={(event) => onProcessChange(event.target.value)}
         />
-        <Select label="Year" value={year} options={yearOptions} placeholder="All years" onChange={(event) => onYearChange(event.target.value)} />
         <Select
           label="Academic Area"
           value={academicAreaId}
