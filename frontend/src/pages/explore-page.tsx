@@ -1,69 +1,352 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
-import { Breadcrumbs, Button, ExploreHeader, HierarchicalSidebar, SectionHeader } from '../components/design-system'
+import {
+  Breadcrumbs,
+  ChartCard,
+  ExploreHeader,
+  HighlightBanner,
+  LineChartAdapter,
+  MetricSelector,
+  RankingList,
+  SectionHeader,
+  Select,
+  StatCard,
+  TrendSummaryCard,
+  type SelectOption,
+} from '../components/design-system'
+import {
+  useDashboardApplicantsTrend,
+  useDashboardCutoffTrend,
+  useDashboardOverview,
+  useDashboardRankings,
+} from '../features/dashboard/api/use-dashboard-aggregates'
+import { useExploreMajorAnalytics, useExploreMajorTrends, useExploreMajors } from '../features/explore/api/use-explore-data'
+import { useProcessOptions } from '../features/global-filters/api/use-process-options'
+import { GlobalFilterBar as SharedGlobalFilterBar, useGlobalFilters } from '../features/global-filters'
 
-const hierarchyData = [
-  {
-    id: 'area-eng',
-    label: 'Engineering',
-    children: [
-      { id: 'major-cs', label: 'Computer Science' },
-      { id: 'major-se', label: 'Software Engineering' },
-    ],
-  },
-  {
-    id: 'area-health',
-    label: 'Health Sciences',
-    children: [
-      { id: 'major-medicine', label: 'Medicine' },
-      { id: 'major-nursing', label: 'Nursing' },
-    ],
-  },
-]
+function toOptionalInt(value: string | null): number | null {
+  if (!value) {
+    return null
+  }
+  const parsed = Number(value)
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : null
+}
+
+function formatInteger(value: number | null | undefined): string {
+  if (value === null || value === undefined) {
+    return '-'
+  }
+  return new Intl.NumberFormat('en-US').format(value)
+}
+
+function formatPercent(value: number | null | undefined): string {
+  if (value === null || value === undefined) {
+    return '-'
+  }
+  return `${(value * 100).toFixed(1)}%`
+}
+
+function trendDirection(current: number | null, previous: number | null): 'up' | 'down' | 'neutral' {
+  if (current === null || previous === null) {
+    return 'neutral'
+  }
+  if (Math.abs(current - previous) < 0.0001) {
+    return 'neutral'
+  }
+  return current > previous ? 'up' : 'down'
+}
+
+function formatMetricValue(metricKey: string, value: number | null): string {
+  if (value === null) {
+    return '-'
+  }
+  if (metricKey === 'acceptance') {
+    return formatPercent(value)
+  }
+  if (metricKey === 'cutoff') {
+    return value.toFixed(1)
+  }
+  return formatInteger(value)
+}
+
+type ExploreTrendPoint = {
+  x: string
+  applicants: number | null
+  admitted: number | null
+  acceptance: number | null
+  cutoff: number | null
+}
 
 export function ExplorePage() {
-  const [selectedNode, setSelectedNode] = useState('major-cs')
+  const { filters, hasActiveFilters, setProcessId, setAcademicAreaId, resetFilters } = useGlobalFilters()
+  const processId = toOptionalInt(filters.processId)
+  const academicAreaId = toOptionalInt(filters.academicAreaId)
+  const [majorId, setMajorId] = useState('')
+  const processOptions = useProcessOptions()
+  const majorsQuery = useExploreMajors(academicAreaId)
 
-  const selectedLabel = useMemo(() => {
-    for (const area of hierarchyData) {
-      const match = area.children?.find((child) => child.id === selectedNode)
-      if (match) {
-        return match.label
-      }
+  const majorOptions: SelectOption[] = useMemo(
+    () =>
+      (majorsQuery.data ?? [])
+        .map((item) => ({ value: String(item.id), label: item.name }))
+        .sort((left, right) => left.label.localeCompare(right.label)),
+    [majorsQuery.data]
+  )
+
+  useEffect(() => {
+    if (!majorId) {
+      return
     }
-    return 'Unknown'
-  }, [selectedNode])
+    const exists = majorOptions.some((option) => option.value === majorId)
+    if (!exists) {
+      setMajorId('')
+    }
+  }, [majorId, majorOptions])
+
+  const fallbackProcessId = toOptionalInt(processOptions.options[0]?.value ?? null)
+  const effectiveProcessId = processId ?? fallbackProcessId
+  const selectedMajorId = toOptionalInt(majorId)
+
+  const overviewQuery = useDashboardOverview({
+    processId: effectiveProcessId,
+    academicAreaId,
+  })
+  const rankingsQuery = useDashboardRankings({ processId: effectiveProcessId, academicAreaId }, 5)
+  const majorAnalyticsQuery = useExploreMajorAnalytics(selectedMajorId, effectiveProcessId)
+  const majorTrendsQuery = useExploreMajorTrends(selectedMajorId, ['applicants', 'admitted', 'acceptance_rate', 'cutoff_score'])
+  const [selectedMetric, setSelectedMetric] = useState('applicants')
+
+  const applicantsTrendQuery = useDashboardApplicantsTrend(academicAreaId)
+  const cutoffTrendQuery = useDashboardCutoffTrend(academicAreaId)
+
+  const totalApplicants = selectedMajorId ? majorAnalyticsQuery.data?.metrics.applicants : overviewQuery.data?.metrics.total_applicants
+  const totalAdmitted = selectedMajorId ? majorAnalyticsQuery.data?.metrics.admitted : overviewQuery.data?.metrics.total_admitted
+  const acceptanceRate = selectedMajorId
+    ? majorAnalyticsQuery.data?.metrics.acceptance_rate
+    : overviewQuery.data?.metrics.acceptance_rate
+  const majorCount = selectedMajorId ? 1 : overviewQuery.data?.metrics.total_majors
+
+  const popularMajors = useMemo(() => {
+    const items = rankingsQuery.data?.most_popular ?? []
+    return [...items].sort((left, right) => {
+      if (left.applicants !== right.applicants) {
+        return right.applicants - left.applicants
+      }
+      return right.admitted - left.admitted
+    })
+  }, [rankingsQuery.data?.most_popular])
+
+  const topApplicantCount = popularMajors[0]?.applicants ?? 0
+
+  const metricOptions: SelectOption[] = selectedMajorId
+    ? [
+        { value: 'applicants', label: 'Applicants' },
+        { value: 'admitted', label: 'Admitted' },
+        { value: 'acceptance', label: 'Acceptance Rate' },
+        { value: 'cutoff', label: 'Cutoff Score' },
+      ]
+    : [
+        { value: 'applicants', label: 'Applicants' },
+        { value: 'cutoff', label: 'Cutoff Score' },
+      ]
+
+  useEffect(() => {
+    const valid = metricOptions.some((option) => option.value === selectedMetric)
+    if (!valid) {
+      setSelectedMetric('applicants')
+    }
+  }, [metricOptions, selectedMetric])
+
+  const trendData: ExploreTrendPoint[] = useMemo(() => {
+    if (selectedMajorId) {
+      return (majorTrendsQuery.data?.history ?? []).map((item) => ({
+        x: item.process.label,
+        applicants: Number(item.metrics.applicants ?? 0),
+        admitted: Number(item.metrics.admitted ?? 0),
+        acceptance: item.metrics.acceptance_rate === null ? null : Number(item.metrics.acceptance_rate),
+        cutoff: item.metrics.cutoff_score === null ? null : Number(item.metrics.cutoff_score),
+      }))
+    }
+
+    const byProcess = new Map<string, ExploreTrendPoint>()
+
+    ;(applicantsTrendQuery.data?.items ?? []).forEach((item) => {
+      byProcess.set(item.process.label, {
+        x: item.process.label,
+        applicants: item.applicants,
+        admitted: null,
+        acceptance: null,
+        cutoff: null,
+      })
+    })
+
+    ;(cutoffTrendQuery.data?.items ?? []).forEach((item) => {
+      const current = byProcess.get(item.process.label)
+      const cutoff = item.avg_cutoff_score === null ? null : Number(item.avg_cutoff_score)
+      if (current) {
+        byProcess.set(item.process.label, { ...current, cutoff })
+      } else {
+        byProcess.set(item.process.label, {
+          x: item.process.label,
+          applicants: null,
+          admitted: null,
+          acceptance: null,
+          cutoff,
+        })
+      }
+    })
+
+    return [...byProcess.values()]
+  }, [selectedMajorId, majorTrendsQuery.data?.history, applicantsTrendQuery.data?.items, cutoffTrendQuery.data?.items])
+
+  const chartData = useMemo(
+    () =>
+      trendData
+        .map((item) => ({
+          x: item.x,
+          value: item[selectedMetric as keyof ExploreTrendPoint],
+        }))
+        .filter((item) => item.value !== null)
+        .map((item) => ({ x: item.x, value: Number(item.value) })),
+    [trendData, selectedMetric]
+  )
+
+  const latestTrend = trendData.length > 0 ? trendData[trendData.length - 1] : null
+  const previousTrend = trendData.length > 1 ? trendData[trendData.length - 2] : null
+  const latestApplicants = latestTrend?.applicants ?? null
+  const previousApplicants = previousTrend?.applicants ?? null
+  const latestCutoff = latestTrend?.cutoff ?? null
+  const previousCutoff = previousTrend?.cutoff ?? null
+
+  const loading = selectedMajorId
+    ? majorAnalyticsQuery.isLoading || majorTrendsQuery.isLoading
+    : overviewQuery.isLoading || rankingsQuery.isLoading
+  const dashboardError =
+    (selectedMajorId
+      ? majorAnalyticsQuery.errorMessage ?? majorTrendsQuery.errorMessage
+      : overviewQuery.errorMessage ?? rankingsQuery.errorMessage) ??
+    applicantsTrendQuery.errorMessage ??
+    cutoffTrendQuery.errorMessage ??
+    majorsQuery.errorMessage
 
   return (
     <div className="space-y-5">
-      <Breadcrumbs
-        items={[
-          { label: 'Home', href: '/dashboard' },
-          { label: 'Explore', href: '/explore' },
-          { label: selectedLabel },
-        ]}
-      />
+      <Breadcrumbs items={[{ label: 'Home', href: '/dashboard' }, { label: 'Explore Results', href: '/explore' }]} />
 
       <ExploreHeader
-        title="Explore Admission Hierarchy"
-        description="Navigate academic areas, faculties, and majors from a single expandable hierarchy."
-        actions={
-          <>
-            <Button variant="secondary">Filter</Button>
-            <Button variant="primary">Export</Button>
-          </>
-        }
+        title="Explore Results"
+        description="Inspect admission outcomes with filter-aware KPIs, trends, and major-level demand insights."
       />
 
-      <div className="grid gap-4 md:grid-cols-[320px_1fr]">
-        <HierarchicalSidebar groups={hierarchyData} selectedId={selectedNode} onSelect={setSelectedNode} />
-        <section className="rounded-card border border-primary/10 bg-surface p-5 shadow-soft">
-          <SectionHeader
-            title={selectedLabel}
-            subtitle="Entity context appears here; future changes will add tables and trend visualizations."
+      <SharedGlobalFilterBar
+        filters={filters}
+        hasActiveFilters={hasActiveFilters}
+        setProcessId={setProcessId}
+        setAcademicAreaId={(value) => {
+          setAcademicAreaId(value)
+          setMajorId('')
+        }}
+        resetFilters={resetFilters}
+      />
+
+      <section className="rounded-card border border-primary/10 bg-surface p-4 shadow-soft md:p-5">
+        <div className="flex flex-col gap-3 md:grid md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
+          <Select
+            label="Major"
+            value={majorId}
+            options={majorOptions}
+            placeholder={majorsQuery.isLoading ? 'Loading majors...' : 'All majors'}
+            disabled={majorsQuery.isLoading || majorOptions.length === 0}
+            onChange={(event) => setMajorId(event.target.value)}
           />
-        </section>
+          <HighlightBanner
+            icon={selectedMajorId ? '◉' : '◎'}
+            label="Current Scope"
+            value={selectedMajorId ? 'Major-specific insights active' : 'Area-wide results overview'}
+          />
+        </div>
+      </section>
+
+      {processId === null ? <p className="text-sm text-textSecondary">No process selected; showing KPIs for the latest available process.</p> : null}
+      {dashboardError ? <p className="text-sm text-danger">{dashboardError}</p> : null}
+
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
+        <StatCard label="Applicants" value={loading ? 'Loading...' : formatInteger(totalApplicants)} />
+        <StatCard label="Admitted" value={loading ? 'Loading...' : formatInteger(totalAdmitted)} />
+        <StatCard label="Acceptance Rate" value={loading ? 'Loading...' : formatPercent(acceptanceRate)} />
+        <StatCard label="Majors in Scope" value={loading ? 'Loading...' : formatInteger(majorCount)} />
       </div>
+
+      <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
+        <ChartCard title={selectedMajorId ? 'Selected Major Trend by Process' : 'Result Trend Explorer'} actions={<MetricSelector value={selectedMetric} onChange={setSelectedMetric} options={metricOptions} />}>
+          {trendData.length === 0 ? (
+            <p className="text-sm text-textSecondary">No trend data available.</p>
+          ) : (
+            <LineChartAdapter data={chartData} series={[{ key: 'value', label: selectedMetric, color: '#8f5658' }]} />
+          )}
+        </ChartCard>
+
+        <div className="grid gap-4">
+          <TrendSummaryCard
+            title="Latest Applicants"
+            value={formatMetricValue('applicants', latestApplicants)}
+            description="Compared to previous process"
+            direction={trendDirection(latestApplicants, previousApplicants)}
+          />
+          <TrendSummaryCard
+            title="Latest Cutoff"
+            value={formatMetricValue('cutoff', latestCutoff)}
+            description="Compared to previous process"
+            direction={trendDirection(latestCutoff, previousCutoff)}
+          />
+          <TrendSummaryCard
+            title="Current Acceptance"
+            value={formatPercent(acceptanceRate)}
+            description={selectedMajorId ? 'Selected major acceptance rate' : 'Overall acceptance within active scope'}
+            direction="neutral"
+          />
+        </div>
+      </div>
+
+      <section className="rounded-card border border-primary/10 bg-surface p-5 shadow-soft">
+        <SectionHeader
+          title={selectedMajorId ? 'Selected Major Snapshot' : 'Most Demanded Majors'}
+          subtitle={
+            selectedMajorId
+              ? 'Applicant and admission context for the selected major in the current scope.'
+              : 'Top majors by applicant demand within the active result scope.'
+          }
+        />
+        {loading ? <p className="text-sm text-textSecondary">Loading major insights...</p> : null}
+        {!loading && !selectedMajorId && popularMajors.length === 0 ? <p className="text-sm text-textSecondary">No major ranking data available.</p> : null}
+        {!loading && selectedMajorId && majorAnalyticsQuery.data ? (
+          <RankingList
+            items={[
+              {
+                id: String(majorAnalyticsQuery.data.major.id),
+                label: majorAnalyticsQuery.data.major.name,
+                value: `${formatInteger(majorAnalyticsQuery.data.metrics.applicants)} applicants`,
+                description: `${formatInteger(majorAnalyticsQuery.data.metrics.admitted)} admitted`,
+                progress: 100,
+              },
+            ]}
+          />
+        ) : null}
+        {!loading && !selectedMajorId && popularMajors.length > 0 ? (
+          <RankingList
+            items={popularMajors.map((item) => ({
+              id: String(item.major.id),
+              label: item.major.name,
+              value: `${formatInteger(item.applicants)} applicants`,
+              description: `${formatInteger(item.admitted)} admitted`,
+              progress:
+                topApplicantCount <= 0
+                  ? undefined
+                  : Math.max(0, Math.min(100, Math.round((item.applicants / topApplicantCount) * 100))),
+            }))}
+          />
+        ) : null}
+      </section>
     </div>
   )
 }
