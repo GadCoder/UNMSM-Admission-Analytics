@@ -44,7 +44,7 @@ def get_dashboard_rankings_params(
     process_id: int = Query(...),
     academic_area_id: int | None = Query(default=None),
     faculty_id: int | None = Query(default=None),
-    limit: int = Query(default=10, ge=1, le=100),
+    limit: int | None = Query(default=None, ge=1, le=100),
 ) -> DashboardRankingsParams:
     return DashboardRankingsParams(
         process_id=process_id,
@@ -64,7 +64,11 @@ def get_dashboard_trend_params(
     )
 
 
-@router.get("/overview", response_model=DashboardOverviewResponse, summary="Get dashboard KPI overview")
+@router.get(
+    "/overview",
+    response_model=DashboardOverviewResponse,
+    summary="Get dashboard KPI overview",
+)
 def get_dashboard_overview(
     params: DashboardScopedParams = Depends(get_dashboard_scoped_params),
     db: Session = Depends(get_db_session),
@@ -73,7 +77,9 @@ def get_dashboard_overview(
     try:
         return service.get_overview(db, params=params)
     except DashboardProcessNotFoundError as exc:
-        raise HTTPException(status_code=404, detail="Admission process not found") from exc
+        raise HTTPException(
+            status_code=404, detail="Admission process not found"
+        ) from exc
     except DashboardAcademicAreaNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Academic area not found") from exc
     except DashboardFacultyNotFoundError as exc:
@@ -82,7 +88,11 @@ def get_dashboard_overview(
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
-@router.get("/rankings", response_model=DashboardRankingsResponse, summary="Get dashboard rankings")
+@router.get(
+    "/rankings",
+    response_model=DashboardRankingsResponse,
+    summary="Get dashboard rankings",
+)
 def get_dashboard_rankings(
     params: DashboardRankingsParams = Depends(get_dashboard_rankings_params),
     db: Session = Depends(get_db_session),
@@ -91,7 +101,9 @@ def get_dashboard_rankings(
     try:
         return service.get_rankings(db, params=params)
     except DashboardProcessNotFoundError as exc:
-        raise HTTPException(status_code=404, detail="Admission process not found") from exc
+        raise HTTPException(
+            status_code=404, detail="Admission process not found"
+        ) from exc
     except DashboardAcademicAreaNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Academic area not found") from exc
     except DashboardFacultyNotFoundError as exc:
@@ -120,7 +132,11 @@ def get_dashboard_applicants_trend(
         raise HTTPException(status_code=422, detail=str(exc)) from exc
 
 
-@router.get("/trends/cutoff", response_model=DashboardCutoffTrendResponse, summary="Get dashboard cutoff trend")
+@router.get(
+    "/trends/cutoff",
+    response_model=DashboardCutoffTrendResponse,
+    summary="Get dashboard cutoff trend",
+)
 def get_dashboard_cutoff_trend(
     params: DashboardTrendParams = Depends(get_dashboard_trend_params),
     db: Session = Depends(get_db_session),

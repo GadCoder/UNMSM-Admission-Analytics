@@ -30,7 +30,11 @@ from app.services.imports import ResultsImportService
 from app.services.processes import ProcessesService
 from app.services.rankings import RankingsService
 from app.services.results import ResultsService
-from app.schemas.dashboard import DashboardRankingsParams, DashboardScopedParams, DashboardTrendParams
+from app.schemas.dashboard import (
+    DashboardRankingsParams,
+    DashboardScopedParams,
+    DashboardTrendParams,
+)
 
 
 class FakeCacheService:
@@ -79,14 +83,20 @@ class CacheServicesTests(unittest.TestCase):
         cls.tempdir = tempfile.TemporaryDirectory()
         cls.db_path = f"{cls.tempdir.name}/cache-test.db"
         cls.engine = create_engine(f"sqlite+pysqlite:///{cls.db_path}", future=True)
-        cls.session_factory = sessionmaker(bind=cls.engine, autoflush=False, autocommit=False, future=True)
+        cls.session_factory = sessionmaker(
+            bind=cls.engine, autoflush=False, autocommit=False, future=True
+        )
         Base.metadata.create_all(bind=cls.engine)
 
         with cls.session_factory() as session:
             area = AcademicArea(id=1, name="Engineering", slug="engineering")
             faculty = Faculty(id=10, name="Systems", slug="systems", academic_area_id=1)
-            major_software = Major(id=100, name="Software", slug="software", faculty_id=10, is_active=True)
-            major_networks = Major(id=101, name="Networks", slug="networks", faculty_id=10, is_active=True)
+            major_software = Major(
+                id=100, name="Software", slug="software", faculty_id=10, is_active=True
+            )
+            major_networks = Major(
+                id=101, name="Networks", slug="networks", faculty_id=10, is_active=True
+            )
 
             process_1 = AdmissionProcess(id=1, year=2024, cycle="I", label="2024-I")
             process_2 = AdmissionProcess(id=2, year=2024, cycle="II", label="2024-II")
@@ -133,7 +143,17 @@ class CacheServicesTests(unittest.TestCase):
                 ),
             ]
 
-            session.add_all([area, faculty, major_software, major_networks, process_1, process_2, *results])
+            session.add_all(
+                [
+                    area,
+                    faculty,
+                    major_software,
+                    major_networks,
+                    process_1,
+                    process_2,
+                    *results,
+                ]
+            )
             session.commit()
 
     @classmethod
@@ -143,8 +163,12 @@ class CacheServicesTests(unittest.TestCase):
 
     def test_cache_key_generation_is_deterministic(self) -> None:
         self.assertEqual(process_overview_cache_key(7), "process_overview:7")
-        self.assertEqual(major_analytics_cache_key(10, None), "major_analytics:10:process:all")
-        self.assertEqual(major_analytics_cache_key(10, 1), "major_analytics:10:process:1")
+        self.assertEqual(
+            major_analytics_cache_key(10, None), "major_analytics:10:process:all"
+        )
+        self.assertEqual(
+            major_analytics_cache_key(10, 1), "major_analytics:10:process:1"
+        )
 
         self.assertEqual(major_trends_cache_key(3, None), "major_trends:3:metrics:all")
         self.assertEqual(
@@ -156,14 +180,23 @@ class CacheServicesTests(unittest.TestCase):
             major_trends_cache_key(3, list(SUPPORTED_TREND_METRICS)),
         )
 
-        params = MajorRankingsParams(process_id=1, metric="cutoff_score", sort_order="desc", limit=10)
+        params = MajorRankingsParams(
+            process_id=1, metric="cutoff_score", sort_order="desc", limit=10
+        )
         self.assertEqual(
             rankings_majors_cache_key(params),
             "rankings:majors:process:1:metric:cutoff_score:sort:desc:area:all:faculty:all:limit:10",
         )
 
-        overview_params = DashboardScopedParams(process_id=1, academic_area_id=None, faculty_id=10)
-        rankings_params = DashboardRankingsParams(process_id=1, academic_area_id=1, faculty_id=None, limit=5)
+        overview_params = DashboardScopedParams(
+            process_id=1, academic_area_id=None, faculty_id=10
+        )
+        rankings_params = DashboardRankingsParams(
+            process_id=1, academic_area_id=1, faculty_id=None, limit=5
+        )
+        rankings_params_no_limit = DashboardRankingsParams(
+            process_id=1, academic_area_id=1, faculty_id=None
+        )
         trend_params = DashboardTrendParams(academic_area_id=None, faculty_id=10)
         self.assertEqual(
             dashboard_overview_cache_key(overview_params),
@@ -172,6 +205,10 @@ class CacheServicesTests(unittest.TestCase):
         self.assertEqual(
             dashboard_rankings_cache_key(rankings_params),
             "dashboard:rankings:process:1:area:1:faculty:all:limit:5",
+        )
+        self.assertEqual(
+            dashboard_rankings_cache_key(rankings_params_no_limit),
+            "dashboard:rankings:process:1:area:1:faculty:all:limit:all",
         )
         self.assertEqual(
             dashboard_applicants_trend_cache_key(trend_params),
@@ -263,16 +300,28 @@ class CacheServicesTests(unittest.TestCase):
 
         with self.session_factory() as session:
             overview = processes_service.get_process_overview(session, 1)
-            analytics = academic_service.get_major_analytics(session, major_id=100, process_id=None)
-            trends = academic_service.get_major_trends(session, major_id=100, metrics=None)
+            analytics = academic_service.get_major_analytics(
+                session, major_id=100, process_id=None
+            )
+            trends = academic_service.get_major_trends(
+                session, major_id=100, metrics=None
+            )
             rankings = rankings_service.list_major_rankings(
                 session,
                 MajorRankingsParams(process_id=1, metric="applicants"),
             )
-            dashboard_overview = dashboard_service.get_overview(session, DashboardScopedParams(process_id=1))
-            dashboard_rankings = dashboard_service.get_rankings(session, DashboardRankingsParams(process_id=1))
-            dashboard_applicants_trend = dashboard_service.get_applicants_trend(session, DashboardTrendParams())
-            dashboard_cutoff_trend = dashboard_service.get_cutoff_trend(session, DashboardTrendParams())
+            dashboard_overview = dashboard_service.get_overview(
+                session, DashboardScopedParams(process_id=1)
+            )
+            dashboard_rankings = dashboard_service.get_rankings(
+                session, DashboardRankingsParams(process_id=1)
+            )
+            dashboard_applicants_trend = dashboard_service.get_applicants_trend(
+                session, DashboardTrendParams()
+            )
+            dashboard_cutoff_trend = dashboard_service.get_cutoff_trend(
+                session, DashboardTrendParams()
+            )
 
         self.assertEqual(overview.total_applicants, 3)
         self.assertIsNotNone(analytics)
@@ -289,14 +338,18 @@ class CacheServicesTests(unittest.TestCase):
 
     def test_cache_service_disabled_mode_and_ttl(self) -> None:
         client_disabled = FakeValkeyClient()
-        disabled_cache = CacheService(client=client_disabled, enabled=False, default_ttl_seconds=321)
+        disabled_cache = CacheService(
+            client=client_disabled, enabled=False, default_ttl_seconds=321
+        )
         self.assertIsNone(disabled_cache.get_json("k1"))
         self.assertFalse(disabled_cache.set_json("k1", {"value": 1}))
         self.assertEqual(client_disabled.get_calls, 0)
         self.assertEqual(client_disabled.set_calls, 0)
 
         client_enabled = FakeValkeyClient()
-        enabled_cache = CacheService(client=client_enabled, enabled=True, default_ttl_seconds=120)
+        enabled_cache = CacheService(
+            client=client_enabled, enabled=True, default_ttl_seconds=120
+        )
         self.assertTrue(enabled_cache.set_json("k2", {"value": 2}))
         self.assertEqual(client_enabled.last_ex, 120)
         self.assertEqual(enabled_cache.get_json("k2"), {"value": 2})

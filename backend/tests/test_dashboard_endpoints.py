@@ -21,21 +21,43 @@ class DashboardEndpointTests(unittest.TestCase):
         cls.tempdir = tempfile.TemporaryDirectory()
         cls.db_path = f"{cls.tempdir.name}/test.db"
         cls.engine = create_engine(f"sqlite+pysqlite:///{cls.db_path}", future=True)
-        cls.session_factory = sessionmaker(bind=cls.engine, autoflush=False, autocommit=False, future=True)
+        cls.session_factory = sessionmaker(
+            bind=cls.engine, autoflush=False, autocommit=False, future=True
+        )
         Base.metadata.create_all(bind=cls.engine)
 
         with cls.session_factory() as session:
             area_eng = AcademicArea(id=1, name="Engineering", slug="engineering")
-            area_health = AcademicArea(id=2, name="Health Sciences", slug="health-sciences")
+            area_health = AcademicArea(
+                id=2, name="Health Sciences", slug="health-sciences"
+            )
 
-            faculty_sys = Faculty(id=10, academic_area_id=1, name="Systems", slug="systems")
-            faculty_civil = Faculty(id=11, academic_area_id=1, name="Civil", slug="civil")
-            faculty_med = Faculty(id=20, academic_area_id=2, name="Medicine", slug="medicine")
+            faculty_sys = Faculty(
+                id=10, academic_area_id=1, name="Systems", slug="systems"
+            )
+            faculty_civil = Faculty(
+                id=11, academic_area_id=1, name="Civil", slug="civil"
+            )
+            faculty_med = Faculty(
+                id=20, academic_area_id=2, name="Medicine", slug="medicine"
+            )
 
-            major_soft = Major(id=100, faculty_id=10, name="Software", slug="software", is_active=True)
-            major_networks = Major(id=101, faculty_id=10, name="Networks", slug="networks", is_active=True)
-            major_civil = Major(id=102, faculty_id=11, name="Civil Eng", slug="civil-eng", is_active=True)
-            major_nursing = Major(id=103, faculty_id=20, name="Nursing", slug="nursing", is_active=True)
+            major_soft = Major(
+                id=100, faculty_id=10, name="Software", slug="software", is_active=True
+            )
+            major_networks = Major(
+                id=101, faculty_id=10, name="Networks", slug="networks", is_active=True
+            )
+            major_civil = Major(
+                id=102,
+                faculty_id=11,
+                name="Civil Eng",
+                slug="civil-eng",
+                is_active=True,
+            )
+            major_nursing = Major(
+                id=103, faculty_id=20, name="Nursing", slug="nursing", is_active=True
+            )
 
             process_1 = AdmissionProcess(id=1, year=2023, cycle="II", label="2023-II")
             process_2 = AdmissionProcess(id=2, year=2024, cycle="I", label="2024-I")
@@ -269,6 +291,13 @@ class DashboardEndpointTests(unittest.TestCase):
         self.assertEqual(scoped_payload["metrics"]["total_majors"], 2)
 
     def test_rankings_endpoint_returns_dual_lists_and_limit(self) -> None:
+        unbounded = self.client.get("/dashboard/rankings?process_id=1")
+        self.assertEqual(unbounded.status_code, 200)
+        unbounded_payload = unbounded.json()
+        self.assertIsNone(unbounded_payload["filters"]["limit"])
+        self.assertEqual(len(unbounded_payload["most_competitive"]), 4)
+        self.assertEqual(len(unbounded_payload["most_popular"]), 4)
+
         response = self.client.get("/dashboard/rankings?process_id=1&limit=2")
         self.assertEqual(response.status_code, 200)
 
@@ -276,23 +305,36 @@ class DashboardEndpointTests(unittest.TestCase):
         self.assertEqual(payload["filters"]["limit"], 2)
         self.assertEqual(len(payload["most_competitive"]), 2)
         self.assertEqual(len(payload["most_popular"]), 2)
-        self.assertEqual([item["major"]["id"] for item in payload["most_competitive"]], [103, 101])
-        self.assertEqual([item["major"]["id"] for item in payload["most_popular"]], [101, 100])
+        self.assertEqual(
+            [item["major"]["id"] for item in payload["most_competitive"]], [103, 101]
+        )
+        self.assertEqual(
+            [item["major"]["id"] for item in payload["most_popular"]], [101, 100]
+        )
 
         scoped = self.client.get("/dashboard/rankings?process_id=1&faculty_id=10")
         self.assertEqual(scoped.status_code, 200)
         scoped_payload = scoped.json()
-        self.assertEqual({item["major"]["id"] for item in scoped_payload["most_competitive"]}, {100, 101})
-        self.assertEqual({item["major"]["id"] for item in scoped_payload["most_popular"]}, {100, 101})
+        self.assertEqual(
+            {item["major"]["id"] for item in scoped_payload["most_competitive"]},
+            {100, 101},
+        )
+        self.assertEqual(
+            {item["major"]["id"] for item in scoped_payload["most_popular"]}, {100, 101}
+        )
 
     def test_trend_endpoints_return_ordered_aggregate_series(self) -> None:
         applicants = self.client.get("/dashboard/trends/applicants")
         self.assertEqual(applicants.status_code, 200)
         applicants_payload = applicants.json()["items"]
-        self.assertEqual([item["process"]["id"] for item in applicants_payload], [1, 2, 3])
+        self.assertEqual(
+            [item["process"]["id"] for item in applicants_payload], [1, 2, 3]
+        )
         self.assertEqual([item["applicants"] for item in applicants_payload], [7, 3, 3])
 
-        applicants_scoped = self.client.get("/dashboard/trends/applicants?academic_area_id=2")
+        applicants_scoped = self.client.get(
+            "/dashboard/trends/applicants?academic_area_id=2"
+        )
         self.assertEqual(applicants_scoped.status_code, 200)
         scoped_items = applicants_scoped.json()["items"]
         self.assertEqual([item["process"]["id"] for item in scoped_items], [1, 3])
@@ -302,8 +344,12 @@ class DashboardEndpointTests(unittest.TestCase):
         self.assertEqual(cutoff.status_code, 200)
         cutoff_payload = cutoff.json()["items"]
         self.assertEqual([item["process"]["id"] for item in cutoff_payload], [1, 2, 3])
-        self.assertAlmostEqual(cutoff_payload[0]["avg_cutoff_score"], (700.0 + 760.0 + 900.0) / 3, places=6)
-        self.assertAlmostEqual(cutoff_payload[1]["avg_cutoff_score"], (710.0 + 680.0) / 2, places=6)
+        self.assertAlmostEqual(
+            cutoff_payload[0]["avg_cutoff_score"], (700.0 + 760.0 + 900.0) / 3, places=6
+        )
+        self.assertAlmostEqual(
+            cutoff_payload[1]["avg_cutoff_score"], (710.0 + 680.0) / 2, places=6
+        )
         self.assertAlmostEqual(cutoff_payload[2]["avg_cutoff_score"], 910.0, places=6)
 
     def test_dashboard_validation_for_required_and_hierarchy_filters(self) -> None:
@@ -313,7 +359,9 @@ class DashboardEndpointTests(unittest.TestCase):
         missing_process_rankings = self.client.get("/dashboard/rankings")
         self.assertEqual(missing_process_rankings.status_code, 422)
 
-        unknown_area = self.client.get("/dashboard/trends/applicants?academic_area_id=999")
+        unknown_area = self.client.get(
+            "/dashboard/trends/applicants?academic_area_id=999"
+        )
         self.assertEqual(unknown_area.status_code, 404)
         self.assertEqual(unknown_area.json()["detail"], "Academic area not found")
 
@@ -321,7 +369,9 @@ class DashboardEndpointTests(unittest.TestCase):
         self.assertEqual(unknown_faculty.status_code, 404)
         self.assertEqual(unknown_faculty.json()["detail"], "Faculty not found")
 
-        mismatch = self.client.get("/dashboard/rankings?process_id=1&academic_area_id=2&faculty_id=10")
+        mismatch = self.client.get(
+            "/dashboard/rankings?process_id=1&academic_area_id=2&faculty_id=10"
+        )
         self.assertEqual(mismatch.status_code, 422)
         self.assertIn("faculty does not belong", mismatch.json()["detail"])
 

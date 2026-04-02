@@ -13,7 +13,7 @@ class DashboardScopedParams(BaseModel):
 
 
 class DashboardRankingsParams(DashboardScopedParams):
-    limit: int = Field(default=10, ge=1, le=100)
+    limit: int | None = Field(default=None, ge=1, le=100)
 
 
 class DashboardTrendParams(BaseModel):

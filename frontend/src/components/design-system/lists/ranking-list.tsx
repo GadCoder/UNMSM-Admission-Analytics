@@ -15,7 +15,7 @@ export function RankingList({ items }: { items: RankingItem[] }) {
             <p className="text-sm font-medium text-textPrimary">
               {index + 1}. {item.label}
             </p>
-            <span className="text-sm font-semibold text-primaryDark">{item.value}</span>
+            <span className="shrink-0 whitespace-nowrap text-right text-sm font-semibold text-primaryDark">{item.value}</span>
           </div>
           {item.description ? <p className="mt-1 text-xs text-textSecondary">{item.description}</p> : null}
           {typeof item.progress === 'number' ? (

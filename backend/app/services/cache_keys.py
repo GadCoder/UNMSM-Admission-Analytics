@@ -1,6 +1,10 @@
 from __future__ import annotations
 
-from app.schemas.dashboard import DashboardRankingsParams, DashboardScopedParams, DashboardTrendParams
+from app.schemas.dashboard import (
+    DashboardRankingsParams,
+    DashboardScopedParams,
+    DashboardTrendParams,
+)
 from app.schemas.major_trends import TrendMetricName
 from app.schemas.rankings import MajorRankingsParams
 
@@ -23,7 +27,9 @@ def major_trends_cache_key(major_id: int, metrics: list[TrendMetricName] | None)
 
 
 def rankings_majors_cache_key(params: MajorRankingsParams) -> str:
-    academic_area = str(params.academic_area_id) if params.academic_area_id is not None else "all"
+    academic_area = (
+        str(params.academic_area_id) if params.academic_area_id is not None else "all"
+    )
     faculty = str(params.faculty_id) if params.faculty_id is not None else "all"
     limit = str(params.limit) if params.limit is not None else "all"
     return (
@@ -38,24 +44,35 @@ def rankings_majors_cache_key(params: MajorRankingsParams) -> str:
 
 
 def dashboard_overview_cache_key(params: DashboardScopedParams) -> str:
-    area = str(params.academic_area_id) if params.academic_area_id is not None else "all"
+    area = (
+        str(params.academic_area_id) if params.academic_area_id is not None else "all"
+    )
     faculty = str(params.faculty_id) if params.faculty_id is not None else "all"
-    return f"dashboard:overview:process:{params.process_id}:area:{area}:faculty:{faculty}"
+    return (
+        f"dashboard:overview:process:{params.process_id}:area:{area}:faculty:{faculty}"
+    )
 
 
 def dashboard_rankings_cache_key(params: DashboardRankingsParams) -> str:
-    area = str(params.academic_area_id) if params.academic_area_id is not None else "all"
+    area = (
+        str(params.academic_area_id) if params.academic_area_id is not None else "all"
+    )
     faculty = str(params.faculty_id) if params.faculty_id is not None else "all"
-    return f"dashboard:rankings:process:{params.process_id}:area:{area}:faculty:{faculty}:limit:{params.limit}"
+    limit = str(params.limit) if params.limit is not None else "all"
+    return f"dashboard:rankings:process:{params.process_id}:area:{area}:faculty:{faculty}:limit:{limit}"
 
 
 def dashboard_applicants_trend_cache_key(params: DashboardTrendParams) -> str:
-    area = str(params.academic_area_id) if params.academic_area_id is not None else "all"
+    area = (
+        str(params.academic_area_id) if params.academic_area_id is not None else "all"
+    )
     faculty = str(params.faculty_id) if params.faculty_id is not None else "all"
     return f"dashboard:trends:applicants:area:{area}:faculty:{faculty}"
 
 
 def dashboard_cutoff_trend_cache_key(params: DashboardTrendParams) -> str:
-    area = str(params.academic_area_id) if params.academic_area_id is not None else "all"
+    area = (
+        str(params.academic_area_id) if params.academic_area_id is not None else "all"
+    )
     faculty = str(params.faculty_id) if params.faculty_id is not None else "all"
     return f"dashboard:trends:cutoff:area:{area}:faculty:{faculty}"

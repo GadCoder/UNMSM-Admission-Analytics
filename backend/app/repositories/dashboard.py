@@ -55,7 +55,9 @@ class DashboardCutoffTrendRow:
 
 
 class DashboardRepository:
-    def get_process_by_id(self, db: Session, process_id: int) -> AdmissionProcess | None:
+    def get_process_by_id(
+        self, db: Session, process_id: int
+    ) -> AdmissionProcess | None:
         stmt = select(AdmissionProcess).where(AdmissionProcess.id == process_id)
         return db.scalar(stmt)
 
@@ -67,7 +69,9 @@ class DashboardRepository:
         stmt = select(Faculty).where(Faculty.id == faculty_id)
         return db.scalar(stmt)
 
-    def get_overview(self, db: Session, params: DashboardScopedParams) -> DashboardOverviewAggregation:
+    def get_overview(
+        self, db: Session, params: DashboardScopedParams
+    ) -> DashboardOverviewAggregation:
         admitted_expr = func.coalesce(
             func.sum(case((AdmissionResult.is_admitted.is_(True), 1), else_=0)),
             0,
@@ -106,19 +110,25 @@ class DashboardRepository:
             total_majors=int(row.total_majors or 0),
         )
 
-    def list_rankings_by_cutoff(self, db: Session, params: DashboardScopedParams, limit: int) -> list[DashboardRankingRow]:
-        return self._list_rankings(db, params=params, limit=limit, order_metric="cutoff_score")
+    def list_rankings_by_cutoff(
+        self, db: Session, params: DashboardScopedParams, limit: int | None
+    ) -> list[DashboardRankingRow]:
+        return self._list_rankings(
+            db, params=params, limit=limit, order_metric="cutoff_score"
+        )
 
     def list_rankings_by_applicants(
-        self, db: Session, params: DashboardScopedParams, limit: int
+        self, db: Session, params: DashboardScopedParams, limit: int | None
     ) -> list[DashboardRankingRow]:
-        return self._list_rankings(db, params=params, limit=limit, order_metric="applicants")
+        return self._list_rankings(
+            db, params=params, limit=limit, order_metric="applicants"
+        )
 
     def _list_rankings(
         self,
         db: Session,
         params: DashboardScopedParams,
-        limit: int,
+        limit: int | None,
         order_metric: str,
     ) -> list[DashboardRankingRow]:
         admitted_expr = func.coalesce(
@@ -178,11 +188,19 @@ class DashboardRepository:
         )
 
         if order_metric == "cutoff_score":
-            stmt = stmt.order_by(cutoff_expr.is_(None), cutoff_expr.desc(), Major.name.asc(), Major.id.asc())
+            stmt = stmt.order_by(
+                cutoff_expr.is_(None),
+                cutoff_expr.desc(),
+                Major.name.asc(),
+                Major.id.asc(),
+            )
         else:
-            stmt = stmt.order_by(applicants_expr.desc(), Major.name.asc(), Major.id.asc())
+            stmt = stmt.order_by(
+                applicants_expr.desc(), Major.name.asc(), Major.id.asc()
+            )
 
-        stmt = stmt.limit(limit)
+        if limit is not None:
+            stmt = stmt.limit(limit)
 
         rows = db.execute(stmt).all()
         return [
@@ -198,13 +216,17 @@ class DashboardRepository:
                 academic_area_slug=row.academic_area_slug,
                 applicants=int(row.applicants or 0),
                 admitted=int(row.admitted or 0),
-                acceptance_rate=float(row.acceptance_rate) if row.acceptance_rate is not None else None,
+                acceptance_rate=float(row.acceptance_rate)
+                if row.acceptance_rate is not None
+                else None,
                 cutoff_score=row.cutoff_score,
             )
             for row in rows
         ]
 
-    def list_applicants_trend(self, db: Session, params: DashboardTrendParams) -> list[DashboardApplicantsTrendRow]:
+    def list_applicants_trend(
+        self, db: Session, params: DashboardTrendParams
+    ) -> list[DashboardApplicantsTrendRow]:
         applicants_expr = func.count(AdmissionResult.id)
 
         stmt: Select = (
@@ -216,7 +238,10 @@ class DashboardRepository:
                 applicants_expr.label("applicants"),
             )
             .select_from(AdmissionResult)
-            .join(AdmissionProcess, AdmissionProcess.id == AdmissionResult.admission_process_id)
+            .join(
+                AdmissionProcess,
+                AdmissionProcess.id == AdmissionResult.admission_process_id,
+            )
             .join(Major, Major.id == AdmissionResult.major_id)
             .join(Faculty, Faculty.id == Major.faculty_id)
             .join(AcademicArea, AcademicArea.id == Faculty.academic_area_id)
@@ -250,7 +275,9 @@ class DashboardRepository:
             for row in rows
         ]
 
-    def list_cutoff_trend(self, db: Session, params: DashboardTrendParams) -> list[DashboardCutoffTrendRow]:
+    def list_cutoff_trend(
+        self, db: Session, params: DashboardTrendParams
+    ) -> list[DashboardCutoffTrendRow]:
         major_cutoff_expr = func.min(
             case(
                 (AdmissionResult.is_admitted.is_(True), AdmissionResult.score),
@@ -270,7 +297,9 @@ class DashboardRepository:
         )
 
         if params.academic_area_id is not None:
-            per_major_stmt = per_major_stmt.where(AcademicArea.id == params.academic_area_id)
+            per_major_stmt = per_major_stmt.where(
+                AcademicArea.id == params.academic_area_id
+            )
         if params.faculty_id is not None:
             per_major_stmt = per_major_stmt.where(Faculty.id == params.faculty_id)
 
@@ -290,7 +319,9 @@ class DashboardRepository:
                 AdmissionProcess.label.label("process_label"),
                 avg_cutoff_expr.label("avg_cutoff_score"),
             )
-            .join(AdmissionProcess, AdmissionProcess.id == per_major_subquery.c.process_id)
+            .join(
+                AdmissionProcess, AdmissionProcess.id == per_major_subquery.c.process_id
+            )
             .group_by(
                 AdmissionProcess.id,
                 AdmissionProcess.year,
@@ -311,7 +342,9 @@ class DashboardRepository:
                 process_year=int(row.process_year),
                 process_cycle=row.process_cycle,
                 process_label=row.process_label,
-                avg_cutoff_score=float(row.avg_cutoff_score) if row.avg_cutoff_score is not None else None,
+                avg_cutoff_score=float(row.avg_cutoff_score)
+                if row.avg_cutoff_score is not None
+                else None,
             )
             for row in rows
         ]
