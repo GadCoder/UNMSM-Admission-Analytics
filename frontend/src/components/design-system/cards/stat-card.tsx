@@ -6,6 +6,7 @@ type StatCardVariant = 'default' | 'compact' | 'with-icon' | 'with-helper'
 
 type StatCardProps = {
   label: string
+  labelTooltip?: string
   value: string
   trend?: ReactNode
   helperText?: string
@@ -13,11 +14,13 @@ type StatCardProps = {
   variant?: StatCardVariant
 }
 
-export function StatCard({ label, value, trend, helperText, icon, variant = 'default' }: StatCardProps) {
+export function StatCard({ label, labelTooltip, value, trend, helperText, icon, variant = 'default' }: StatCardProps) {
   return (
     <article className={cn('rounded-card border border-primary/10 bg-surface p-4 shadow-soft', variant === 'compact' && 'p-3')}>
       <div className="flex items-start justify-between gap-2">
-        <p className="text-xs uppercase tracking-[0.12em] text-textSecondary">{label}</p>
+        <p className="text-xs uppercase tracking-[0.12em] text-textSecondary" title={labelTooltip}>
+          {label}
+        </p>
         {variant === 'with-icon' && icon ? <span className="text-primaryDark">{icon}</span> : null}
       </div>
       <p className="mt-2 text-2xl font-semibold text-textPrimary">{value}</p>
