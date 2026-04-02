@@ -120,15 +120,15 @@ export function useDashboardOverview(params: DashboardScopeParams) {
   }
 }
 
-export function useDashboardRankings(params: DashboardScopeParams, limit = 5) {
+export function useDashboardRankings(params: DashboardScopeParams, limit?: number) {
   const query = useQuery({
-    queryKey: ['dashboard', 'rankings', params.processId, params.academicAreaId, limit],
+    queryKey: ['dashboard', 'rankings', params.processId, params.academicAreaId, limit ?? 'all'],
     enabled: params.processId !== null,
     queryFn: async () => {
       const response = await httpClient.get<DashboardRankingsResponse>('/dashboard/rankings', {
         params: {
           ...buildScopedParams(params),
-          limit,
+          ...(typeof limit === 'number' ? { limit } : {}),
         },
       })
       return response.data
