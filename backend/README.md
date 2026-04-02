@@ -1,4 +1,15 @@
-# Backend Bootstrap
+# Backend
+
+FastAPI backend for UNMSM Admission Analytics.
+
+## Tech
+
+- Python 3.13
+- FastAPI
+- SQLAlchemy
+- Alembic
+- PostgreSQL
+- Redis/Valkey cache
 
 ## Requirements
 
@@ -21,17 +32,27 @@ cd backend
 uv run python main.py
 ```
 
-The service starts on `http://localhost:8000` and exposes:
+Default API URL: `http://localhost:8000`.
 
-- `GET /health`
-
-## Alembic
+## Database Migrations
 
 ```bash
 cd backend
 uv run alembic -c alembic.ini current
-uv run alembic -c alembic.ini revision -m "init"
 uv run alembic -c alembic.ini upgrade head
 ```
 
-Alembic uses `DATABASE_URL` from `.env` through `app.core.config`.
+Alembic reads `DATABASE_URL` from backend env config.
+
+## API Contract Snapshot
+
+- Endpoint report: `backend/ENDPOINTS_REPORT.md`
+- Route implementations: `backend/app/api/routes/`
+
+## Service Structure
+
+- `app/api/routes/`: HTTP endpoints
+- `app/schemas/`: request/response models
+- `app/models/`: SQLAlchemy ORM models
+- `app/repositories/`: query/data access layer
+- `app/services/`: business logic and caching orchestration
