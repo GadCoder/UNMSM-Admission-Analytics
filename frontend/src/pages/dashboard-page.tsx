@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 
 import {
   Button,
@@ -73,6 +73,23 @@ function parseProcessLabel(label: string): { year: string; cycle: 'I' | 'II' } |
   return { year: match[1], cycle: match[2].toUpperCase() as 'I' | 'II' }
 }
 
+function compareProcessRecency(left: SelectOption, right: SelectOption): number {
+  const leftParsed = parseProcessLabel(left.label)
+  const rightParsed = parseProcessLabel(right.label)
+
+  if (!leftParsed || !rightParsed) {
+    return right.label.localeCompare(left.label)
+  }
+
+  const yearDelta = Number(rightParsed.year) - Number(leftParsed.year)
+  if (yearDelta !== 0) {
+    return yearDelta
+  }
+
+  const cycleOrder: Record<'I' | 'II', number> = { I: 0, II: 1 }
+  return cycleOrder[rightParsed.cycle] - cycleOrder[leftParsed.cycle]
+}
+
 export function DashboardPage() {
   const { filters, hasActiveFilters, setProcessId, setAcademicAreaId, resetFilters } = useGlobalFilters()
   const { options: processOptions, errorMessage: processError } = useProcessOptions()
@@ -94,6 +111,31 @@ export function DashboardPage() {
       .map((value) => ({ value, label: value }))
   }, [processOptions])
 
+  const latestProcessOption = useMemo(() => {
+    const sorted = [...processOptions].sort(compareProcessRecency)
+    return sorted[0] ?? null
+  }, [processOptions])
+
+  useEffect(() => {
+    if (year) {
+      return
+    }
+
+    if (filters.processId) {
+      const processFromFilters = processOptions.find((option) => option.value === filters.processId)
+      const parsed = processFromFilters ? parseProcessLabel(processFromFilters.label) : null
+      if (parsed?.year) {
+        setYear(parsed.year)
+        return
+      }
+    }
+
+    const latestParsed = latestProcessOption ? parseProcessLabel(latestProcessOption.label) : null
+    if (latestParsed?.year) {
+      setYear(latestParsed.year)
+    }
+  }, [filters.processId, latestProcessOption, processOptions, year])
+
   const filteredProcessOptions: SelectOption[] = useMemo(() => {
     if (!year) {
       return []
@@ -104,24 +146,14 @@ export function DashboardPage() {
         const parsed = parseProcessLabel(option.label)
         return parsed?.year === year && (parsed.cycle === 'I' || parsed.cycle === 'II')
       })
-      .sort((left, right) => {
-        const leftCycle = parseProcessLabel(left.label)?.cycle
-        const rightCycle = parseProcessLabel(right.label)?.cycle
-        const cycleOrder: Record<'I' | 'II', number> = { I: 0, II: 1 }
-
-        if (!leftCycle || !rightCycle) {
-          return left.label.localeCompare(right.label)
-        }
-
-        return cycleOrder[leftCycle] - cycleOrder[rightCycle]
-      })
+      .sort(compareProcessRecency)
   }, [processOptions, year])
 
   const processIdFromFilters = toOptionalInt(filters.processId)
   const selectedProcessId =
     processIdFromFilters !== null && filteredProcessOptions.some((option) => option.value === String(processIdFromFilters))
       ? processIdFromFilters
-      : toOptionalInt(filteredProcessOptions[0]?.value ?? null)
+      : toOptionalInt(filteredProcessOptions[0]?.value ?? latestProcessOption?.value ?? null)
   const selectedAreaId = toOptionalInt(filters.academicAreaId)
 
   const overviewQuery = useDashboardOverview({
@@ -213,7 +245,7 @@ export function DashboardPage() {
         }}
         onAreaChange={(value) => setAcademicAreaId(value || null)}
         resetAction={
-          <Button disabled={!hasActiveFilters && !year} variant="secondary" onClick={() => {
+          <Button disabled={!hasActiveFilters} variant="secondary" onClick={() => {
             resetFilters()
             setYear('')
           }}>
