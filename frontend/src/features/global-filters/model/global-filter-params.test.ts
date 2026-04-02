@@ -39,12 +39,13 @@ describe('global-filter-params', () => {
 
   it('updates managed params and preserves unrelated query params', () => {
     const updated = updateGlobalFiltersInParams(
-      new URLSearchParams('sort=asc&page=2&process_id=2'),
+      new URLSearchParams('sort_by=score&page=2&candidate_name=ana&process_id=2'),
       { processId: '10', academicAreaId: '7' }
     )
 
-    expect(updated.get('sort')).toBe('asc')
+    expect(updated.get('sort_by')).toBe('score')
     expect(updated.get('page')).toBe('2')
+    expect(updated.get('candidate_name')).toBe('ana')
     expect(updated.get(GLOBAL_FILTER_QUERY_KEYS.processId)).toBe('10')
     expect(updated.get(GLOBAL_FILTER_QUERY_KEYS.academicAreaId)).toBe('7')
   })
