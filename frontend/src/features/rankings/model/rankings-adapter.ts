@@ -21,9 +21,9 @@ function formatPercent(value: number | null): string {
 
 function formatShare(value: number, total: number): string {
   if (total <= 0) {
-    return '0.0%'
+    return '0.00%'
   }
-  return `${((value / total) * 100).toFixed(1)}%`
+  return `${((value / total) * 100).toFixed(2)}%`
 }
 
 export function buildCompetitiveRankingItems(items: DashboardRankingItem[]): RankingsListItem[] {
@@ -46,7 +46,7 @@ export function buildCompetitiveRankingItems(items: DashboardRankingItem[]): Ran
   return sorted.map((item) => ({
     id: String(item.major.id),
     label: item.major.name,
-    value: formatPercent(item.acceptance_rate),
+    value: `${formatPercent(item.acceptance_rate)} acceptance`,
     description: `${formatInteger(item.admitted)} admitted from ${formatInteger(item.applicants)} applicants`,
     progress:
       item.acceptance_rate === null
