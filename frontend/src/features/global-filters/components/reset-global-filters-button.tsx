@@ -4,12 +4,15 @@ type ResetGlobalFiltersButtonProps = {
 }
 
 export function ResetGlobalFiltersButton({ hasActiveFilters, onReset }: ResetGlobalFiltersButtonProps) {
+  if (!hasActiveFilters) {
+    return null
+  }
+
   return (
     <button
       type="button"
-      className="inline-flex h-10 shrink-0 items-center justify-center rounded-card border border-primary/20 bg-white px-4 text-sm font-medium text-primaryDark shadow-soft transition hover:border-primary/40 hover:text-primary disabled:cursor-not-allowed disabled:opacity-50"
+      className="inline-flex h-8 shrink-0 items-center justify-center rounded-card px-2 text-sm font-medium text-textSecondary transition hover:text-primaryDark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35"
       onClick={onReset}
-      disabled={!hasActiveFilters}
     >
       Reset filters
     </button>
