@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 
+import { useI18n } from '../../../lib/i18n'
 import { useAcademicAreaOptions } from '../api/use-academic-area-options'
 import { useProcessOptions } from '../api/use-process-options'
 import type { GlobalFilters } from '../model/global-filter-params'
@@ -26,35 +27,36 @@ export function GlobalFilterBar({
   showAcademicArea = true,
   compact = false,
 }: GlobalFilterBarProps) {
+  const { t } = useI18n()
   const processOptions = useProcessOptions()
   const academicAreaOptions = useAcademicAreaOptions()
   const [isEditing, setIsEditing] = useState(false)
 
   const selectedProcessLabel = useMemo(() => {
     if (processOptions.isLoading) {
-      return 'Loading process...'
+      return t('filters.loadingProcess')
     }
     if (!filters.processId) {
-      return 'All processes'
+      return t('filters.allProcesses')
     }
-    return processOptions.options.find((option) => option.value === filters.processId)?.label ?? `Process ${filters.processId}`
-  }, [filters.processId, processOptions.isLoading, processOptions.options])
+    return processOptions.options.find((option) => option.value === filters.processId)?.label ?? t('filters.processFallback').replace('{id}', filters.processId)
+  }, [filters.processId, processOptions.isLoading, processOptions.options, t])
 
   const selectedAcademicAreaLabel = useMemo(() => {
     if (!showAcademicArea) {
       return null
     }
     if (academicAreaOptions.isLoading) {
-      return 'Loading area...'
+      return t('filters.loadingArea')
     }
     if (!filters.academicAreaId) {
-      return 'All areas'
+      return t('filters.allAreas')
     }
     return (
       academicAreaOptions.options.find((option) => option.value === filters.academicAreaId)?.label ??
-      `Area ${filters.academicAreaId}`
+      t('filters.areaFallback').replace('{id}', filters.academicAreaId)
     )
-  }, [academicAreaOptions.isLoading, academicAreaOptions.options, filters.academicAreaId, showAcademicArea])
+  }, [academicAreaOptions.isLoading, academicAreaOptions.options, filters.academicAreaId, showAcademicArea, t])
 
   const contextText = selectedAcademicAreaLabel
     ? `${selectedProcessLabel} · ${selectedAcademicAreaLabel}`
@@ -63,11 +65,11 @@ export function GlobalFilterBar({
   return (
     <section
       className={compact ? 'rounded-card border border-primary/15 bg-surface p-3 shadow-soft' : 'rounded-card border border-primary/15 bg-surface p-4 shadow-soft md:p-5'}
-      aria-label="Global analytics filters"
+      aria-label={t('filters.globalAnalytics')}
     >
       <div className="flex flex-wrap items-center justify-between gap-2 rounded-card border border-primary/10 bg-background px-3 py-2.5">
         <p className="text-sm text-textSecondary">
-          <span className="font-semibold text-textPrimary">Showing:</span>{' '}
+          <span className="font-semibold text-textPrimary">{t('filters.showing')}</span>{' '}
           <span className="font-semibold text-primaryDark">{contextText}</span>
         </p>
 
@@ -77,7 +79,7 @@ export function GlobalFilterBar({
             className="inline-flex h-8 items-center justify-center rounded-card px-2 text-sm font-medium text-textSecondary transition hover:text-primaryDark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35"
             onClick={() => setIsEditing((current) => !current)}
           >
-            {isEditing ? 'Hide' : 'Change'}
+            {isEditing ? t('filters.hide') : t('filters.change')}
           </button>
           <ResetGlobalFiltersButton hasActiveFilters={hasActiveFilters} onReset={resetFilters} />
         </div>

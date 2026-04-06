@@ -17,8 +17,10 @@ import { useResultsQuery } from '../features/results/api/use-results-data'
 import { mapResultItemsToRows, type ResultsTableRow } from '../features/results/model/results-adapter'
 import { deriveResultsPageState } from '../features/results/model/results-page-state'
 import { resolveResultsProcessId, toOptionalInt } from '../features/results/model/results-scope'
+import { useI18n } from '../lib/i18n'
 
 export function ResultsPage() {
+  const { t } = useI18n()
   const { filters, hasActiveFilters, setProcessId, setAcademicAreaId, resetFilters } = useGlobalFilters()
   const processOptionsQuery = useProcessOptions()
   const academicAreaOptionsQuery = useAcademicAreaOptions()
@@ -85,28 +87,28 @@ export function ResultsPage() {
   const columns: DataColumn<ResultsTableRow>[] = [
     {
       key: 'candidateCode',
-      header: 'Code',
+      header: t('results.column.code'),
       render: (row) => row.candidateCode,
     },
     {
       key: 'applicant',
-      header: 'Applicant',
+      header: t('results.column.applicant'),
       render: (row) => <span className="block max-w-64 truncate">{row.applicant}</span>,
     },
     {
       key: 'major',
-      header: 'Major',
+      header: t('results.column.major'),
       render: (row) => <span className="block max-w-56 truncate">{row.major}</span>,
     },
     {
       key: 'score',
-      header: 'Score',
+      header: t('results.column.score'),
       align: 'right',
       render: (row) => row.score.toFixed(1),
     },
     {
       key: 'status',
-      header: 'Status',
+      header: t('results.column.status'),
       render: (row) => row.status,
     },
   ]
@@ -115,7 +117,7 @@ export function ResultsPage() {
 
   return (
     <div className="space-y-5">
-      <SectionHeader title="Results" subtitle="Search candidate-level admission outcomes with shared process and area scope." />
+      <SectionHeader title={t('results.title')} subtitle={t('results.subtitle')} />
 
       <GlobalFilterBar
         filters={filters}
@@ -126,7 +128,7 @@ export function ResultsPage() {
       />
 
       {processIdFromFilters === null ? (
-        <p className="text-sm text-textSecondary">No process selected; defaulting to the latest available process.</p>
+        <p className="text-sm text-textSecondary">{t('results.noProcessSelected')}</p>
       ) : null}
 
       <section className="rounded-card border border-primary/10 bg-surface p-4 shadow-soft">
@@ -136,10 +138,10 @@ export function ResultsPage() {
           actions={
             <div className="w-64 shrink-0">
               <Select
-                label="Major"
+                label={t('results.major')}
                 value={majorId}
                 options={majorOptionsQuery.options}
-                placeholder={majorOptionsQuery.isLoading ? 'Loading majors...' : 'All majors'}
+                placeholder={majorOptionsQuery.isLoading ? t('results.loadingMajors') : t('results.allMajors')}
                 onChange={(event) => setMajorId(event.target.value)}
                 disabled={majorOptionsQuery.isLoading || majorOptionsQuery.options.length === 0}
               />
@@ -157,7 +159,7 @@ export function ResultsPage() {
         ) : null}
 
         {pageState === 'error' ? <p className="text-sm text-danger">{pageError}</p> : null}
-        {pageState === 'empty' ? <p className="text-sm text-textSecondary">No results found for the selected scope.</p> : null}
+        {pageState === 'empty' ? <p className="text-sm text-textSecondary">{t('results.empty')}</p> : null}
 
         {pageState === 'ready' ? <DataTable columns={columns} rows={rows} getRowKey={(row) => row.id} /> : null}
 

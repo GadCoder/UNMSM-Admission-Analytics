@@ -1,3 +1,4 @@
+import { useI18n } from '../../../lib/i18n'
 import { Select } from './select'
 import { cn } from '../foundation/cn'
 import type { SelectOption } from './types'
@@ -10,9 +11,11 @@ type MetricSelectorProps = {
 }
 
 export function MetricSelector({ value, onChange, options, variant = 'select' }: MetricSelectorProps) {
+  const { t } = useI18n()
+
   if (variant === 'segmented') {
     return (
-      <div className="inline-flex items-center rounded-card border border-primary/20 bg-white p-1 shadow-soft" role="tablist" aria-label="Metric selector">
+      <div className="inline-flex items-center rounded-card border border-primary/20 bg-white p-1 shadow-soft" role="tablist" aria-label={t('analytics.metric')}>
         {options.map((option) => {
           const isActive = option.value === value
           return (
@@ -35,5 +38,5 @@ export function MetricSelector({ value, onChange, options, variant = 'select' }:
     )
   }
 
-  return <Select label="Metric" value={value} options={options} onChange={(event) => onChange(event.target.value)} />
+  return <Select label={t('analytics.metric')} value={value} options={options} onChange={(event) => onChange(event.target.value)} />
 }
