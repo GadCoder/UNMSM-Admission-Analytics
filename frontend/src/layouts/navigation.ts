@@ -4,6 +4,19 @@ export type PrimaryNavItem = {
   short: string
 }
 
+export type ResolvedPrimaryNavItem = {
+  label: string
+  path: string
+  short: string
+}
+
+export type PrimaryNavGroup = {
+  label: string
+  items: ResolvedPrimaryNavItem[]
+}
+
+type TranslateFn = (key: string) => string
+
 export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
   { labelKey: 'shell.nav.dashboard', path: '/dashboard', short: 'DB' },
   { labelKey: 'shell.nav.explore', path: '/explore', short: 'EX' },
@@ -20,3 +33,26 @@ export const ADMIN_NAV_ITEMS: PrimaryNavItem[] = [
   { labelKey: 'admin.nav.faculties', path: '/admin/faculties', short: 'AF' },
   { labelKey: 'admin.nav.majors', path: '/admin/majors', short: 'AM' },
 ]
+
+export function buildPrimaryNavItems(t: TranslateFn): ResolvedPrimaryNavItem[] {
+  return PRIMARY_NAV_ITEMS.map((item) => ({
+    label: t(item.labelKey),
+    path: item.path,
+    short: item.short,
+  }))
+}
+
+export function buildPrimaryNavGroups(t: TranslateFn): PrimaryNavGroup[] {
+  const items = buildPrimaryNavItems(t)
+
+  return [
+    {
+      label: t('shell.group.coreViews'),
+      items: items.slice(0, 3),
+    },
+    {
+      label: t('shell.group.analyticsViews'),
+      items: items.slice(3),
+    },
+  ]
+}
