@@ -1,5 +1,6 @@
 import type { ChangeEventHandler } from 'react'
 
+import { useI18n } from '../../../lib/i18n'
 import type { SelectOption } from './types'
 
 type SelectProps = {
@@ -11,7 +12,9 @@ type SelectProps = {
   disabled?: boolean
 }
 
-export function Select({ label, value, options, onChange, placeholder = 'Select option', disabled }: SelectProps) {
+export function Select({ label, value, options, onChange, placeholder, disabled }: SelectProps) {
+  const { t } = useI18n()
+
   return (
     <label className="flex min-w-0 flex-1 flex-col gap-2 text-sm text-textSecondary">
       <span className="text-xs font-semibold uppercase tracking-[0.16em] text-primaryDark">{label}</span>
@@ -21,7 +24,7 @@ export function Select({ label, value, options, onChange, placeholder = 'Select 
         onChange={onChange}
         disabled={disabled}
       >
-        <option value="">{placeholder}</option>
+        <option value="">{placeholder || t('common.selectOption')}</option>
         {options.map((option) => (
           <option key={option.value} value={option.value}>
             {option.label}

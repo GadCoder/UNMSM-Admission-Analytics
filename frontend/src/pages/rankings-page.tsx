@@ -21,6 +21,7 @@ import {
   resolveSelectedProcessId,
 } from '../features/rankings/model/rankings-filters'
 import { deriveRankingsPageState } from '../features/rankings/model/rankings-page-state'
+import { useI18n } from '../lib/i18n'
 
 function toOptionalInt(value: string | null): number | null {
   if (!value) {
@@ -31,6 +32,7 @@ function toOptionalInt(value: string | null): number | null {
 }
 
 export function RankingsPage() {
+  const { t } = useI18n()
   const { filters, hasActiveFilters, setProcessId, setAcademicAreaId, resetFilters } = useGlobalFilters()
   const { options: processOptions, isLoading: processLoading, errorMessage: processError } = useProcessOptions()
   const { options: areaOptions, isLoading: areaLoading, errorMessage: areaError } = useAcademicAreaOptions()
@@ -100,15 +102,12 @@ export function RankingsPage() {
   })
 
   const selectedProcessLabel =
-    processOptions.find((option) => option.value === String(selectedProcessId ?? ''))?.label ?? 'Latest process'
+    processOptions.find((option) => option.value === String(selectedProcessId ?? ''))?.label ?? t('rankings.latestProcess')
   const selectedAreaLabel = areaOptions.find((option) => option.value === (filters.academicAreaId ?? ''))?.label
 
   return (
     <div className="space-y-5">
-      <SectionHeader
-        title="Rankings"
-        subtitle="Compare top-performing entities with consistent ranking and progress views."
-      />
+      <SectionHeader title={t('rankings.title')} subtitle={t('rankings.subtitle')} />
 
       <GlobalFilterBar
         processId={selectedProcessId ? String(selectedProcessId) : ''}
@@ -133,22 +132,22 @@ export function RankingsPage() {
               setYear('')
             }}
           >
-            Reset
+            {t('rankings.reset')}
           </Button>
         }
       />
 
       <div className="flex flex-wrap gap-2">
-        {selectedProcessId ? <FilterPill label="Process" value={selectedProcessLabel} /> : null}
-        {filters.academicAreaId ? <FilterPill label="Area" value={selectedAreaLabel ?? filters.academicAreaId} /> : null}
-        {year ? <FilterPill label="Year" value={year} /> : null}
+        {selectedProcessId ? <FilterPill label={t('common.process')} value={selectedProcessLabel} /> : null}
+        {filters.academicAreaId ? <FilterPill label={t('common.area')} value={selectedAreaLabel ?? filters.academicAreaId} /> : null}
+        {year ? <FilterPill label={t('common.year')} value={year} /> : null}
       </div>
 
       {pageError ? <p className="text-sm text-danger">{pageError}</p> : null}
 
       <div className="grid gap-4 md:grid-cols-2">
         <section className="space-y-2">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-primaryDark">Most Competitive Majors</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-primaryDark">{t('rankings.section.mostCompetitive')}</h3>
           {pageState === 'loading' ? (
             <div className="space-y-2 rounded-card border border-primary/10 bg-surface p-3 shadow-soft">
               <Skeleton className="h-8 w-full" />
@@ -157,12 +156,12 @@ export function RankingsPage() {
               <Skeleton className="h-8 w-full" />
             </div>
           ) : null}
-          {pageState === 'empty' ? <p className="text-sm text-textSecondary">No ranking data for selected filters.</p> : null}
+          {pageState === 'empty' ? <p className="text-sm text-textSecondary">{t('rankings.empty')}</p> : null}
           {pageState === 'ready' ? <RankingList items={competitiveItems} /> : null}
         </section>
 
         <section className="space-y-2">
-          <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-primaryDark">Largest Intake</h3>
+          <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-primaryDark">{t('rankings.section.largestIntake')}</h3>
           {pageState === 'loading' ? (
             <div className="space-y-2 rounded-card border border-primary/10 bg-surface p-3 shadow-soft">
               <Skeleton className="h-8 w-full" />
@@ -171,7 +170,7 @@ export function RankingsPage() {
               <Skeleton className="h-8 w-full" />
             </div>
           ) : null}
-          {pageState === 'empty' ? <p className="text-sm text-textSecondary">No ranking data for selected filters.</p> : null}
+          {pageState === 'empty' ? <p className="text-sm text-textSecondary">{t('rankings.empty')}</p> : null}
           {pageState === 'ready' ? <RankingList items={popularItems} /> : null}
         </section>
       </div>

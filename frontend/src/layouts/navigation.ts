@@ -1,21 +1,22 @@
 export type PrimaryNavItem = {
-  label: string
+  labelKey: string
   path: string
   short: string
 }
 
 export const PRIMARY_NAV_ITEMS: PrimaryNavItem[] = [
-  { label: 'Dashboard', path: '/dashboard', short: 'DB' },
-  { label: 'Explore', path: '/explore', short: 'EX' },
-  { label: 'Compare', path: '/compare', short: 'CP' },
-  { label: 'Rankings', path: '/rankings', short: 'RK' },
-  { label: 'Results', path: '/results', short: 'RS' },
+  { labelKey: 'shell.nav.dashboard', path: '/dashboard', short: 'DB' },
+  { labelKey: 'shell.nav.explore', path: '/explore', short: 'EX' },
+  { labelKey: 'shell.nav.compare', path: '/compare', short: 'CP' },
+  { labelKey: 'shell.nav.rankings', path: '/rankings', short: 'RK' },
+  { labelKey: 'shell.nav.results', path: '/results', short: 'RS' },
+  { labelKey: 'shell.nav.trends', path: '/trends', short: 'TR' },
 ]
 
 export const ADMIN_NAV_ITEMS: PrimaryNavItem[] = [
-  { label: 'Admin Processes', path: '/admin/processes', short: 'AP' },
-  { label: 'Admin Imports', path: '/admin/imports', short: 'AI' },
-  { label: 'Admin Areas', path: '/admin/areas', short: 'AA' },
-  { label: 'Admin Faculties', path: '/admin/faculties', short: 'AF' },
-  { label: 'Admin Majors', path: '/admin/majors', short: 'AM' },
+  { labelKey: 'admin.nav.processes', path: '/admin/processes', short: 'AP' },
+  { labelKey: 'admin.nav.imports', path: '/admin/imports', short: 'AI' },
+  { labelKey: 'admin.nav.areas', path: '/admin/areas', short: 'AA' },
+  { labelKey: 'admin.nav.faculties', path: '/admin/faculties', short: 'AF' },
+  { labelKey: 'admin.nav.majors', path: '/admin/majors', short: 'AM' },
 ]
