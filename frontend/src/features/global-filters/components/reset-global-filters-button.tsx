@@ -1,9 +1,13 @@
+import { useTranslation } from 'react-i18next'
+
 type ResetGlobalFiltersButtonProps = {
   hasActiveFilters: boolean
   onReset: () => void
 }
 
 export function ResetGlobalFiltersButton({ hasActiveFilters, onReset }: ResetGlobalFiltersButtonProps) {
+  const { t } = useTranslation(['common'])
+
   if (!hasActiveFilters) {
     return null
   }
@@ -14,7 +18,7 @@ export function ResetGlobalFiltersButton({ hasActiveFilters, onReset }: ResetGlo
       className="inline-flex h-8 shrink-0 items-center justify-center rounded-card px-2 text-sm font-medium text-textSecondary transition hover:text-primaryDark focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/35"
       onClick={onReset}
     >
-      Reset filters
+      {t('common:actions.resetFilters')}
     </button>
   )
 }
