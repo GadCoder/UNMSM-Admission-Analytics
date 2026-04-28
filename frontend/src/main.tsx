@@ -5,6 +5,7 @@ import '@fontsource/lexend/500.css'
 import '@fontsource/lexend/600.css'
 import '@fontsource/lexend/700.css'
 import './index.css'
+import './lib/i18n'
 import { App } from './app/App'
 
 createRoot(document.getElementById('root')!).render(

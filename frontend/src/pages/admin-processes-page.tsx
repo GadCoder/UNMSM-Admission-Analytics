@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '../components/design-system'
 import {
@@ -10,6 +11,7 @@ import {
 import { getApiErrorMessage } from '../features/admin/model/error-message'
 
 export function AdminProcessesPage() {
+  const { t } = useTranslation(['admin', 'common'])
   const [processes, setProcesses] = useState<AdminProcess[]>([])
   const [year, setYear] = useState('')
   const [cycle, setCycle] = useState('')
@@ -38,7 +40,7 @@ export function AdminProcessesPage() {
         if (!active) {
           return
         }
-        setErrorMessage(getApiErrorMessage(error, 'Could not load admission processes'))
+        setErrorMessage(getApiErrorMessage(error, t('admin:processes.errors.load')))
       }
     }
 
@@ -47,7 +49,7 @@ export function AdminProcessesPage() {
     return () => {
       active = false
     }
-  }, [])
+  }, [t])
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -55,11 +57,11 @@ export function AdminProcessesPage() {
 
     const parsedYear = Number(year)
     if (!Number.isInteger(parsedYear) || parsedYear <= 0) {
-      setErrorMessage('Year is required')
+      setErrorMessage(t('admin:processes.errors.yearRequired'))
       return
     }
     if (cycle !== 'I' && cycle !== 'II') {
-      setErrorMessage('Cycle is required')
+      setErrorMessage(t('admin:processes.errors.cycleRequired'))
       return
     }
 
@@ -85,7 +87,7 @@ export function AdminProcessesPage() {
       setEditingId(null)
       await refresh()
     } catch (error) {
-      setErrorMessage(getApiErrorMessage(error, 'Could not save admission process'))
+      setErrorMessage(getApiErrorMessage(error, t('admin:processes.errors.save')))
     }
   }
 
@@ -100,12 +102,12 @@ export function AdminProcessesPage() {
 
   return (
     <section className="space-y-4 rounded-card border border-primary/10 bg-surface p-4 shadow-soft">
-      <h2 className="text-lg font-semibold text-textPrimary">Admission processes</h2>
+      <h2 className="text-lg font-semibold text-textPrimary">{t('admin:processes.title')}</h2>
 
       <form className="grid gap-3 md:grid-cols-5" onSubmit={onSubmit}>
         <input
           className="rounded-card border border-primary/20 px-3 py-2 text-sm"
-          placeholder="Year"
+          placeholder={t('admin:processes.placeholders.year')}
           type="number"
           min={2000}
           value={year}
@@ -118,20 +120,20 @@ export function AdminProcessesPage() {
           onChange={(event) => setCycle(event.target.value)}
           required
         >
-          <option value="">Select cycle</option>
+          <option value="">{t('admin:processes.placeholders.selectCycle')}</option>
           <option value="I">I</option>
           <option value="II">II</option>
         </select>
         <div className="rounded-card border border-primary/20 bg-white px-3 py-2 text-sm text-textSecondary">
-          Label: <span className="font-semibold text-textPrimary">{generatedLabel || '-'}</span>
+          {t('admin:processes.form.label')}: <span className="font-semibold text-textPrimary">{generatedLabel || '-'}</span>
         </div>
         <label className="flex items-center gap-2 rounded-card border border-primary/20 px-3 py-2 text-sm text-textSecondary">
           <input type="checkbox" checked={isPublished} onChange={(event) => setIsPublished(event.target.checked)} />
-          Published
+          {t('admin:processes.form.published')}
         </label>
         <div className="flex gap-2">
           <Button variant="primary" type="submit">
-            {selectedProcess ? 'Update process' : 'Create process'}
+            {selectedProcess ? t('admin:processes.form.update') : t('admin:processes.form.create')}
           </Button>
           {selectedProcess ? (
             <Button
@@ -143,7 +145,7 @@ export function AdminProcessesPage() {
                 setIsPublished(false)
               }}
             >
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
           ) : null}
         </div>
@@ -155,12 +157,12 @@ export function AdminProcessesPage() {
         <table className="min-w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-primary/15 text-left text-textSecondary">
-              <th className="py-2 pr-3">ID</th>
-              <th className="py-2 pr-3">Label</th>
-              <th className="py-2 pr-3">Year</th>
-              <th className="py-2 pr-3">Cycle</th>
-              <th className="py-2 pr-3">Published</th>
-              <th className="py-2">Actions</th>
+              <th className="py-2 pr-3">{t('common:table.id')}</th>
+              <th className="py-2 pr-3">{t('admin:processes.table.label')}</th>
+              <th className="py-2 pr-3">{t('admin:processes.table.year')}</th>
+              <th className="py-2 pr-3">{t('admin:processes.table.cycle')}</th>
+              <th className="py-2 pr-3">{t('admin:processes.table.published')}</th>
+              <th className="py-2">{t('common:table.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -170,10 +172,10 @@ export function AdminProcessesPage() {
                 <td className="py-2 pr-3">{process.label}</td>
                 <td className="py-2 pr-3">{process.year}</td>
                 <td className="py-2 pr-3">{process.cycle}</td>
-                <td className="py-2 pr-3">{process.is_published ? 'Yes' : 'No'}</td>
+                 <td className="py-2 pr-3">{process.is_published ? t('common:states.yes') : t('common:states.no')}</td>
                 <td className="py-2">
                   <Button type="button" variant="ghost" onClick={() => startEdit(process)}>
-                    Edit
+                    {t('common:actions.edit')}
                   </Button>
                 </td>
               </tr>
