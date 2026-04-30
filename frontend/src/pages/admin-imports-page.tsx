@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '../components/design-system'
 import {
@@ -18,6 +19,7 @@ const MAX_FILES_PER_BATCH = 100
 const MAX_FILE_MB = 25
 
 export function AdminImportsPage() {
+  const { t } = useTranslation(['admin', 'common'])
   const { options: processOptions } = useProcessOptions()
   const [selectedFiles, setSelectedFiles] = useState<File[]>([])
   const [defaultProcessId, setDefaultProcessId] = useState('')
@@ -39,17 +41,17 @@ export function AdminImportsPage() {
 
   const validateFiles = (files: File[]) => {
     if (files.length === 0) {
-      setErrorMessage('Select at least one CSV file')
+      setErrorMessage(t('admin:imports.errors.selectAtLeastOne'))
       return false
     }
     if (files.length > MAX_FILES_PER_BATCH) {
-      setErrorMessage(`A batch can include up to ${MAX_FILES_PER_BATCH} files`)
+      setErrorMessage(t('admin:imports.errors.maxFiles', { max: MAX_FILES_PER_BATCH }))
       return false
     }
 
     for (const file of files) {
       if (file.size > MAX_FILE_MB * 1024 * 1024) {
-        setErrorMessage(`File ${file.name} exceeds the ${MAX_FILE_MB}MB limit`)
+        setErrorMessage(t('admin:imports.errors.maxFileMb', { name: file.name, max: MAX_FILE_MB }))
         return false
       }
     }
@@ -71,7 +73,7 @@ export function AdminImportsPage() {
   const submitBatch = async () => {
     const parsedDefaultProcessId = Number(defaultProcessId)
     if (!Number.isInteger(parsedDefaultProcessId) || parsedDefaultProcessId <= 0) {
-      setErrorMessage('Default admission process is required')
+      setErrorMessage(t('admin:imports.errors.defaultProcessRequired'))
       return
     }
     if (!validateFiles(selectedFiles)) {
@@ -93,7 +95,7 @@ export function AdminImportsPage() {
       setPollMs(2_000)
       lastSignatureRef.current = null
     } catch (error) {
-      setErrorMessage(getApiErrorMessage(error, 'Could not submit batch import'))
+      setErrorMessage(getApiErrorMessage(error, t('admin:imports.errors.submit')))
     }
   }
 
@@ -120,7 +122,7 @@ export function AdminImportsPage() {
         lastSignatureRef.current = signature
         setPollMs((previous) => nextPollInterval(previous, hasChanged))
       } catch (error) {
-        setErrorMessage(getApiErrorMessage(error, 'Could not refresh batch status'))
+        setErrorMessage(getApiErrorMessage(error, t('admin:imports.errors.refreshStatus')))
       }
     }, pollMs)
 
@@ -128,7 +130,7 @@ export function AdminImportsPage() {
       active = false
       window.clearTimeout(timer)
     }
-  }, [batchId, pollMs])
+  }, [batchId, pollMs, t])
 
   const updateOverride = (fileName: string, processId: string) => {
     const parsed = Number(processId)
@@ -147,7 +149,7 @@ export function AdminImportsPage() {
 
   return (
     <section className="space-y-4 rounded-card border border-primary/10 bg-surface p-4 shadow-soft">
-      <h2 className="text-lg font-semibold text-textPrimary">Bulk results imports</h2>
+      <h2 className="text-lg font-semibold text-textPrimary">{t('admin:imports.title')}</h2>
 
       <div
         className={`rounded-card border-2 border-dashed p-6 text-center ${isDragging ? 'border-primary bg-primary/5' : 'border-primary/25'}`}
@@ -162,19 +164,19 @@ export function AdminImportsPage() {
           onPickFiles(event.dataTransfer.files)
         }}
       >
-        <p className="text-sm text-textSecondary">Drag and drop CSV files, or use the picker.</p>
+        <p className="text-sm text-textSecondary">{t('admin:imports.dropzone')}</p>
         <input className="mt-3" type="file" accept=".csv,text/csv" multiple onChange={(event) => onPickFiles(event.target.files)} />
       </div>
 
       <div className="grid gap-3 md:grid-cols-2">
         <label className="text-sm text-textSecondary">
-          Default process
+          {t('admin:imports.form.defaultProcess')}
           <select
             className="mt-1 w-full rounded-card border border-primary/20 bg-white px-3 py-2 text-sm"
             value={defaultProcessId}
             onChange={(event) => setDefaultProcessId(event.target.value)}
           >
-            <option value="">Select process</option>
+            <option value="">{t('admin:imports.form.selectProcess')}</option>
             {processOptions.map((option) => (
               <option key={option.value} value={option.value}>
                 {option.label}
@@ -185,7 +187,7 @@ export function AdminImportsPage() {
 
         <div className="flex items-end">
           <Button type="button" variant="primary" onClick={submitBatch} disabled={selectedFiles.length === 0}>
-            Create batch
+            {t('common:actions.createBatch')}
           </Button>
         </div>
       </div>
@@ -195,9 +197,9 @@ export function AdminImportsPage() {
           <table className="min-w-full border-collapse text-sm">
             <thead>
               <tr className="border-b border-primary/15 text-left text-textSecondary">
-                <th className="py-2 pr-3">File</th>
-                <th className="py-2 pr-3">Size</th>
-                <th className="py-2">Process override</th>
+                <th className="py-2 pr-3">{t('common:table.file')}</th>
+                <th className="py-2 pr-3">{t('common:table.size')}</th>
+                <th className="py-2">{t('admin:imports.form.processOverride')}</th>
               </tr>
             </thead>
             <tbody>
@@ -211,7 +213,7 @@ export function AdminImportsPage() {
                       value={String(overrideByName[file.name] ?? '')}
                       onChange={(event) => updateOverride(file.name, event.target.value)}
                     >
-                      <option value="">Use default</option>
+                      <option value="">{t('admin:imports.form.useDefault')}</option>
                       {processOptions.map((option) => (
                         <option key={option.value} value={option.value}>
                           {option.label}
@@ -231,34 +233,39 @@ export function AdminImportsPage() {
       {batchId ? (
         <div className="space-y-3 rounded-card border border-primary/15 bg-white/70 p-4">
           <div className="flex flex-wrap items-center justify-between gap-2">
-            <p className="text-sm font-semibold text-textPrimary">Batch #{batchId}</p>
-            <div className="flex gap-2">
-              <Button type="button" variant="secondary" onClick={() => retryBatchItems(batchId)}>
-                Retry failed
-              </Button>
-              <Button type="button" variant="ghost" onClick={() => cancelBatchItems(batchId)} disabled={!inProgress}>
-                Cancel queued
-              </Button>
-            </div>
+             <p className="text-sm font-semibold text-textPrimary">{t('admin:imports.batch.title', { batchId })}</p>
+             <div className="flex gap-2">
+               <Button type="button" variant="secondary" onClick={() => retryBatchItems(batchId)}>
+                 {t('common:actions.retryFailed')}
+               </Button>
+               <Button type="button" variant="ghost" onClick={() => cancelBatchItems(batchId)} disabled={!inProgress}>
+                 {t('common:actions.cancelQueued')}
+               </Button>
+             </div>
           </div>
 
           {batchStatus ? (
             <p className="text-sm text-textSecondary">
-              Queued: {batchStatus.queued_items} - Processing: {batchStatus.processing_items} - Completed:{' '}
-              {batchStatus.completed_items} - Failed: {batchStatus.failed_items} - Cancelled: {batchStatus.cancelled_items}
+              {t('admin:imports.batch.summary', {
+                queued: batchStatus.queued_items,
+                processing: batchStatus.processing_items,
+                completed: batchStatus.completed_items,
+                failed: batchStatus.failed_items,
+                cancelled: batchStatus.cancelled_items,
+              })}
             </p>
           ) : (
-            <p className="text-sm text-textSecondary">Loading batch status...</p>
+            <p className="text-sm text-textSecondary">{t('admin:imports.batch.loadingStatus')}</p>
           )}
 
           <div className="overflow-x-auto">
             <table className="min-w-full border-collapse text-sm">
               <thead>
                 <tr className="border-b border-primary/15 text-left text-textSecondary">
-                  <th className="py-2 pr-3">File</th>
-                  <th className="py-2 pr-3">Status</th>
-                  <th className="py-2 pr-3">Imported/Total</th>
-                  <th className="py-2">Error</th>
+                   <th className="py-2 pr-3">{t('common:table.file')}</th>
+                   <th className="py-2 pr-3">{t('common:table.status')}</th>
+                   <th className="py-2 pr-3">{t('admin:imports.batch.importedRows')}</th>
+                   <th className="py-2">{t('common:table.error')}</th>
                 </tr>
               </thead>
               <tbody>

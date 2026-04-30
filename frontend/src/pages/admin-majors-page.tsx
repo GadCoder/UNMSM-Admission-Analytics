@@ -1,4 +1,5 @@
 import { useEffect, useState, type FormEvent } from 'react'
+import { useTranslation } from 'react-i18next'
 
 import { Button } from '../components/design-system'
 import {
@@ -12,6 +13,7 @@ import {
 import { getApiErrorMessage } from '../features/admin/model/error-message'
 
 export function AdminMajorsPage() {
+  const { t } = useTranslation(['admin', 'common'])
   const [majors, setMajors] = useState<AdminMajor[]>([])
   const [faculties, setFaculties] = useState<AdminFaculty[]>([])
   const [name, setName] = useState('')
@@ -44,7 +46,7 @@ export function AdminMajorsPage() {
         if (!active) {
           return
         }
-        setErrorMessage(getApiErrorMessage(error, 'Could not load majors'))
+        setErrorMessage(getApiErrorMessage(error, t('admin:majors.errors.load')))
       }
     }
 
@@ -53,7 +55,7 @@ export function AdminMajorsPage() {
     return () => {
       active = false
     }
-  }, [])
+  }, [t])
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -61,7 +63,7 @@ export function AdminMajorsPage() {
 
     const parsedFacultyId = Number(facultyId)
     if (!Number.isInteger(parsedFacultyId) || parsedFacultyId <= 0) {
-      setErrorMessage('Faculty is required')
+      setErrorMessage(t('admin:majors.errors.facultyRequired'))
       return
     }
 
@@ -90,7 +92,7 @@ export function AdminMajorsPage() {
       setEditingId(null)
       await refresh()
     } catch (error) {
-      setErrorMessage(getApiErrorMessage(error, 'Could not save major'))
+      setErrorMessage(getApiErrorMessage(error, t('admin:majors.errors.save')))
     }
   }
 
@@ -104,18 +106,18 @@ export function AdminMajorsPage() {
 
   return (
     <section className="space-y-4 rounded-card border border-primary/10 bg-surface p-4 shadow-soft">
-      <h2 className="text-lg font-semibold text-textPrimary">Majors</h2>
+      <h2 className="text-lg font-semibold text-textPrimary">{t('admin:majors.title')}</h2>
       <form className="grid gap-3 md:grid-cols-5" onSubmit={onSubmit}>
         <input
           className="rounded-card border border-primary/20 px-3 py-2 text-sm"
-          placeholder="Major name"
+          placeholder={t('admin:majors.placeholders.name')}
           value={name}
           onChange={(event) => setName(event.target.value)}
           required
         />
         <input
           className="rounded-card border border-primary/20 px-3 py-2 text-sm"
-          placeholder="major-slug"
+          placeholder={t('admin:majors.placeholders.slug')}
           value={slug}
           onChange={(event) => setSlug(event.target.value)}
           required
@@ -126,7 +128,7 @@ export function AdminMajorsPage() {
           onChange={(event) => setFacultyId(event.target.value)}
           required
         >
-          <option value="">Select faculty</option>
+          <option value="">{t('admin:majors.placeholders.selectFaculty')}</option>
           {faculties.map((faculty) => (
             <option key={faculty.id} value={faculty.id}>
               {faculty.name}
@@ -135,11 +137,11 @@ export function AdminMajorsPage() {
         </select>
         <label className="flex items-center gap-2 rounded-card border border-primary/20 px-3 py-2 text-sm text-textSecondary">
           <input type="checkbox" checked={isActive} onChange={(event) => setIsActive(event.target.checked)} />
-          Active
+          {t('admin:majors.form.active')}
         </label>
         <div className="flex gap-2">
           <Button variant="primary" type="submit">
-            {selectedMajor ? 'Update major' : 'Create major'}
+            {selectedMajor ? t('admin:majors.form.update') : t('admin:majors.form.create')}
           </Button>
           {selectedMajor ? (
             <Button
@@ -152,7 +154,7 @@ export function AdminMajorsPage() {
                 setIsActive(true)
               }}
             >
-              Cancel
+              {t('common:actions.cancel')}
             </Button>
           ) : null}
         </div>
@@ -163,12 +165,12 @@ export function AdminMajorsPage() {
         <table className="min-w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-primary/15 text-left text-textSecondary">
-              <th className="py-2 pr-3">ID</th>
-              <th className="py-2 pr-3">Name</th>
-              <th className="py-2 pr-3">Faculty ID</th>
-              <th className="py-2 pr-3">Active</th>
-              <th className="py-2 pr-3">Slug</th>
-              <th className="py-2">Actions</th>
+              <th className="py-2 pr-3">{t('common:table.id')}</th>
+              <th className="py-2 pr-3">{t('common:table.name')}</th>
+              <th className="py-2 pr-3">{t('admin:majors.table.facultyId')}</th>
+              <th className="py-2 pr-3">{t('admin:majors.table.active')}</th>
+              <th className="py-2 pr-3">{t('common:table.slug')}</th>
+              <th className="py-2">{t('common:table.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -177,11 +179,11 @@ export function AdminMajorsPage() {
                 <td className="py-2 pr-3">{major.id}</td>
                 <td className="py-2 pr-3">{major.name}</td>
                 <td className="py-2 pr-3">{major.faculty_id}</td>
-                <td className="py-2 pr-3">{major.is_active ? 'Yes' : 'No'}</td>
+                 <td className="py-2 pr-3">{major.is_active ? t('common:states.yes') : t('common:states.no')}</td>
                 <td className="py-2 pr-3">{major.slug}</td>
                 <td className="py-2">
                   <Button type="button" variant="ghost" onClick={() => startEdit(major)}>
-                    Edit
+                    {t('common:actions.edit')}
                   </Button>
                 </td>
               </tr>
