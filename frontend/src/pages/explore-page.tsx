@@ -23,6 +23,7 @@ import {
 import { useExploreMajorAnalytics, useExploreMajorTrends, useExploreMajors } from '../features/explore/api/use-explore-data'
 import { useProcessOptions } from '../features/global-filters/api/use-process-options'
 import { GlobalFilterBar as SharedGlobalFilterBar, useGlobalFilters } from '../features/global-filters'
+import { useI18n } from '../lib/i18n'
 
 function toOptionalInt(value: string | null): number | null {
   if (!value) {
@@ -78,6 +79,7 @@ type ExploreTrendPoint = {
 }
 
 export function ExplorePage() {
+  const { t } = useI18n()
   const { filters, hasActiveFilters, setProcessId, setAcademicAreaId, resetFilters } = useGlobalFilters()
   const processId = toOptionalInt(filters.processId)
   const academicAreaId = toOptionalInt(filters.academicAreaId)
@@ -139,15 +141,15 @@ export function ExplorePage() {
   const topApplicantCount = popularMajors[0]?.applicants ?? 0
 
   const metricOptions: SelectOption[] = selectedMajorId
-    ? [
-        { value: 'applicants', label: 'Applicants' },
-        { value: 'admitted', label: 'Admitted' },
-        { value: 'acceptance', label: 'Acceptance Rate' },
-        { value: 'cutoff', label: 'Cutoff Score' },
+      ? [
+        { value: 'applicants', label: t('explore.kpi.applicants') },
+        { value: 'admitted', label: t('explore.kpi.admitted') },
+        { value: 'acceptance', label: t('explore.kpi.acceptance') },
+        { value: 'cutoff', label: t('trends.metric.cutoff') },
       ]
     : [
-        { value: 'applicants', label: 'Applicants' },
-        { value: 'cutoff', label: 'Cutoff Score' },
+        { value: 'applicants', label: t('explore.kpi.applicants') },
+        { value: 'cutoff', label: t('trends.metric.cutoff') },
       ]
 
   useEffect(() => {
@@ -211,6 +213,8 @@ export function ExplorePage() {
     [trendData, selectedMetric]
   )
 
+  const selectedMetricLabel = metricOptions.find((option) => option.value === selectedMetric)?.label ?? selectedMetric
+
   const latestTrend = trendData.length > 0 ? trendData[trendData.length - 1] : null
   const previousTrend = trendData.length > 1 ? trendData[trendData.length - 2] : null
   const latestApplicants = latestTrend?.applicants ?? null
@@ -231,11 +235,11 @@ export function ExplorePage() {
 
   return (
     <div className="space-y-5">
-      <Breadcrumbs items={[{ label: 'Home', href: '/dashboard' }, { label: 'Explore Results', href: '/explore' }]} />
+      <Breadcrumbs items={[{ label: t('explore.breadcrumb.home'), href: '/dashboard' }, { label: t('explore.breadcrumb.results'), href: '/explore' }]} />
 
       <ExploreHeader
-        title="Explore Results"
-        description="Inspect admission outcomes with filter-aware KPIs, trends, and major-level demand insights."
+        title={t('explore.title')}
+        description={t('explore.description')}
       />
 
       <SharedGlobalFilterBar
@@ -252,57 +256,57 @@ export function ExplorePage() {
       <section className="rounded-card border border-primary/10 bg-surface p-4 shadow-soft md:p-5">
         <div className="flex flex-col gap-3 md:grid md:grid-cols-[minmax(0,1fr)_auto] md:items-end">
           <Select
-            label="Major"
+            label={t('explore.major')}
             value={majorId}
             options={majorOptions}
-            placeholder={majorsQuery.isLoading ? 'Loading majors...' : 'All majors'}
+            placeholder={majorsQuery.isLoading ? t('explore.loadingMajors') : t('explore.allMajors')}
             disabled={majorsQuery.isLoading || majorOptions.length === 0}
             onChange={(event) => setMajorId(event.target.value)}
           />
           <HighlightBanner
             icon={selectedMajorId ? '◉' : '◎'}
-            label="Current Scope"
-            value={selectedMajorId ? 'Major-specific insights active' : 'Area-wide results overview'}
+            label={t('explore.scope.label')}
+            value={selectedMajorId ? t('explore.scope.majorActive') : t('explore.scope.areaOverview')}
           />
         </div>
       </section>
 
-      {processId === null ? <p className="text-sm text-textSecondary">No process selected; showing KPIs for the latest available process.</p> : null}
+      {processId === null ? <p className="text-sm text-textSecondary">{t('explore.noProcessSelected')}</p> : null}
       {dashboardError ? <p className="text-sm text-danger">{dashboardError}</p> : null}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-        <StatCard label="Applicants" value={loading ? 'Loading...' : formatInteger(totalApplicants)} />
-        <StatCard label="Admitted" value={loading ? 'Loading...' : formatInteger(totalAdmitted)} />
-        <StatCard label="Acceptance Rate" value={loading ? 'Loading...' : formatPercent(acceptanceRate)} />
-        <StatCard label="Majors in Scope" value={loading ? 'Loading...' : formatInteger(majorCount)} />
+        <StatCard label={t('explore.kpi.applicants')} value={loading ? t('common.loading') : formatInteger(totalApplicants)} />
+        <StatCard label={t('explore.kpi.admitted')} value={loading ? t('common.loading') : formatInteger(totalAdmitted)} />
+        <StatCard label={t('explore.kpi.acceptance')} value={loading ? t('common.loading') : formatPercent(acceptanceRate)} />
+        <StatCard label={t('explore.kpi.majorsInScope')} value={loading ? t('common.loading') : formatInteger(majorCount)} />
       </div>
 
       <div className="grid gap-4 lg:grid-cols-[2fr_1fr]">
-        <ChartCard title={selectedMajorId ? 'Selected Major Trend by Process' : 'Result Trend Explorer'} actions={<MetricSelector value={selectedMetric} onChange={setSelectedMetric} options={metricOptions} />}>
+        <ChartCard title={selectedMajorId ? t('explore.chart.selectedMajorTrend') : t('explore.chart.resultTrendExplorer')} actions={<MetricSelector value={selectedMetric} onChange={setSelectedMetric} options={metricOptions} />}>
           {trendData.length === 0 ? (
-            <p className="text-sm text-textSecondary">No trend data available.</p>
+            <p className="text-sm text-textSecondary">{t('explore.chart.noData')}</p>
           ) : (
-            <LineChartAdapter data={chartData} series={[{ key: 'value', label: selectedMetric, color: '#8f5658' }]} />
+            <LineChartAdapter data={chartData} series={[{ key: 'value', label: selectedMetricLabel, color: '#8f5658' }]} />
           )}
         </ChartCard>
 
         <div className="grid gap-4">
           <TrendSummaryCard
-            title="Latest Applicants"
+            title={t('explore.summary.latestApplicants')}
             value={formatMetricValue('applicants', latestApplicants)}
-            description="Compared to previous process"
+            description={t('explore.summary.comparedToPrevious')}
             direction={trendDirection(latestApplicants, previousApplicants)}
           />
           <TrendSummaryCard
-            title="Latest Cutoff"
+            title={t('explore.summary.latestCutoff')}
             value={formatMetricValue('cutoff', latestCutoff)}
-            description="Compared to previous process"
+            description={t('explore.summary.comparedToPrevious')}
             direction={trendDirection(latestCutoff, previousCutoff)}
           />
           <TrendSummaryCard
-            title="Current Acceptance"
+            title={t('explore.summary.currentAcceptance')}
             value={formatPercent(acceptanceRate)}
-            description={selectedMajorId ? 'Selected major acceptance rate' : 'Overall acceptance within active scope'}
+            description={selectedMajorId ? t('explore.summary.selectedMajorAcceptance') : t('explore.summary.scopeAcceptance')}
             direction="neutral"
           />
         </div>
@@ -310,23 +314,23 @@ export function ExplorePage() {
 
       <section className="rounded-card border border-primary/10 bg-surface p-5 shadow-soft">
         <SectionHeader
-          title={selectedMajorId ? 'Selected Major Snapshot' : 'Most Demanded Majors'}
+          title={selectedMajorId ? t('explore.snapshot.selectedMajor') : t('explore.snapshot.mostDemanded')}
           subtitle={
             selectedMajorId
-              ? 'Applicant and admission context for the selected major in the current scope.'
-              : 'Top majors by applicant demand within the active result scope.'
+              ? t('explore.snapshot.selectedMajorSubtitle')
+              : t('explore.snapshot.mostDemandedSubtitle')
           }
         />
-        {loading ? <p className="text-sm text-textSecondary">Loading major insights...</p> : null}
-        {!loading && !selectedMajorId && popularMajors.length === 0 ? <p className="text-sm text-textSecondary">No major ranking data available.</p> : null}
+        {loading ? <p className="text-sm text-textSecondary">{t('explore.snapshot.loading')}</p> : null}
+        {!loading && !selectedMajorId && popularMajors.length === 0 ? <p className="text-sm text-textSecondary">{t('explore.snapshot.empty')}</p> : null}
         {!loading && selectedMajorId && majorAnalyticsQuery.data ? (
           <RankingList
             items={[
               {
                 id: String(majorAnalyticsQuery.data.major.id),
                 label: majorAnalyticsQuery.data.major.name,
-                value: `${formatInteger(majorAnalyticsQuery.data.metrics.applicants)} applicants`,
-                description: `${formatInteger(majorAnalyticsQuery.data.metrics.admitted)} admitted`,
+                value: t('explore.value.applicants').replace('{count}', formatInteger(majorAnalyticsQuery.data.metrics.applicants)),
+                description: t('explore.value.admitted').replace('{count}', formatInteger(majorAnalyticsQuery.data.metrics.admitted)),
                 progress: 100,
               },
             ]}
@@ -337,8 +341,8 @@ export function ExplorePage() {
             items={popularMajors.map((item) => ({
               id: String(item.major.id),
               label: item.major.name,
-              value: `${formatInteger(item.applicants)} applicants`,
-              description: `${formatInteger(item.admitted)} admitted`,
+              value: t('explore.value.applicants').replace('{count}', formatInteger(item.applicants)),
+              description: t('explore.value.admitted').replace('{count}', formatInteger(item.admitted)),
               progress:
                 topApplicantCount <= 0
                   ? undefined

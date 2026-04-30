@@ -1,45 +1,52 @@
+import type { ChangeEvent, RefObject } from 'react'
+
 import { Topbar as DesignSystemTopbar } from '../components/design-system'
-import { useTranslation } from 'react-i18next'
+import { useI18n } from '../lib/i18n'
 
-import { setAppLocale } from '../lib/i18n'
-import type { AppLocale } from '../lib/i18n/constants'
+type TopbarProps = {
+  isMobileNavOpen: boolean
+  onToggleMobileNav: () => void
+  mobileMenuButtonRef: RefObject<HTMLButtonElement | null>
+}
 
-export function Topbar() {
-  const { t, i18n } = useTranslation(['shell'])
+export function Topbar({ isMobileNavOpen, onToggleMobileNav, mobileMenuButtonRef }: TopbarProps) {
+  const { locale, supportedLocales, setLocale, t } = useI18n()
 
-  const activeLocale: AppLocale = i18n.language.startsWith('en') ? 'en' : 'es'
+  const handleLocaleChange = (event: ChangeEvent<HTMLSelectElement>) => {
+    setLocale(event.target.value)
+  }
 
   return (
     <DesignSystemTopbar
+      leading={
+        <button
+          ref={mobileMenuButtonRef}
+          type="button"
+          className="inline-flex h-9 w-9 items-center justify-center rounded-card border border-primary/20 bg-background text-lg text-textPrimary outline-none focus-visible:ring-2 focus-visible:ring-primary/70 md:hidden"
+          aria-label={isMobileNavOpen ? t('shell.mobileMenu.closeLabel') : t('shell.mobileMenu.openLabel')}
+          aria-controls="mobile-navigation"
+          aria-expanded={isMobileNavOpen}
+          onClick={onToggleMobileNav}
+        >
+          ☰
+        </button>
+      }
       actions={
-        <div className="flex w-full items-center justify-between gap-3">
-          <input
-            type="search"
-            readOnly
-            value=""
-            placeholder={t('shell:topbar.searchPlaceholder')}
-            className="h-9 w-full max-w-xs rounded-card border border-primary/20 bg-background px-3 text-sm text-textSecondary"
-            aria-label={t('shell:topbar.searchPlaceholder')}
-          />
-
-          <div className="flex items-center gap-2">
-            <label className="text-xs font-semibold uppercase tracking-wider text-textSecondary" htmlFor="app-language-selector">
-              {t('shell:topbar.languageLabel')}
-            </label>
-            <select
-              id="app-language-selector"
-              className="h-9 rounded-card border border-primary/20 bg-background px-2 text-sm text-textPrimary"
-              value={activeLocale}
-              onChange={(event) => void setAppLocale(event.target.value as AppLocale)}
-            >
-              <option value="es">ES</option>
-              <option value="en">EN</option>
-            </select>
-            <span className="rounded-card border border-primary/20 bg-background px-3 py-2 text-xs font-semibold uppercase tracking-wider text-textSecondary">
-              {t('shell:topbar.globalControls')}
-            </span>
-          </div>
-        </div>
+        <label className="flex items-center gap-2 text-sm font-medium text-textPrimary" htmlFor="app-locale-selector">
+          <span className="hidden sm:inline">{t('shell.languageLabel')}</span>
+          <select
+            id="app-locale-selector"
+            value={locale}
+            onChange={handleLocaleChange}
+            className="max-w-28 rounded-card border border-primary/20 bg-background px-2 py-1 text-sm text-textPrimary outline-none focus-visible:ring-2 focus-visible:ring-primary/70 sm:max-w-none"
+          >
+            {supportedLocales.map((optionLocale) => (
+              <option key={optionLocale} value={optionLocale}>
+                {t(`shell.languageOption.${optionLocale}`)}
+              </option>
+            ))}
+          </select>
+        </label>
       }
     />
   )

@@ -1,28 +1,29 @@
 ## Why
 
-The product currently ships with a single language experience, which limits usability for Spanish-speaking and English-speaking users in mixed academic and administrative contexts. Adding first-class i18n now enables broader adoption and prevents future feature work from hard-coding user-facing text.
+The frontend currently hardcodes UI copy in a single language across pages and shared components, which makes content updates slow and prevents us from shipping a consistent multilingual experience. We need a centralized i18n foundation now so the product can default to Spanish while still supporting additional locales without duplicating UI logic.
 
 ## What Changes
 
-- Introduce an application-level internationalization layer for frontend user-facing content.
-- Add locale support for `en` (English) and `es` (Spanish) as the initial languages.
-- Define locale selection behavior (default language, user switch, and persistence) for a consistent experience across sessions.
-- Replace hard-coded UI strings in key screens and shared components with translation keys.
-- Establish translation resource structure and conventions to support future language expansion without major refactors.
+- Add an application-level internationalization foundation for the frontend (message catalogs, translation lookup, and locale provider wiring).
+- Set Spanish (`es`) as the default and fallback locale used on first load and when no explicit locale is selected.
+- Add locale persistence so user language preference survives page reloads.
+- Introduce a language switcher pattern in the app shell for changing locale at runtime.
+- Migrate existing user-facing copy in core pages/components to translation keys and locale dictionaries.
+- Add guardrails for missing keys/fallback behavior and tests to prevent regressions.
 
 ## Capabilities
 
 ### New Capabilities
-- `frontend-internationalization`: Provides locale-aware rendering, translation key lookup, and language switching for frontend UI content with initial support for English and Spanish.
+
+- `frontend-internationalization-foundation`: Locale provider, translation resources, runtime language switching, and fallback behavior for frontend UI text.
 
 ### Modified Capabilities
-- `frontend-app-shell-layout`: Update shell-level behavior to expose language selection and apply the active locale across navigational and layout text.
-- `frontend-design-system-components`: Update reusable components to consume translation keys for built-in labels, actions, and helper text.
-- `frontend-admin-management-interface`: Update admin-facing pages to render translated user-visible text for the supported locales.
+
+- `frontend-app-shell-layout`: Add language selection entry point and ensure shell-level labels are localized.
+- `frontend-app-bootstrap-foundation`: Initialize frontend runtime with Spanish default locale and persisted user preference handling.
 
 ## Impact
 
-- Affected code: frontend app bootstrap, shell layout, shared UI components, and admin-facing views.
-- Dependencies: add or standardize on an i18n library/runtime for React and translation resource loading.
-- APIs/systems: no backend API contract changes required for this phase.
-- Process impact: feature teams will need to provide translation keys and `en`/`es` copy for new user-facing strings.
+- Affected code: frontend app bootstrap, shell/navigation UI, shared UI primitives, and page-level copy currently rendered as hardcoded strings.
+- New assets: locale dictionaries (starting with `es` as default plus at least one secondary locale scaffold).
+- QA/testing: translation-key coverage checks, locale-switch behavior tests, and fallback validation for missing translations.

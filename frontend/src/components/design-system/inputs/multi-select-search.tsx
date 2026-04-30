@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 
+import { useI18n } from '../../../lib/i18n'
 import { cn } from '../foundation/cn'
 import { ChipTag } from './chip-tag'
 import { debounce, getVisibleRange } from './multi-select-search-utils'
@@ -20,7 +21,7 @@ const ITEM_HEIGHT = 36
 const VIEWPORT_HEIGHT = 144
 
 export function MultiSelectSearch({
-  label = 'Compare Majors',
+  label,
   selected,
   onChange,
   loadOptions,
@@ -29,6 +30,7 @@ export function MultiSelectSearch({
   compact = false,
   debounceMs = 250,
 }: MultiSelectSearchProps) {
+  const { t } = useI18n()
   const [query, setQuery] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [results, setResults] = useState<SelectOption[]>([])
@@ -104,19 +106,23 @@ export function MultiSelectSearch({
 
   const showSuggestions = isSuggestionsOpen || query.trim().length > 0
 
+  const sectionLabel = label ?? t('compare.multiSelect.label')
+
   return (
     <section className={compact ? 'rounded-card border border-primary/15 bg-surface p-3 shadow-soft' : 'rounded-card border border-primary/15 bg-surface p-4 shadow-soft'}>
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primaryDark">{label}</p>
+        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primaryDark">{sectionLabel}</p>
         {maxSelection ? (
           <p className="text-xs font-medium text-textSecondary">
-            {selected.length}/{maxSelection} selected
+            {selected.length}/{maxSelection} {t('compare.multiSelect.selected')}
           </p>
         ) : null}
       </div>
 
       <p className={cn('text-xs text-textSecondary', compact ? 'mt-0.5' : 'mt-1')}>
-        {maxSelection ? `Select up to ${maxSelection} majors to compare.` : 'Select majors to compare.'}
+        {maxSelection
+          ? t('compare.multiSelect.maxHint').replace('{max}', String(maxSelection))
+          : t('compare.multiSelect.hint')}
       </p>
 
       <input
@@ -131,7 +137,7 @@ export function MultiSelectSearch({
         onBlur={() => {
           setTimeout(() => setIsSuggestionsOpen(false), 120)
         }}
-        placeholder="Search majors..."
+        placeholder={t('compare.multiSelect.searchPlaceholder')}
         className={cn(
           'w-full rounded-card border border-primary/20 bg-background px-3 py-2 text-sm text-textPrimary outline-none focus-visible:ring-2 focus-visible:ring-primary/60',
           compact ? 'mt-2' : 'mt-3'
@@ -140,8 +146,8 @@ export function MultiSelectSearch({
 
       <div className={cn('rounded-card border border-primary/10 bg-background/70 p-2', compact ? 'mt-2' : 'mt-3')}>
         <div className="flex items-center justify-between gap-2">
-          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primaryDark">Selected</p>
-          {selected.length > 0 ? <p className="text-xs text-textSecondary">Scroll to view all</p> : null}
+          <p className="text-xs font-semibold uppercase tracking-[0.12em] text-primaryDark">{t('compare.multiSelect.selectedTitle')}</p>
+          {selected.length > 0 ? <p className="text-xs text-textSecondary">{t('compare.multiSelect.scrollHint')}</p> : null}
         </div>
         <div className="mt-2 flex gap-2 overflow-x-auto pb-1">
           {selected.length > 0 ? (
@@ -154,14 +160,14 @@ export function MultiSelectSearch({
               </div>
             ))
           ) : (
-            <p className="text-xs text-textSecondary">No majors selected yet.</p>
+            <p className="text-xs text-textSecondary">{t('compare.multiSelect.empty')}</p>
           )}
         </div>
       </div>
 
       {showSuggestions ? (
         <>
-          <p className={cn('text-xs font-semibold uppercase tracking-[0.12em] text-primaryDark', compact ? 'mt-2' : 'mt-3')}>Suggestions</p>
+          <p className={cn('text-xs font-semibold uppercase tracking-[0.12em] text-primaryDark', compact ? 'mt-2' : 'mt-3')}>{t('compare.multiSelect.suggestions')}</p>
 
           <div
             className="mt-2 overflow-auto rounded-card border border-primary/10 bg-background"
@@ -195,7 +201,7 @@ export function MultiSelectSearch({
                           : 'border-primary/25 bg-white text-textSecondary'
                       )}
                     >
-                      {isSelected ? '✓ Selected' : 'Add'}
+                      {isSelected ? t('compare.multiSelect.tagSelected') : t('compare.multiSelect.add')}
                     </span>
                   </button>
                 )
@@ -205,9 +211,9 @@ export function MultiSelectSearch({
         </>
       ) : null}
 
-      {showSuggestions && !isLoading && results.length === 0 ? <p className="mt-2 text-xs text-textSecondary">No majors found.</p> : null}
+      {showSuggestions && !isLoading && results.length === 0 ? <p className="mt-2 text-xs text-textSecondary">{t('compare.multiSelect.noneFound')}</p> : null}
 
-      {isLoading ? <p className="mt-2 text-xs text-textSecondary">Loading search results...</p> : null}
+      {isLoading ? <p className="mt-2 text-xs text-textSecondary">{t('compare.multiSelect.loading')}</p> : null}
 
       {statusMessage ? <p className="mt-2 text-xs text-danger">{statusMessage}</p> : null}
     </section>

@@ -17,10 +17,11 @@ type SidebarProps = {
   title: string
   subtitle: string
   groups: SidebarNavGroup[]
+  navAriaLabel?: string
   className?: string
 }
 
-export function Sidebar({ title, subtitle, groups, className }: SidebarProps) {
+export function Sidebar({ title, subtitle, groups, navAriaLabel = 'Primary', className }: SidebarProps) {
   return (
     <aside className={cn('hidden w-72 shrink-0 border-r border-primary/10 bg-surface px-4 py-6 md:block', className)}>
       <div className="mb-8 px-3">
@@ -28,7 +29,7 @@ export function Sidebar({ title, subtitle, groups, className }: SidebarProps) {
         <h1 className="mt-2 text-lg font-semibold text-textPrimary">{title}</h1>
       </div>
 
-      <nav aria-label="Primary" className="space-y-4">
+      <nav aria-label={navAriaLabel} className="space-y-4">
         {groups.map((group) => (
           <section key={group.label}>
             <p className="mb-2 px-3 text-[0.66rem] font-semibold uppercase tracking-[0.16em] text-textSecondary/80">{group.label}</p>

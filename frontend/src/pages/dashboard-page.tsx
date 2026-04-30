@@ -21,6 +21,7 @@ import {
 import { useAcademicAreaOptions } from '../features/global-filters/api/use-academic-area-options'
 import { useProcessOptions } from '../features/global-filters/api/use-process-options'
 import { useGlobalFilters } from '../features/global-filters/model/use-global-filters'
+import { useI18n } from '../lib/i18n'
 
 function toOptionalInt(value: string | null): number | null {
   if (!value) {
@@ -53,7 +54,7 @@ function formatShare(value: number, total: number | undefined): string {
 
 function deriveTrend(current: number, previous: number): { direction: 'up' | 'down' | 'neutral'; value: string } {
   if (previous <= 0) {
-    return { direction: 'neutral', value: 'N/A' }
+    return { direction: 'neutral', value: 'N/D' }
   }
   const delta = ((current - previous) / previous) * 100
   if (Math.abs(delta) < 0.05) {
@@ -91,6 +92,7 @@ function compareProcessRecency(left: SelectOption, right: SelectOption): number 
 }
 
 export function DashboardPage() {
+  const { t } = useI18n()
   const { filters, hasActiveFilters, setProcessId, setAcademicAreaId, resetFilters } = useGlobalFilters()
   const { options: processOptions, errorMessage: processError } = useProcessOptions()
   const { options: areaOptions, errorMessage: areaError } = useAcademicAreaOptions()
@@ -220,14 +222,14 @@ export function DashboardPage() {
       : { direction: 'neutral' as const, value: 'N/A' }
 
   const selectedProcessLabel =
-    processOptions.find((option) => option.value === String(selectedProcessId ?? ''))?.label ?? 'No process selected'
+    processOptions.find((option) => option.value === String(selectedProcessId ?? ''))?.label ?? t('dashboard.noProcessSelected')
   const selectedAreaSlug = areaOptions.find((option) => option.value === (filters.academicAreaId ?? ''))?.slug
 
   return (
     <div className="space-y-5">
       <SectionHeader
-        title="Dashboard"
-        subtitle="Scan key admission signals quickly before drilling into detail views."
+        title={t('dashboard.title')}
+        subtitle={t('dashboard.subtitle')}
       />
 
       <GlobalFilterBar
@@ -249,46 +251,46 @@ export function DashboardPage() {
             resetFilters()
             setYear('')
           }}>
-            Reset filters
+            {t('dashboard.resetFilters')}
           </Button>
         }
       />
 
       <div className="flex flex-wrap gap-2">
-        {selectedProcessId ? <FilterPill label="Process" value={selectedProcessLabel} /> : null}
-        {filters.academicAreaId ? <FilterPill label="Area" value={selectedAreaSlug ?? filters.academicAreaId} /> : null}
-        {year ? <FilterPill label="Year" value={year} /> : null}
+        {selectedProcessId ? <FilterPill label={t('common.process')} value={selectedProcessLabel} /> : null}
+        {filters.academicAreaId ? <FilterPill label={t('common.area')} value={selectedAreaSlug ?? filters.academicAreaId} /> : null}
+        {year ? <FilterPill label={t('common.year')} value={year} /> : null}
       </div>
 
       {dashboardError ? <p className="text-sm text-danger">{dashboardError}</p> : null}
 
       <Grid>
         <GridItem span={3}>
-          <StatCard
-            label="Applicants"
-            value={loading ? 'Loading...' : formatInteger(overviewQuery.data?.metrics.total_applicants)}
+            <StatCard
+            label={t('dashboard.kpi.applicants')}
+            value={loading ? t('common.loading') : formatInteger(overviewQuery.data?.metrics.total_applicants)}
             trend={<TrendIndicator direction={applicantsTrend.direction} value={applicantsTrend.value} />}
           />
         </GridItem>
         <GridItem span={3}>
           <StatCard
-            label="Admitted"
-            value={loading ? 'Loading...' : formatInteger(overviewQuery.data?.metrics.total_admitted)}
-            trend={<TrendIndicator direction="neutral" value={latestTrend ? latestTrend.process.label : 'N/A'} />}
+            label={t('dashboard.kpi.admitted')}
+            value={loading ? t('common.loading') : formatInteger(overviewQuery.data?.metrics.total_admitted)}
+            trend={<TrendIndicator direction="neutral" value={latestTrend ? latestTrend.process.label : t('common.na')} />}
           />
         </GridItem>
         <GridItem span={3}>
           <StatCard
-            label="Acceptance Rate"
-            value={loading ? 'Loading...' : formatPercent(overviewQuery.data?.metrics.acceptance_rate)}
-            trend={<TrendIndicator direction="neutral" value="From selected process" />}
+            label={t('dashboard.kpi.acceptanceRate')}
+            value={loading ? t('common.loading') : formatPercent(overviewQuery.data?.metrics.acceptance_rate)}
+            trend={<TrendIndicator direction="neutral" value={t('dashboard.trend.fromSelectedProcess')} />}
           />
         </GridItem>
         <GridItem span={3}>
           <StatCard
-            label="Majors"
-            value={loading ? 'Loading...' : formatInteger(overviewQuery.data?.metrics.total_majors)}
-            helperText="Active in selected process"
+            label={t('dashboard.kpi.majors')}
+            value={loading ? t('common.loading') : formatInteger(overviewQuery.data?.metrics.total_majors)}
+            helperText={t('dashboard.helper.activeMajors')}
             variant="with-helper"
           />
         </GridItem>
@@ -297,16 +299,18 @@ export function DashboardPage() {
       <Grid>
         <GridItem span={6}>
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-primaryDark">Most Competitive Majors</h3>
-            {loading ? <p className="text-sm text-textSecondary">Loading...</p> : null}
-            {!loading && competitiveMajors.length === 0 ? <p className="text-sm text-textSecondary">No ranking data for selected filters</p> : null}
+            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-primaryDark">{t('dashboard.section.mostCompetitive')}</h3>
+            {loading ? <p className="text-sm text-textSecondary">{t('common.loading')}</p> : null}
+            {!loading && competitiveMajors.length === 0 ? <p className="text-sm text-textSecondary">{t('dashboard.empty.rankingData')}</p> : null}
             {!loading && competitiveMajors.length > 0 ? (
               <RankingList
                 items={competitiveMajors.map((item) => ({
                   id: String(item.major.id),
                   label: item.major.name,
                   value: formatPercent(item.acceptance_rate),
-                  description: `${formatInteger(item.admitted)} admitted from ${formatInteger(item.applicants)} applicants`,
+                  description: t('dashboard.description.admittedFromApplicants')
+                    .replace('{admitted}', formatInteger(item.admitted))
+                    .replace('{applicants}', formatInteger(item.applicants)),
                   progress:
                     item.acceptance_rate === null
                       ? undefined
@@ -318,16 +322,19 @@ export function DashboardPage() {
         </GridItem>
         <GridItem span={6}>
           <div className="space-y-2">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-primaryDark">Largest Intake</h3>
-            {loading ? <p className="text-sm text-textSecondary">Loading...</p> : null}
-            {!loading && popularMajors.length === 0 ? <p className="text-sm text-textSecondary">No ranking data for selected filters</p> : null}
+            <h3 className="text-sm font-semibold uppercase tracking-[0.16em] text-primaryDark">{t('dashboard.section.largestIntake')}</h3>
+            {loading ? <p className="text-sm text-textSecondary">{t('common.loading')}</p> : null}
+            {!loading && popularMajors.length === 0 ? <p className="text-sm text-textSecondary">{t('dashboard.empty.rankingData')}</p> : null}
             {!loading && popularMajors.length > 0 ? (
               <RankingList
                 items={popularMajors.map((item) => ({
                   id: String(item.major.id),
                   label: item.major.name,
-                  value: `${formatInteger(item.applicants)} applicants`,
-                  description: `${formatShare(item.applicants, totalApplicants)} of total applicants`,
+                  value: t('dashboard.value.applicants').replace('{count}', formatInteger(item.applicants)),
+                  description: t('dashboard.description.shareOfApplicants').replace(
+                    '{share}',
+                    formatShare(item.applicants, totalApplicants),
+                  ),
                   progress:
                     topApplicantCount <= 0
                       ? undefined

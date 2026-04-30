@@ -19,6 +19,7 @@ import { deriveComparePageState } from '../features/compare/model/compare-page-s
 import { MAX_COMPARE_SELECTION, applySelectionLimit } from '../features/compare/model/compare-table'
 import { useProcessOptions } from '../features/global-filters/api/use-process-options'
 import { GlobalFilterBar, useGlobalFilters } from '../features/global-filters'
+import { useI18n } from '../lib/i18n'
 
 type TrendMetricKey = 'applicants' | 'admitted' | 'acceptance_rate'
 type AxisDomainValue = number | 'auto' | 'dataMin' | 'dataMax'
@@ -41,12 +42,6 @@ type SnapshotCard = {
   helperText?: string
   labelTooltip?: string
 }
-
-const METRIC_OPTIONS: SelectOption[] = [
-  { value: 'applicants', label: 'Applicants' },
-  { value: 'admitted', label: 'Admitted' },
-  { value: 'acceptance_rate', label: 'Acceptance Rate' },
-]
 
 const COMPARE_COLORS = ['#8f5658', '#2e8b57', '#3f5ba9', '#b46a2f', '#5f4b8b']
 
@@ -74,6 +69,7 @@ function getApplicantsTrendPct(history: Array<{ metrics: { applicants: number | 
 }
 
 export function ComparePage() {
+  const { t } = useI18n()
   const { filters, hasActiveFilters, setProcessId, setAcademicAreaId, resetFilters } = useGlobalFilters()
   const academicAreaId = toOptionalInt(filters.academicAreaId)
   const processId = toOptionalInt(filters.processId)
@@ -82,6 +78,12 @@ export function ComparePage() {
   const [selectionFeedback, setSelectionFeedback] = useState<string | null>(null)
   const [trendMetric, setTrendMetric] = useState<TrendMetricKey>('applicants')
   const [isLoadingSettling, setIsLoadingSettling] = useState(false)
+
+  const metricOptions: SelectOption[] = [
+    { value: 'applicants', label: t('compare.table.applicants') },
+    { value: 'admitted', label: t('compare.table.admitted') },
+    { value: 'acceptance_rate', label: t('compare.snapshot.acceptanceRate') },
+  ]
 
   const majorOptionsQuery = useCompareMajorOptions(academicAreaId)
   const processOptions = useProcessOptions()
@@ -120,14 +122,14 @@ export function ComparePage() {
 
   const snapshotProcessLabel = useMemo(() => {
     if (processId === null) {
-      return 'Latest available process'
+      return t('rankings.latestProcess')
     }
     if (processOptions.isLoading) {
-      return 'Loading process...'
+      return t('filters.loadingProcess')
     }
     const matched = processOptions.options.find((option) => Number(option.value) === processId)
-    return matched?.label ?? `Process ${processId}`
-  }, [processId, processOptions.isLoading, processOptions.options])
+    return matched?.label ?? t('filters.processFallback').replace('{id}', String(processId))
+  }, [processId, processOptions.isLoading, processOptions.options, t])
 
   const loadingCount = compareData.entities.filter((entity) => entity.isLoading).length
   const successCount = compareData.entities.filter((entity) => Boolean(entity.analytics)).length
@@ -155,27 +157,27 @@ export function ComparePage() {
       const major = entitiesWithAnalytics[0]
       return [
         {
-          label: 'Compared Majors',
+          label: t('compare.snapshot.comparedMajors'),
           value: String(selected.length),
-          helperText: 'selected now',
+          helperText: t('compare.snapshot.selectedNow'),
         },
         {
-          label: 'Applicants',
+          label: t('compare.snapshot.applicants'),
           value: major ? new Intl.NumberFormat('en-US').format(major.analytics?.metrics.applicants ?? 0) : '-',
-          helperText: major ? major.label : 'selected major',
+          helperText: major ? major.label : t('compare.snapshot.selectedMajor'),
         },
         {
-          label: 'Admitted',
+          label: t('compare.snapshot.admitted'),
           value: major ? new Intl.NumberFormat('en-US').format(major.analytics?.metrics.admitted ?? 0) : '-',
-          helperText: major ? major.label : 'selected major',
+          helperText: major ? major.label : t('compare.snapshot.selectedMajor'),
         },
         {
-          label: 'Acceptance Rate',
+          label: t('compare.snapshot.acceptanceRate'),
           value: major && major.analytics?.metrics.acceptance_rate !== null
             ? `${((major.analytics?.metrics.acceptance_rate ?? 0) * 100).toFixed(1)}%`
             : '-',
-          helperText: major ? major.label : 'selected major',
-          labelTooltip: 'Acceptance rate = admitted divided by applicants in the selected process context.',
+          helperText: major ? major.label : t('compare.snapshot.selectedMajor'),
+          labelTooltip: t('compare.acceptanceTooltip'),
         },
       ]
     }
@@ -193,36 +195,39 @@ export function ComparePage() {
 
     return [
       {
-        label: 'Compared Majors',
+        label: t('compare.snapshot.comparedMajors'),
         value: String(selected.length),
-        helperText: 'selected now',
+        helperText: t('compare.snapshot.selectedNow'),
       },
       {
-        label: 'Most Competitive',
+        label: t('compare.snapshot.mostCompetitive'),
         value: mostCompetitive?.label ?? '-',
         helperText:
           mostCompetitive && mostCompetitive.analytics?.metrics.acceptance_rate !== null
-            ? `${((mostCompetitive.analytics?.metrics.acceptance_rate ?? 0) * 100).toFixed(1)}% acceptance`
-            : 'No acceptance data',
+            ? t('compare.snapshot.acceptanceSuffix').replace('{value}', ((mostCompetitive.analytics?.metrics.acceptance_rate ?? 0) * 100).toFixed(1))
+            : t('compare.snapshot.noAcceptanceData'),
       },
       {
-        label: 'Highest Acceptance',
+        label: t('compare.snapshot.highestAcceptance'),
         value: highestAcceptance?.label ?? '-',
         helperText:
           highestAcceptance && highestAcceptance.analytics?.metrics.acceptance_rate !== null
-            ? `${((highestAcceptance.analytics?.metrics.acceptance_rate ?? 0) * 100).toFixed(1)}% acceptance`
-            : 'No acceptance data',
+            ? t('compare.snapshot.acceptanceSuffix').replace('{value}', ((highestAcceptance.analytics?.metrics.acceptance_rate ?? 0) * 100).toFixed(1))
+            : t('compare.snapshot.noAcceptanceData'),
       },
       {
-        label: 'Highest Demand',
+        label: t('compare.snapshot.highestDemand'),
         value: highestDemand?.label ?? '-',
         helperText:
           highestDemand
-            ? `${new Intl.NumberFormat('en-US').format(highestDemand.analytics?.metrics.applicants ?? 0)} applicants`
-            : 'No demand data',
+            ? t('compare.snapshot.applicantsSuffix').replace(
+              '{value}',
+              new Intl.NumberFormat('en-US').format(highestDemand.analytics?.metrics.applicants ?? 0),
+            )
+            : t('compare.snapshot.noDemandData'),
       },
     ]
-  }, [entitiesWithAnalytics, selected.length, snapshotProcessLabel])
+  }, [entitiesWithAnalytics, selected.length, snapshotProcessLabel, t])
 
   const trendSeries = useMemo(
     () => selected.map((entity, index) => ({ key: `major_${entity.value}`, label: entity.label, color: COMPARE_COLORS[index % COMPARE_COLORS.length] })),
@@ -298,12 +303,12 @@ export function ComparePage() {
     },
     {
       key: 'major',
-      header: 'Major',
+      header: t('compare.table.major'),
       render: (row) => <span className="font-medium">{row.major}</span>,
     },
     {
       key: 'applicants',
-      header: 'Applicants',
+      header: t('compare.table.applicants'),
       align: 'right',
       render: (row) => (
         <div className="ml-auto min-w-44 space-y-1">
@@ -316,7 +321,7 @@ export function ComparePage() {
     },
     {
       key: 'admitted',
-      header: 'Admitted',
+      header: t('compare.table.admitted'),
       align: 'right',
       render: (row) => (
         <div className="ml-auto w-24">
@@ -331,7 +336,7 @@ export function ComparePage() {
     },
     {
       key: 'acceptanceRate',
-      header: 'Acceptance',
+      header: t('compare.table.acceptance'),
       align: 'right',
       render: (row) => (
         <div className="ml-auto w-24">
@@ -346,7 +351,7 @@ export function ComparePage() {
     },
     {
       key: 'trend',
-      header: 'Trend',
+      header: t('compare.table.trend'),
       align: 'right',
       render: (row) => {
         if (row.applicantsTrendPct === null) {
@@ -370,14 +375,14 @@ export function ComparePage() {
     setSelected(limited.nextSelection)
     setSelectionFeedback(
       limited.limitReached
-        ? `You can compare up to ${MAX_COMPARE_SELECTION} majors at once.`
+        ? t('compare.selection.limit').replace('{max}', String(MAX_COMPARE_SELECTION))
         : null
     )
   }
 
   return (
     <div className="space-y-8 md:space-y-10">
-      <SectionHeader title="Compare" subtitle="Compare majors with real process-scoped metrics, trends, and demand snapshots." />
+      <SectionHeader title={t('compare.title')} subtitle={t('compare.subtitle')} />
 
       <section className="space-y-3 rounded-card border border-primary/10 bg-background/40 p-3 shadow-soft md:space-y-4">
         <GlobalFilterBar
@@ -398,25 +403,25 @@ export function ComparePage() {
           compact
         />
 
-        {majorOptionsQuery.isLoading ? <p className="text-xs text-textSecondary">Loading major options...</p> : null}
+        {majorOptionsQuery.isLoading ? <p className="text-xs text-textSecondary">{t('compare.loadingMajorOptions')}</p> : null}
         {majorOptionsQuery.errorMessage ? <p className="text-xs text-danger">{majorOptionsQuery.errorMessage}</p> : null}
       </section>
       {selected.length === 0 ? (
         <HighlightBanner
           icon="◎"
-          label="Start Here"
-          value="Select majors to start comparing."
+          label={t('compare.startHere')}
+          value={t('compare.selectMajors')}
         />
       ) : null}
 
       {compareState !== 'empty' ? (
         <section className="space-y-4 rounded-card border border-primary/10 bg-surface p-4 shadow-soft md:space-y-5 md:p-5">
           <SectionHeader
-            title="Current Process Comparison"
-            subtitle="KPIs and ranking for the selected process."
+            title={t('compare.currentProcess.title')}
+            subtitle={t('compare.currentProcess.subtitle')}
           />
           <p className="text-sm text-textSecondary">
-            Showing data for: <span className="font-semibold text-primaryDark">{snapshotProcessLabel}</span>
+            {t('compare.showingDataFor')} <span className="font-semibold text-primaryDark">{snapshotProcessLabel}</span>
           </p>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
@@ -432,9 +437,9 @@ export function ComparePage() {
           </div>
 
           <SectionHeader
-            title="Application Pressure Ranking"
-            subtitle="Ranked view of selected majors by applicant demand, with bars to quickly compare competitiveness."
-            actions={<span className="text-xs text-textSecondary" title="Application pressure ranking orders selected majors by applicant volume and trend shift between the latest two processes.">ⓘ Ranking info</span>}
+            title={t('compare.ranking.title')}
+            subtitle={t('compare.ranking.subtitle')}
+            actions={<span className="text-xs text-textSecondary" title={t('compare.ranking.infoTooltip')}>{t('compare.ranking.info')}</span>}
           />
 
           {showLoadingFeedback ? (
@@ -446,10 +451,10 @@ export function ComparePage() {
             </div>
           ) : null}
 
-          {compareState === 'loading' && !showLoadingFeedback ? <p className="text-sm text-textSecondary">Loading ranking metrics...</p> : null}
-          {compareState === 'error' ? <p className="text-sm text-danger">Could not load ranking metrics for the selected majors.</p> : null}
+          {compareState === 'loading' && !showLoadingFeedback ? <p className="text-sm text-textSecondary">{t('compare.ranking.loadingMetrics')}</p> : null}
+          {compareState === 'error' ? <p className="text-sm text-danger">{t('compare.ranking.error')}</p> : null}
           {compareState === 'partial' ? (
-            <p className="text-sm text-textSecondary">Some majors failed to load ({partialErrorLabels}). Available ranking data is still shown.</p>
+            <p className="text-sm text-textSecondary">{t('compare.ranking.partial').replace('{labels}', partialErrorLabels)}</p>
           ) : null}
 
           {!showLoadingFeedback && rankedRows.length > 0 ? <DataTable columns={rankingColumns} rows={rankedRows} getRowKey={(row) => row.id} /> : null}
@@ -459,29 +464,29 @@ export function ComparePage() {
       {compareState !== 'empty' ? (
         <section className="space-y-3 rounded-card border border-primary/10 bg-background/45 p-4 shadow-soft md:p-5">
           <SectionHeader
-            title="Trends Across Processes"
-            subtitle="Use this view to understand how selected majors evolve over time."
-            actions={<MetricSelector value={trendMetric} onChange={(value) => setTrendMetric(value as TrendMetricKey)} options={METRIC_OPTIONS} variant="segmented" />}
+            title={t('compare.trends.title')}
+            subtitle={t('compare.trends.subtitle')}
+            actions={<MetricSelector value={trendMetric} onChange={(value) => setTrendMetric(value as TrendMetricKey)} options={metricOptions} variant="segmented" />}
           />
-          <ChartCard title="Trend Explorer">
+          <ChartCard title={t('compare.trends.explorer')}>
             {showLoadingFeedback ? (
               <div className="space-y-3">
                 <Skeleton className="h-64 w-full" />
                 <Skeleton className="h-4 w-2/3" />
               </div>
             ) : trendExplorerData.length === 0 || trendSeries.length === 0 ? (
-              <p className="text-sm text-textSecondary">No trend history available for the current selection.</p>
+              <p className="text-sm text-textSecondary">{t('compare.trends.empty')}</p>
             ) : (
               <>
                 <LineChartAdapter data={trendExplorerData} series={trendSeries} yAxisDomain={trendYAxisDomain} showLegend />
-                <p className="mt-3 text-xs text-textSecondary">This chart is the only multi-process view on this page.</p>
+                <p className="mt-3 text-xs text-textSecondary">{t('compare.trends.note')}</p>
               </>
             )}
           </ChartCard>
         </section>
       ) : null}
 
-      {compareState === 'empty' ? <p className="text-sm text-textSecondary">Select one or more majors to begin comparison.</p> : null}
+      {compareState === 'empty' ? <p className="text-sm text-textSecondary">{t('compare.empty')}</p> : null}
     </div>
   )
 }

@@ -12,21 +12,11 @@ import {
   type ChartSeries,
   type SelectOption,
 } from '../components/design-system'
-
-const metricOptions: SelectOption[] = [
-  { value: 'cutoff', label: 'Cutoff Score' },
-  { value: 'applicants', label: 'Applicants' },
-  { value: 'admitted', label: 'Admitted' },
-]
+import { useI18n } from '../lib/i18n'
 
 const dateRangeOptions: SelectOption[] = [
   { value: '2020-2024', label: '2020-2024' },
   { value: '2022-2026', label: '2022-2026' },
-]
-
-const series: ChartSeries[] = [
-  { key: 'cs', label: 'Computer Science', color: '#8f5658' },
-  { key: 'se', label: 'Software Engineering', color: '#2e8b57' },
 ]
 
 const data: ChartPoint[] = [
@@ -37,6 +27,19 @@ const data: ChartPoint[] = [
 ]
 
 export function TrendsPage() {
+  const { t } = useI18n()
+
+  const metricOptions: SelectOption[] = [
+    { value: 'cutoff', label: t('trends.metric.cutoff') },
+    { value: 'applicants', label: t('trends.metric.applicants') },
+    { value: 'admitted', label: t('trends.metric.admitted') },
+  ]
+
+  const series: ChartSeries[] = [
+    { key: 'cs', label: t('trends.entity.computerScience'), color: '#8f5658' },
+    { key: 'se', label: t('trends.entity.softwareEngineering'), color: '#2e8b57' },
+  ]
+
   const [entityType, setEntityType] = useState('major')
   const [metric, setMetric] = useState('cutoff')
   const [dateRange, setDateRange] = useState('2022-2026')
@@ -44,7 +47,7 @@ export function TrendsPage() {
 
   return (
     <div className="space-y-5">
-      <SectionHeader title="Trends" subtitle="Analyze changes over time across entity types and selected metrics." />
+      <SectionHeader title={t('trends.title')} subtitle={t('trends.subtitle')} />
 
       <AnalyticsFilterBar
         entityType={entityType}
@@ -59,7 +62,7 @@ export function TrendsPage() {
         onEntitySearchChange={setEntitySearch}
       />
 
-      <ChartCard title="Multi-Series Trend" actions={<InlineAnnotation label={metric.toUpperCase()} />}>
+      <ChartCard title={t('trends.chart.multiSeries')} actions={<InlineAnnotation label={metric.toUpperCase()} />}>
         <LineChartAdapter data={data} series={series} />
         <div className="mt-3">
           <ChartLegend series={series} />
@@ -68,21 +71,21 @@ export function TrendsPage() {
 
       <div className="grid gap-4 md:grid-cols-3">
         <TrendSummaryCard
-          title="Biggest Increase"
-          value="Computer Science"
-          description="+4 points in cutoff since 2022."
+          title={t('trends.card.biggestIncrease')}
+          value={t('trends.entity.computerScience')}
+          description={t('trends.card.increaseDescription')}
           direction="up"
         />
         <TrendSummaryCard
-          title="Biggest Decrease"
-          value="Economics"
-          description="-3 points after 2023 peak."
+          title={t('trends.card.biggestDecrease')}
+          value={t('trends.entity.economics')}
+          description={t('trends.card.decreaseDescription')}
           direction="down"
         />
         <TrendSummaryCard
-          title="Most Stable"
-          value="Software Engineering"
-          description="Low variance across selected range."
+          title={t('trends.card.mostStable')}
+          value={t('trends.entity.softwareEngineering')}
+          description={t('trends.card.stableDescription')}
           direction="neutral"
         />
       </div>

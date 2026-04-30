@@ -1,3 +1,4 @@
+import { useI18n } from '../../../lib/i18n'
 import { Select } from './select'
 import type { SelectOption } from './types'
 
@@ -7,12 +8,21 @@ type EntityTypeSelectorProps = {
   options?: SelectOption[]
 }
 
-const defaultEntityTypeOptions: SelectOption[] = [
-  { value: 'major', label: 'Major' },
-  { value: 'faculty', label: 'Faculty' },
-  { value: 'area', label: 'Area' },
-]
+export function EntityTypeSelector({ value, onChange, options }: EntityTypeSelectorProps) {
+  const { t } = useI18n()
 
-export function EntityTypeSelector({ value, onChange, options = defaultEntityTypeOptions }: EntityTypeSelectorProps) {
-  return <Select label="Entity Type" value={value} options={options} onChange={(event) => onChange(event.target.value)} />
+  const defaultEntityTypeOptions: SelectOption[] = [
+    { value: 'major', label: t('results.major') },
+    { value: 'faculty', label: t('admin.faculties.title') },
+    { value: 'area', label: t('common.area') },
+  ]
+
+  return (
+    <Select
+      label={t('analytics.entityType')}
+      value={value}
+      options={options ?? defaultEntityTypeOptions}
+      onChange={(event) => onChange(event.target.value)}
+    />
+  )
 }

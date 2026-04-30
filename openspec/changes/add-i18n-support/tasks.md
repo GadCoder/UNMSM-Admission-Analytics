@@ -1,36 +1,25 @@
-## 1. i18n foundation and dependencies
+## 1. i18n foundation and contracts
 
-- [x] 1.1 Add `i18next` and `react-i18next` dependencies in `frontend/package.json`.
-- [x] 1.2 Create frontend i18n bootstrap module and register it at app startup.
-- [x] 1.3 Configure supported locales (`es`, `en`) and set default/fallback locale to Spanish (`es`).
+- [x] 1.1 Add `frontend/src/lib/i18n/` runtime primitives (supported locale registry, translator utility, fallback resolution, and exported i18n types).
+- [x] 1.2 Add locale resource dictionaries with Spanish (`es`) as complete baseline and at least one secondary locale scaffold.
+- [x] 1.3 Add missing-key handling behavior that resolves active locale -> default locale (`es`) -> explicit fallback token.
 
-## 2. Locale resolution and persistence
+## 2. App bootstrap and persistence wiring
 
-- [x] 2.1 Implement locale resolution order: persisted preference -> supported browser locale -> `es`.
-- [x] 2.2 Persist user-selected locale in client storage and restore it on reload.
-- [x] 2.3 Add guard logic for invalid/unsupported stored locales to prevent broken initialization.
+- [x] 2.1 Wire an i18n provider into root frontend provider composition so pages/components can access `locale`, `setLocale`, and translation lookup.
+- [x] 2.2 Implement startup locale resolution with Spanish default when no valid preference exists.
+- [x] 2.3 Persist locale selection in local storage and restore it on reload with validation against supported locales.
 
-## 3. Translation resource structure
+## 3. Shell localization and language switching
 
-- [x] 3.1 Create locale resource directories for Spanish and English (for example `common`, `shell`, `admin` namespaces).
-- [x] 3.2 Add baseline translation keys for shell navigation, top bar, shared actions, and admin labels/messages.
-- [x] 3.3 Add fallback-safe handling for missing translation keys so UI never renders blank text.
+- [x] 3.1 Add a shell-level language switcher control in the app layout and connect it to runtime locale updates.
+- [x] 3.2 Migrate shell navigation and top-bar user-facing labels from hardcoded copy to translation keys.
+- [x] 3.3 Ensure locale changes rerender shell/core translatable text without full page reload.
 
-## 4. Shell and shared component integration
+## 4. Verification and regression safety
 
-- [x] 4.1 Add a shell-level language selector that switches between `es` and `en` at runtime.
-- [x] 4.2 Replace app shell hard-coded navigation/top bar labels with translation keys.
-- [x] 4.3 Update reusable design-system components to consume translated strings or translation keys instead of hard-coded copy.
+- [x] 4.1 Add/update frontend tests for Spanish default behavior, invalid-locale fallback, runtime switching, and persisted locale restoration.
+- [x] 4.2 Add/update tests for missing translation key fallback behavior and deterministic output expectations.
+- [x] 4.3 Run frontend verification (`pnpm test` and `pnpm build`) and document any follow-up gaps.
 
-## 5. Admin interface localization
-
-- [x] 5.1 Localize admin catalog management labels, helper text, and action button text.
-- [x] 5.2 Localize admin validation/domain error presentation for active locale.
-- [x] 5.3 Localize bulk upload workflow text including guidance, statuses, and retry/cancel labels.
-
-## 6. Verification and quality gates
-
-- [x] 6.1 Add tests for locale resolution behavior, including Spanish default and persistence behavior.
-- [x] 6.2 Add tests for runtime language switching without full page reload.
-- [x] 6.3 Add translation key coverage validation between `es` and `en` resources.
-- [x] 6.4 Run frontend lint/test/build and resolve any i18n-related regressions before merge.
+Follow-up gaps: Vite reports the main bundle is above the default chunk-size warning threshold; no functional blockers for i18n, but chunk splitting can be addressed in a separate performance pass.

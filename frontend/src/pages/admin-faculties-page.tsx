@@ -1,5 +1,4 @@
 import { useEffect, useState, type FormEvent } from 'react'
-import { useTranslation } from 'react-i18next'
 
 import { Button } from '../components/design-system'
 import {
@@ -11,9 +10,10 @@ import {
   type AdminFaculty,
 } from '../features/admin/api/admin-api'
 import { getApiErrorMessage } from '../features/admin/model/error-message'
+import { useI18n } from '../lib/i18n'
 
 export function AdminFacultiesPage() {
-  const { t } = useTranslation(['admin', 'common'])
+  const { t } = useI18n()
   const [faculties, setFaculties] = useState<AdminFaculty[]>([])
   const [areas, setAreas] = useState<AdminArea[]>([])
   const [name, setName] = useState('')
@@ -45,7 +45,7 @@ export function AdminFacultiesPage() {
         if (!active) {
           return
         }
-        setErrorMessage(getApiErrorMessage(error, t('admin:faculties.errors.load')))
+        setErrorMessage(getApiErrorMessage(error, t('admin.faculties.error.load')))
       }
     }
 
@@ -54,7 +54,7 @@ export function AdminFacultiesPage() {
     return () => {
       active = false
     }
-  }, [t])
+  }, [])
 
   const onSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault()
@@ -62,7 +62,7 @@ export function AdminFacultiesPage() {
 
     const parsedAreaId = Number(academicAreaId)
     if (!Number.isInteger(parsedAreaId) || parsedAreaId <= 0) {
-      setErrorMessage(t('admin:faculties.errors.areaRequired'))
+      setErrorMessage(t('admin.faculties.error.areaRequired'))
       return
     }
 
@@ -88,7 +88,7 @@ export function AdminFacultiesPage() {
       setEditingId(null)
       await refresh()
     } catch (error) {
-      setErrorMessage(getApiErrorMessage(error, t('admin:faculties.errors.save')))
+      setErrorMessage(getApiErrorMessage(error, t('admin.faculties.error.save')))
     }
   }
 
@@ -101,18 +101,18 @@ export function AdminFacultiesPage() {
 
   return (
     <section className="space-y-4 rounded-card border border-primary/10 bg-surface p-4 shadow-soft">
-      <h2 className="text-lg font-semibold text-textPrimary">{t('admin:faculties.title')}</h2>
+      <h2 className="text-lg font-semibold text-textPrimary">{t('admin.faculties.title')}</h2>
       <form className="grid gap-3 md:grid-cols-4" onSubmit={onSubmit}>
         <input
           className="rounded-card border border-primary/20 px-3 py-2 text-sm"
-          placeholder={t('admin:faculties.placeholders.name')}
+          placeholder={t('admin.faculties.placeholder.name')}
           value={name}
           onChange={(event) => setName(event.target.value)}
           required
         />
         <input
           className="rounded-card border border-primary/20 px-3 py-2 text-sm"
-          placeholder={t('admin:faculties.placeholders.slug')}
+          placeholder={t('admin.faculties.placeholder.slug')}
           value={slug}
           onChange={(event) => setSlug(event.target.value)}
           required
@@ -123,7 +123,7 @@ export function AdminFacultiesPage() {
           onChange={(event) => setAcademicAreaId(event.target.value)}
           required
         >
-          <option value="">{t('admin:faculties.placeholders.selectArea')}</option>
+          <option value="">{t('admin.faculties.selectArea')}</option>
           {areas.map((area) => (
             <option key={area.id} value={area.id}>
               {area.name}
@@ -132,7 +132,7 @@ export function AdminFacultiesPage() {
         </select>
         <div className="flex gap-2">
           <Button variant="primary" type="submit">
-            {selectedFaculty ? t('admin:faculties.form.update') : t('admin:faculties.form.create')}
+            {selectedFaculty ? t('admin.faculties.update') : t('admin.faculties.create')}
           </Button>
           {selectedFaculty ? (
             <Button
@@ -144,7 +144,7 @@ export function AdminFacultiesPage() {
                 setAcademicAreaId('')
               }}
             >
-              {t('common:actions.cancel')}
+              {t('common.cancel')}
             </Button>
           ) : null}
         </div>
@@ -155,11 +155,11 @@ export function AdminFacultiesPage() {
         <table className="min-w-full border-collapse text-sm">
           <thead>
             <tr className="border-b border-primary/15 text-left text-textSecondary">
-              <th className="py-2 pr-3">{t('common:table.id')}</th>
-              <th className="py-2 pr-3">{t('common:table.name')}</th>
-              <th className="py-2 pr-3">{t('admin:faculties.table.areaId')}</th>
-              <th className="py-2 pr-3">{t('common:table.slug')}</th>
-              <th className="py-2">{t('common:table.actions')}</th>
+               <th className="py-2 pr-3">{t('admin.faculties.column.id')}</th>
+               <th className="py-2 pr-3">{t('admin.faculties.column.name')}</th>
+               <th className="py-2 pr-3">{t('admin.faculties.column.areaId')}</th>
+               <th className="py-2 pr-3">{t('admin.faculties.column.slug')}</th>
+               <th className="py-2">{t('admin.faculties.column.actions')}</th>
             </tr>
           </thead>
           <tbody>
@@ -171,7 +171,7 @@ export function AdminFacultiesPage() {
                 <td className="py-2 pr-3">{faculty.slug}</td>
                 <td className="py-2">
                   <Button type="button" variant="ghost" onClick={() => startEdit(faculty)}>
-                    {t('common:actions.edit')}
+                    {t('common.edit')}
                   </Button>
                 </td>
               </tr>
