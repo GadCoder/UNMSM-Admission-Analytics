@@ -10,6 +10,7 @@ _HEADER_ALIASES = {
     "apellidos": "last_names",
     "names": "given_names",
     "nombres": "given_names",
+    "name": "full_name",
     "major": "major_name",
     "carrera": "major_name",
     "score": "score",
@@ -18,6 +19,7 @@ _HEADER_ALIASES = {
     "merito": "merit",
     "observation": "observation",
     "observacion": "observation",
+    "status": "observation",
     "modality": "modality_name",
     "modalidad": "modality_name",
 }
@@ -29,7 +31,7 @@ def _clean(value: str | None) -> str:
 
 def _parse_score(value: str | None) -> str | None:
     value = _clean(value).replace(",", ".")
-    if not value:
+    if not value or value.lower().startswith("articulo"):
         return None
     try:
         return f"{Decimal(value):.4f}"
@@ -39,7 +41,7 @@ def _parse_score(value: str | None) -> str | None:
 
 def _parse_merit(value: str | None) -> int | None:
     value = _clean(value)
-    if not value:
+    if not value or value.lower().startswith("articulo"):
         return None
     try:
         merit = int(value)
@@ -52,13 +54,22 @@ def _parse_merit(value: str | None) -> int | None:
 
 def _status(source_name: str, observation: str, score: str | None) -> str:
     observation_upper = observation.upper()
-    if not score or any(word in observation_upper for word in ("AUSENTE", "AUSENT", "NO SE PRESENT")):
-        return "absent"
     if any(word in observation_upper for word in ("NO INGRES", "NO ADMIT", "NO ALCANZ")):
         return "not_admitted"
+    if "ALCANZ" in observation_upper or "INGRES" in observation_upper:
+        return "admitted"
+    if not score or any(word in observation_upper for word in ("AUSENTE", "AUSENT", "NO SE PRESENT")):
+        return "absent"
     if source_name.lower().startswith("ingres"):
         return "admitted"
     return "postulant"
+
+
+def _split_full_name(value: str) -> tuple[str, str]:
+    last_names, separator, given_names = value.partition(",")
+    if not separator:
+        return value, ""
+    return _clean(last_names), _clean(given_names)
 
 
 def parse_csv(handle: TextIO, *, source_name: str) -> tuple[list[dict], list[str]]:
@@ -72,7 +83,11 @@ def parse_csv(handle: TextIO, *, source_name: str) -> tuple[list[dict], list[str
         for header, canonical in _HEADER_ALIASES.items()
         if header in fields
     }
-    required = {"candidate_code", "last_names", "given_names", "major_name"}
+    required = {"candidate_code", "major_name"}
+    has_split_name = {"last_names", "given_names"}.issubset(normalized_fields)
+    has_full_name = "full_name" in normalized_fields
+    if not has_split_name and not has_full_name:
+        return [], ["missing columns: given_names, last_names"]
     missing = required - normalized_fields.keys()
     if missing:
         return [], [f"missing columns: {', '.join(sorted(missing))}"]
@@ -84,6 +99,13 @@ def parse_csv(handle: TextIO, *, source_name: str) -> tuple[list[dict], list[str
             key: _clean(raw_row.get(field))
             for key, field in normalized_fields.items()
         }
+        if has_full_name:
+            values["last_names"], values["given_names"] = _split_full_name(
+                values.get("full_name", "")
+            )
+        if not values.get("last_names") or not values.get("given_names"):
+            errors.append(f"row {row_number}: invalid full name")
+            continue
         if not values.get("candidate_code"):
             errors.append(f"row {row_number}: missing candidate code")
             continue

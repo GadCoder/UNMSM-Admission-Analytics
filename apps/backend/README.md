@@ -23,6 +23,17 @@ uv run python manage.py migrate
 uv run python manage.py runserver
 ```
 
+Import one admission process from the separate `Resultados-UNMSM` repository:
+
+```bash
+uv run python manage.py import_results /path/to/Resultados-UNMSM/2026/26-2 --dry-run
+uv run python manage.py import_results /path/to/Resultados-UNMSM/2026/26-2
+```
+
+The importer supports the historical Spanish CSV schema and the newer combined
+name schema. It replaces existing results for the selected process and reports
+duplicate/rejected rows instead of silently creating inconsistent records.
+
 The API health check is available at `/health/`. The versioned API root is
 available at `/api/v1/` and advertises these read-only resources:
 

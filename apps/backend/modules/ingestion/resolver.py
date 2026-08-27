@@ -20,8 +20,19 @@ def resolve_major(area_code: str, source_name: str) -> dict:
     if area is None:
         raise ValueError(f"unknown academic area: {area_code}")
 
+    aliases = {
+        "CIENCIAS DE LOS ALIMENTOS": "CIENCIA DE LOS ALIMENTOS",
+        "INGENIERIA DEL AGUA Y TECNOLOGIAS DE TRATAMIENTO": "INGENIERIA DEL AGUA Y TECNOLOGIAS DE TRATAMIENTOS",
+        "INGENIERIA DE INTELIGENCIA ARTIFICIAL": "INTELIGENCIA ARTIFICIAL",
+        "INGENIERIA LOGISTICA Y CADENA DE SUMISTRO DIGITAL": "INGENIERIA LOGISTICA Y CADENA DE SUMINISTRO DIGITAL",
+        "TEC MED LAB CLINICO Y ANATOMIA PATOLOGICA": "TECNOLOGIA MEDICA LABORATORIO CLINICO Y ANATOMIA PATOLOGICA",
+        "TEC MED RADIOLOGIA": "TECNOLOGIA MEDICA RADIOLOGIA",
+        "TEC MED TERAPIA FISICA Y REHABILITACION": "TECNOLOGIA MEDICA TERAPIA FISICA Y REHABILITACION",
+        "TEC MED TERAPIA OCUPACIONAL": "TECNOLOGIA MEDICA TERAPIA OCUPACIONAL",
+    }
     source_key = _key(source_name)
     source_key = re.sub(r" +(LIMA|HUARAL|S J L)$", "", source_key)
+    source_key = aliases.get(source_key, source_key)
     major = next(
         (
             item

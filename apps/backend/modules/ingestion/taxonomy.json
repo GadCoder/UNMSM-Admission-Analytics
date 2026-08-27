@@ -715,6 +715,83 @@
       "code": "M81",
       "faculty_slug": "facultad-de-ciencias-sociales",
       "academic_area_slug": "E"
+    },
+    {
+      "name": "Ciencia de los Alimentos",
+      "slug": "ciencia-de-los-alimentos",
+      "faculty_slug": "facultad-de-farmacia-y-bioquimica",
+      "academic_area_slug": "A",
+      "code": "M82"
+    },
+    {
+      "name": "Educación Inicial",
+      "slug": "educación-inicial",
+      "faculty_slug": "facultad-de-educacion",
+      "academic_area_slug": "E",
+      "code": "M83"
+    },
+    {
+      "name": "Educación Primaria",
+      "slug": "educación-primaria",
+      "faculty_slug": "facultad-de-educacion",
+      "academic_area_slug": "E",
+      "code": "M84"
+    },
+    {
+      "name": "Educación Secundaria",
+      "slug": "educación-secundaria",
+      "faculty_slug": "facultad-de-educacion",
+      "academic_area_slug": "E",
+      "code": "M85"
+    },
+    {
+      "name": "Ingeniería del Agua y Tecnologías de Tratamientos",
+      "slug": "ingeniería-del-agua-y-tecnologías-de-tratamientos",
+      "faculty_slug": "facultad-de-quimica-e-ingenieria-quimica",
+      "academic_area_slug": "C",
+      "code": "M86"
+    },
+    {
+      "name": "Inteligencia Artificial",
+      "slug": "inteligencia-artificial",
+      "faculty_slug": "facultad-de-ingenieria-de-sistemas-e-informatica",
+      "academic_area_slug": "C",
+      "code": "M87"
+    },
+    {
+      "name": "Ingeniería Logística y Cadena de Suministro Digital",
+      "slug": "ingeniería-logística-y-cadena-de-suministro-digital",
+      "faculty_slug": "facultad-de-ingenieria-industrial",
+      "academic_area_slug": "C",
+      "code": "M88"
+    },
+    {
+      "name": "Tecnología Médica — Laboratorio Clínico y Anatomía Patológica",
+      "slug": "tecnología-médica-—-laboratorio-clínico-y-anatomía-patológica",
+      "faculty_slug": "facultad-de-medicina-san-fernando",
+      "academic_area_slug": "A",
+      "code": "M89"
+    },
+    {
+      "name": "Tecnología Médica — Radiología",
+      "slug": "tecnología-médica-—-radiología",
+      "faculty_slug": "facultad-de-medicina-san-fernando",
+      "academic_area_slug": "A",
+      "code": "M90"
+    },
+    {
+      "name": "Tecnología Médica — Terapia Física y Rehabilitación",
+      "slug": "tecnología-médica-—-terapia-física-y-rehabilitación",
+      "faculty_slug": "facultad-de-medicina-san-fernando",
+      "academic_area_slug": "A",
+      "code": "M91"
+    },
+    {
+      "name": "Tecnología Médica — Terapia Ocupacional",
+      "slug": "tecnología-médica-—-terapia-ocupacional",
+      "faculty_slug": "facultad-de-medicina-san-fernando",
+      "academic_area_slug": "A",
+      "code": "M92"
     }
   ]
 }
