@@ -23,7 +23,7 @@ Admission Analytics.
 | Status | Milestone | Deliverables |
 | --- | --- | --- |
 | Completed | 1. Monorepo foundation | Repository conventions, environment configuration, and PostgreSQL `compose.yml`. Application Dockerfiles will be added with their respective scaffolds. |
-| Not started | 2. Backend scaffold | Django project, modular settings, DRF, API routing, and health endpoint. |
+| Completed | 2. Backend scaffold | Django project, modular settings, DRF, API routing, health endpoint, dependency management, and a backend container. |
 | Not started | 3. Domain model | Academic hierarchy, admission processes, modalities, results, migrations, and Django Admin. |
 | Not started | 4. Initial API | Catalog and process resources plus a latest-process analytics overview. |
 | Not started | 5. Web scaffold | React + TypeScript application, routing, and API-client foundation. |
