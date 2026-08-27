@@ -1,0 +1,38 @@
+[project]
+name = "unmsm-admission-analytics-backend"
+version = "0.1.0"
+description = "Django API for UNMSM Admission Analytics"
+readme = "README.md"
+requires-python = ">=3.14,<3.15"
+dependencies = [
+    "Django>=6.1,<6.2",
+    "django-cors-headers>=4.7,<5.0",
+    "djangorestframework>=3.16,<4.0",
+    "psycopg[binary]>=3.2,<4.0",
+]
+
+[build-system]
+requires = ["setuptools>=75"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["config*", "modules*"]
+
+[dependency-groups]
+dev = [
+    "pytest>=8.3,<9.0",
+    "pytest-django>=4.11,<5.0",
+    "ruff>=0.11,<1.0",
+]
+
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "config.settings"
+python_files = ["test_*.py", "*_tests.py"]
+
+[tool.ruff]
+line-length = 88
+target-version = "py313"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP"]
+ignore = ["E501"]
