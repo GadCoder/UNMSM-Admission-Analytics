@@ -9,10 +9,10 @@ def test_resolve_major_uses_legacy_taxonomy_and_normalizes_accents():
     assert result == {
         "academic_area": {"code": "C", "name": "Ingenierías"},
         "faculty": {
-            "code": "facultad-de-ingenieria-electronica-y-electrica",
+            "code": "F12",
             "name": "Facultad de Ingeniería Electrónica y Eléctrica",
         },
-        "major": {"code": "ingenieria-mecatronica", "name": "Ingeniería Mecatrónica"},
+        "major": {"code": "M42", "name": "Ingeniería Mecatrónica"},
     }
 
 

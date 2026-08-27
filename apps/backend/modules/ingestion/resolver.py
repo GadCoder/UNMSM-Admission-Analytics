@@ -41,6 +41,6 @@ def resolve_major(area_code: str, source_name: str) -> dict:
     )
     return {
         "academic_area": {"code": area["slug"], "name": area["name"]},
-        "faculty": {"code": faculty["slug"], "name": faculty["name"]},
-        "major": {"code": major["slug"], "name": major["name"]},
+        "faculty": {"code": faculty["code"], "name": faculty["name"]},
+        "major": {"code": major["code"], "name": major["name"]},
     }
