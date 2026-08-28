@@ -46,6 +46,7 @@ class ApiRootView(APIView):
                     "modalities": "/api/v1/modalities/",
                     "processes": "/api/v1/processes/",
                     "latest_overview": "/api/v1/analytics/latest/",
+                    "comparative_overview": "/api/v1/analytics/overview/",
                 },
             }
         )
