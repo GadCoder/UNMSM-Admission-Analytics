@@ -37,3 +37,35 @@ def latest_process_overview():
     )
 
     return {"process": process, "majors": majors, **totals}
+
+
+def process_overviews(process_ids):
+    processes = AdmissionProcess.objects.filter(is_published=True, id__in=process_ids)
+    processes_by_id = {process.id: process for process in processes}
+    overviews = []
+    for process_id in process_ids:
+        process = processes_by_id[process_id]
+        results = AdmissionResult.objects.filter(process=process)
+        totals = results.aggregate(
+            total_results=Count("id"),
+            admitted_count=Count(
+                "id", filter=Q(status=AdmissionResult.Status.ADMITTED)
+            ),
+            absent_count=Count("id", filter=Q(status=AdmissionResult.Status.ABSENT)),
+            average_score=Avg("score"),
+            highest_score=Max("score"),
+        )
+        majors = list(
+            results.values("major_id", "major__code", "major__name")
+            .annotate(
+                total_results=Count("id"),
+                admitted_count=Count(
+                    "id", filter=Q(status=AdmissionResult.Status.ADMITTED)
+                ),
+                absent_count=Count("id", filter=Q(status=AdmissionResult.Status.ABSENT)),
+                average_score=Avg("score"),
+            )
+            .order_by("major__code")
+        )
+        overviews.append({"process": process, "majors": majors, **totals})
+    return overviews

@@ -11,7 +11,10 @@ from modules.admission_processes.api_views import (
     PublishedProcessDetailView,
     PublishedProcessListView,
 )
-from modules.analytics.api_views import LatestProcessOverviewView
+from modules.analytics.api_views import (
+    ComparativeOverviewView,
+    LatestProcessOverviewView,
+)
 
 urlpatterns = [
     path("", ApiRootView.as_view(), name="api-root"),
@@ -22,4 +25,5 @@ urlpatterns = [
     path("processes/", PublishedProcessListView.as_view(), name="processes"),
     path("processes/<int:pk>/", PublishedProcessDetailView.as_view(), name="process-detail"),
     path("analytics/latest/", LatestProcessOverviewView.as_view(), name="latest-overview"),
+    path("analytics/overview/", ComparativeOverviewView.as_view(), name="comparative-overview"),
 ]

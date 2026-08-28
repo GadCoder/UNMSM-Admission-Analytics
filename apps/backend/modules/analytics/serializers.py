@@ -27,3 +27,7 @@ class ProcessOverviewSerializer(serializers.Serializer):
         max_digits=8, decimal_places=4, allow_null=True
     )
     majors = MajorOverviewSerializer(many=True)
+
+
+class ComparativeOverviewSerializer(serializers.Serializer):
+    processes = ProcessOverviewSerializer(many=True)
