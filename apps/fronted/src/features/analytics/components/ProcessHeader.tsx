@@ -1,5 +1,5 @@
-import type { ProcessOverview } from "../../shared/api/analytics.types";
-import styles from "./DashboardPage.module.css";
+import type { ProcessOverview } from "../api/analytics.types";
+import styles from "../pages/DashboardPage.module.css";
 
 type ProcessHeaderProps = {
   process: ProcessOverview["process"];

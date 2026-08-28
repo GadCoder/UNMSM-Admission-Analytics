@@ -1,4 +1,4 @@
-import styles from "./DashboardPage.module.css";
+import styles from "../pages/DashboardPage.module.css";
 
 type KpiProps = {
   label: string;

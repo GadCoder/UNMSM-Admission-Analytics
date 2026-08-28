@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 
-import { apiFetch } from "./client";
+import { apiFetch } from "../../../shared/api/client";
 import type { AdmissionProcess, ComparativeOverview } from "./analytics.types";
 
 export function getPublishedProcesses(): Promise<AdmissionProcess[]> {

@@ -1,9 +1,9 @@
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { useAnalyticsOverview, usePublishedProcesses } from "../../shared/api/analytics";
-import { DashboardContent } from "./DashboardContent";
-import { DashboardControls } from "./DashboardControls";
+import { useAnalyticsOverview, usePublishedProcesses } from "../api/analytics";
+import { DashboardContent } from "../components/DashboardContent";
+import { DashboardControls } from "../components/DashboardControls";
 import styles from "./DashboardPage.module.css";
 
 export function DashboardPage() {

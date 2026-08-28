@@ -1,6 +1,6 @@
-import type { AdmissionProcess, ProcessOverview } from "../../shared/api/analytics.types";
-import { formatNumber } from "./formatters";
-import styles from "./DashboardPage.module.css";
+import type { AdmissionProcess, ProcessOverview } from "../api/analytics.types";
+import { formatNumber } from "../utils/formatters";
+import styles from "../pages/DashboardPage.module.css";
 
 type ComparisonSummaryProps = {
   comparisons: ProcessOverview[];

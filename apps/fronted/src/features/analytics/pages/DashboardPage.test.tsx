@@ -5,10 +5,10 @@ import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DashboardPage } from "./DashboardPage";
-import * as api from "../../shared/api/analytics";
+import * as api from "../api/analytics";
 
-vi.mock("../../shared/api/analytics", async (importOriginal) => ({
-  ...await importOriginal<typeof import("../../shared/api/analytics")>(),
+vi.mock("../api/analytics", async (importOriginal) => ({
+  ...await importOriginal<typeof import("../api/analytics")>(),
   usePublishedProcesses: vi.fn(),
   useAnalyticsOverview: vi.fn(),
 }));

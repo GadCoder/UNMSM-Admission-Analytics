@@ -1,5 +1,5 @@
-import type { AdmissionProcess } from "../../shared/api/analytics.types";
-import styles from "./DashboardPage.module.css";
+import type { AdmissionProcess } from "../api/analytics.types";
+import styles from "../pages/DashboardPage.module.css";
 
 type DashboardControlsProps = {
   processes: AdmissionProcess[];

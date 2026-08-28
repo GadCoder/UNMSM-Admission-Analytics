@@ -1,7 +1,7 @@
-import type { ProcessOverview } from "../../shared/api/analytics.types";
-import { formatNumber } from "./formatters";
+import type { ProcessOverview } from "../api/analytics.types";
+import { formatNumber } from "../utils/formatters";
 import { Kpi } from "./Kpi";
-import styles from "./DashboardPage.module.css";
+import styles from "../pages/DashboardPage.module.css";
 
 type KpiGridProps = {
   overview: ProcessOverview;
