@@ -67,7 +67,7 @@ describe("DashboardPage", () => {
     expect(screen.getByRole("img", { name: /comparación de postulantes/i })).toBeInTheDocument();
     expect(screen.getAllByRole("listitem")[1]).toHaveTextContent("Proceso 2025-I: 80 postulantes, 16 admitidos, 8 ausentes");
     expect(screen.getByRole("heading", { name: "Principales carreras por postulantes" })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /principales carreras/i })).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toBeInTheDocument();
     expect(screen.getAllByText("Ingeniería").length).toBeGreaterThan(1);
     expect(screen.queryByText("ING")).not.toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Postulantes" })).toBeInTheDocument();
@@ -99,7 +99,7 @@ describe("DashboardPage", () => {
     expect(within(table).queryByText("Ingeniería")).not.toBeInTheDocument();
 
     await user.clear(filter);
-    await user.selectOptions(screen.getByRole("combobox", { name: "Ordenar carreras" }), "average_score");
+    await user.selectOptions(screen.getByRole("combobox", { name: "Ordenar carreras" }), "average_score-desc");
     const rows = screen.getAllByRole("row");
     expect(rows[1]).toHaveTextContent("Derecho");
   });

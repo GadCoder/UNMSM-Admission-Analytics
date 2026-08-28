@@ -89,6 +89,14 @@ export function DashboardPage() {
               if (key === "academicArea") next.delete("faculty");
               setParams(next);
             }}
+            onReset={() => {
+              const next = new URLSearchParams(params);
+              next.delete("compare");
+              next.delete("academic_area");
+              next.delete("faculty");
+              next.delete("modality");
+              setParams(next);
+            }}
           />
           {overviewQuery.isPending && (
             <p role="status" className={styles.state}>Cargando indicadores…</p>
