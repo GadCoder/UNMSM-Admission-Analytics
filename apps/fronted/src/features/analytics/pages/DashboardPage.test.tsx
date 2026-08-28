@@ -91,6 +91,19 @@ describe("DashboardPage", () => {
     expect(screen.getByRole("columnheader", { name: "Postulantes" })).toBeInTheDocument();
   });
 
+  it("opens comparison independently and applies selected processes", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByRole("button", { name: /Comparar procesos/ }));
+    expect(screen.queryByText("Comparar con")).not.toBeInTheDocument();
+    await user.click(screen.getByRole("checkbox", { name: "Proceso 2025-I" }));
+    expect(screen.getByTestId("location")).not.toHaveTextContent("compare=2");
+    await user.click(screen.getByRole("button", { name: "Aplicar comparación" }));
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=1&compare=2"));
+    expect(screen.getByRole("button", { name: "Quitar comparación Proceso 2025-I" })).toBeInTheDocument();
+  });
+
   it("filters faculty options by the selected academic area", async () => {
     const user = userEvent.setup();
     renderPage("/?academic_area=SALUD");
