@@ -26,7 +26,7 @@ export function DashboardContent({
         processById={processById}
       />
       <ProcessComparisonChart overviews={[primary, ...comparisons]} />
-      <MajorDemandRanking overview={primary} />
+      <MajorDemandRanking overview={primary} comparisons={comparisons} />
       <MajorBreakdown overview={primary} />
     </>
   );
