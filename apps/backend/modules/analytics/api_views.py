@@ -1,4 +1,5 @@
-from drf_spectacular.utils import OpenApiResponse, extend_schema
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_schema
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -25,7 +26,25 @@ class LatestProcessOverviewView(APIView):
 
 
 class ComparativeOverviewView(APIView):
+    max_processes = 6
+
     @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="process",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=True,
+                description="Required comma-separated positive integer process IDs (maximum 6 unique IDs total).",
+            ),
+            OpenApiParameter(
+                name="compare",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Optional comma-separated positive integer process IDs (maximum 6 unique IDs total).",
+            ),
+        ],
         responses={
             200: ComparativeOverviewSerializer,
             400: OpenApiResponse(description="Invalid process ID query parameter."),
@@ -52,6 +71,13 @@ class ComparativeOverviewView(APIView):
             if error:
                 return Response({"detail": error}, status=400)
             process_ids.extend(compare_ids)
+
+        process_ids = list(dict.fromkeys(process_ids))
+        if len(process_ids) > self.max_processes:
+            return Response(
+                {"detail": f"A maximum of {self.max_processes} unique processes may be compared."},
+                status=400,
+            )
 
         published_ids = set(
             AdmissionProcess.objects.filter(

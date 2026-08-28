@@ -161,3 +161,105 @@ def test_comparative_overview_returns_not_found_for_missing_or_unpublished_proce
 
     assert response.status_code == 404
     assert response.json() == {"detail": "Admission process not found or is not published."}
+
+
+@pytest.mark.django_db
+def test_comparative_overview_accepts_comma_separated_process_ids_and_excludes_unrequested(client):
+    processes = [
+        AdmissionProcess.objects.create(year=2025, sequence="25-2"),
+        AdmissionProcess.objects.create(year=2026, sequence="26-1"),
+        AdmissionProcess.objects.create(year=2027, sequence="27-1"),
+    ]
+
+    response = client.get(
+        f"/api/v1/analytics/overview/?process={processes[0].id},{processes[1].id}"
+    )
+
+    assert response.status_code == 200
+    assert [item["process"]["id"] for item in response.json()["processes"]] == [
+        processes[0].id,
+        processes[1].id,
+    ]
+
+
+@pytest.mark.django_db
+def test_comparative_overview_deduplicates_ids_preserving_request_order(client):
+    processes = [
+        AdmissionProcess.objects.create(year=2025, sequence="25-2"),
+        AdmissionProcess.objects.create(year=2026, sequence="26-1"),
+    ]
+
+    response = client.get(
+        f"/api/v1/analytics/overview/?process={processes[1].id},{processes[0].id}"
+        f"&compare={processes[1].id},{processes[0].id}"
+    )
+
+    assert response.status_code == 200
+    assert [item["process"]["id"] for item in response.json()["processes"]] == [
+        processes[1].id,
+        processes[0].id,
+    ]
+
+
+@pytest.mark.django_db
+def test_comparative_overview_rejects_empty_compare(client):
+    process = AdmissionProcess.objects.create(year=2025, sequence="25-2")
+
+    response = client.get(f"/api/v1/analytics/overview/?process={process.id}&compare=")
+
+    assert response.status_code == 400
+    assert "compare" in response.json()["detail"]
+
+
+@pytest.mark.django_db
+def test_comparative_overview_returns_not_found_for_nonexistent_primary_process(client):
+    response = client.get("/api/v1/analytics/overview/?process=999999")
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Admission process not found or is not published."}
+
+
+@pytest.mark.django_db
+def test_comparative_overview_returns_not_found_for_unpublished_compare_process(client):
+    published = AdmissionProcess.objects.create(year=2025, sequence="25-2")
+    unpublished = AdmissionProcess.objects.create(
+        year=2026, sequence="26-1", is_published=False
+    )
+
+    response = client.get(
+        f"/api/v1/analytics/overview/?process={published.id}&compare={unpublished.id}"
+    )
+
+    assert response.status_code == 404
+    assert response.json() == {"detail": "Admission process not found or is not published."}
+
+
+@pytest.mark.django_db
+def test_comparative_overview_rejects_more_than_six_unique_processes(client):
+    processes = [
+        AdmissionProcess.objects.create(year=2020 + index, sequence=f"{index}-1")
+        for index in range(7)
+    ]
+
+    response = client.get(
+        "/api/v1/analytics/overview/?process="
+        + ",".join(str(process.id) for process in processes)
+    )
+
+    assert response.status_code == 400
+    assert "6" in response.json()["detail"]
+
+
+@pytest.mark.django_db
+def test_comparative_overview_allows_six_unique_processes(client):
+    processes = [
+        AdmissionProcess.objects.create(year=2020 + index, sequence=f"{index}-1")
+        for index in range(6)
+    ]
+
+    response = client.get(
+        "/api/v1/analytics/overview/?process="
+        + ",".join(str(process.id) for process in processes)
+    )
+
+    assert response.status_code == 200

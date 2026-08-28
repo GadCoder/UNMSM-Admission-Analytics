@@ -46,3 +46,4 @@ schema is available at `/api/schema/`. The versioned API root is available at
 - `/api/v1/processes/`
 - `/api/v1/processes/<id>/`
 - `/api/v1/analytics/latest/`
+- `/api/v1/analytics/overview/`
