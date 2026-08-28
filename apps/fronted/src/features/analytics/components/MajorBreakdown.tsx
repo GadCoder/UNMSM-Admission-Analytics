@@ -1,10 +1,11 @@
 import { useMemo, useState } from "react";
+import type { ReactNode } from "react";
 
 import type { MajorOverview, ProcessOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
 import styles from "../pages/DashboardPage.module.css";
 
-type MajorBreakdownProps = { overview: ProcessOverview };
+type MajorBreakdownProps = { overview: ProcessOverview; filterControls?: ReactNode };
 type SortKey = "total_results" | "admitted_count" | "admission_rate" | "average_score" | "major_name";
 type SortDirection = "asc" | "desc";
 
@@ -12,7 +13,7 @@ function admissionRate(major: MajorOverview) {
   return major.total_results ? (major.admitted_count / major.total_results) * 100 : 0;
 }
 
-export function MajorBreakdown({ overview }: MajorBreakdownProps) {
+export function MajorBreakdown({ overview, filterControls }: MajorBreakdownProps) {
   const [query, setQuery] = useState("");
   const [sortKey, setSortKey] = useState<SortKey>("total_results");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
@@ -32,8 +33,11 @@ export function MajorBreakdown({ overview }: MajorBreakdownProps) {
     setSortDirection(nextDirection);
   };
 
-  return <div className={styles.card}>
-    <h2>Desempeño por carrera</h2>
+  return <section className={styles.card} aria-labelledby="major-breakdown-heading">
+    <div className={styles.sectionHeading}>
+      <h2 id="major-breakdown-heading">Desempeño por carrera</h2>
+      {filterControls}
+    </div>
     <div className={styles.tableControls} aria-label="Filtros y orden de carreras">
       <label className={styles.tableFilter}><span>Filtrar carreras</span><input type="search" aria-label="Filtrar carreras" placeholder="Busca por nombre" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
       <label className={styles.tableSort}><span>Ordenar carreras</span><select aria-label="Ordenar carreras" value={`${sortKey}-${sortDirection}`} onChange={(event) => updateSort(event.target.value)}>
@@ -48,5 +52,5 @@ export function MajorBreakdown({ overview }: MajorBreakdownProps) {
       {majors.map((major) => <tr key={major.major_id}><th scope="row">{major.major_name}</th><td>{formatNumber(major.total_results)}</td><td>{formatNumber(major.admitted_count)}</td><td>{formatNumber(admissionRate(major), 1)}%</td><td>{formatNumber(major.absent_count)}</td><td>{formatNumber(major.average_score, 2)}</td></tr>)}
       {!majors.length && <tr><td colSpan={6}>No hay carreras que coincidan con la búsqueda.</td></tr>}
     </tbody></table></div>
-  </div>;
+  </section>;
 }
