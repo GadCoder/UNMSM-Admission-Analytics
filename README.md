@@ -10,7 +10,7 @@ The repository is organized as a monorepo:
 ```text
 apps/
   backend/       Django + Django REST Framework API and Django Admin
-  web/           React public application
+  fronted/       React public application
 packages/        Shared packages, including a future API client
 compose.yml      Local PostgreSQL service
 ```
@@ -33,9 +33,9 @@ project.
    docker compose up -d postgres
    ```
 
-The backend and web application have separate setup instructions.
+The backend and fronted application have separate setup instructions.
 
-For the frontend, see [`apps/web/README.md`](apps/web/README.md). From that
+For the frontend, see [`apps/fronted/README.md`](apps/fronted/README.md). From that
 directory, run `npm install` and `npm run dev`.
 
 ## Development Workflow
