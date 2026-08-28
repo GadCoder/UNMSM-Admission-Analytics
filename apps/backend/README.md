@@ -34,8 +34,10 @@ The importer supports the historical Spanish CSV schema and the newer combined
 name schema. It replaces existing results for the selected process and reports
 duplicate/rejected rows instead of silently creating inconsistent records.
 
-The API health check is available at `/health/`. The versioned API root is
-available at `/api/v1/` and advertises these read-only resources:
+The API health check is available at `/health/`. Interactive API documentation is
+available at `/api/docs/` (Swagger UI) and `/api/redoc/` (ReDoc); the raw OpenAPI
+schema is available at `/api/schema/`. The versioned API root is available at
+`/api/v1/` and advertises these read-only resources:
 
 - `/api/v1/academic-areas/`
 - `/api/v1/faculties/`
