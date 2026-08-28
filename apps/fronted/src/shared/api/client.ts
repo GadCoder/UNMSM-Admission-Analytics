@@ -20,7 +20,7 @@ export async function apiFetch<T>(path: string, init?: RequestInit): Promise<T> 
   });
 
   if (!response.ok) {
-    throw new ApiError(`La API respondió con ${response.status}`, response.status);
+    throw new ApiError(`The API responded with ${response.status}`, response.status);
   }
 
   return response.json() as Promise<T>;
