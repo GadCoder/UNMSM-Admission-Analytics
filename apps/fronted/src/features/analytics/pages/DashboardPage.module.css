@@ -13,6 +13,7 @@
 .filtersDisclosure > summary small { color:var(--color-muted); font-size:.64rem; font-weight:600; }
 .filtersPanel { position:absolute; top:calc(100% + .45rem); right:0; display:grid; grid-template-columns:repeat(3,minmax(12rem,1fr)); gap:var(--space-3); width:min(52rem,calc(100vw - 2rem)); padding:var(--space-3); border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); box-shadow:0 14px 30px rgb(45 34 35 / 12%); }
 .filtersPanel .resetButton { grid-column:1 / -1; }
+.filterActions { display:flex; grid-column:1 / -1; align-items:center; justify-content:flex-end; gap:.5rem; padding-top:.65rem; border-top:1px solid var(--color-border); }
 .control > label { color:#9a898a; font-size:.62rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
 .control select { min-width:0; border:0; background:transparent; color:var(--color-text); font-size:.76rem; font-weight:600; outline:0; }
 .comparisonDisclosure { position:relative; z-index:3; flex:0 1 auto; min-width:11rem; }
