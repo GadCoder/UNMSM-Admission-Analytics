@@ -18,6 +18,7 @@ const processes = [
   { id: 2, year: 2025, sequence: "1", name: "Proceso 2025-I" },
 ];
 const overview = { processes: [{ process: processes[0], total_results: 100, admitted_count: 20, absent_count: 10, average_score: "65.5", highest_score: "98.0", majors: [{ major_id: 1, major_code: "ING", major_name: "Ingeniería", total_results: 50, admitted_count: 12, absent_count: 5, average_score: "70" }] }] };
+const comparisonOverview = { processes: [overview.processes[0], { process: processes[1], total_results: 80, admitted_count: 16, absent_count: 8, average_score: "62.5", highest_score: "95.0", majors: [{ major_id: 1, major_code: "ING", major_name: "Ingeniería", total_results: 40, admitted_count: 10, absent_count: 4, average_score: "68" }] }] };
 function LocationProbe() { const location = useLocation(); return <output data-testid="location">{location.search}</output>; }
 function renderPage(entry = "/") {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -51,6 +52,20 @@ describe("DashboardPage", () => {
     await screen.findByRole("table");
     await userEvent.selectOptions(screen.getByDisplayValue("Proceso 2025-II"), "2");
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=2"));
+  });
+  it("renders accessible comparison and top-majors charts for selected processes", async () => {
+    vi.mocked(api.useAnalyticsOverview).mockReturnValue({
+      data: comparisonOverview,
+      isPending: false,
+      isError: false,
+      isSuccess: true,
+    } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
+    renderPage("/?process=1&compare=2");
+    expect(await screen.findByRole("heading", { name: "Comparación de procesos" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /comparación de resultados/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("listitem")[1]).toHaveTextContent("Proceso 2025-I: 80 resultados, 16 admitidos, 8 ausentes");
+    expect(screen.getByRole("heading", { name: "Principales carreras por resultados" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /principales carreras/i })).toBeInTheDocument();
   });
   it("shows loading and error states", async () => {
     vi.mocked(api.usePublishedProcesses).mockReturnValue({

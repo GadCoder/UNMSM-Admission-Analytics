@@ -1,4 +1,5 @@
 import type { AdmissionProcess, ProcessOverview } from "../api/analytics.types";
+import { ProcessComparisonChart, TopMajorsChart } from "./AnalyticsCharts";
 import { ComparisonSummary } from "./ComparisonSummary";
 import { KpiGrid } from "./KpiGrid";
 import { MajorBreakdown } from "./MajorBreakdown";
@@ -23,6 +24,8 @@ export function DashboardContent({
         comparisons={comparisons}
         processById={processById}
       />
+      <ProcessComparisonChart overviews={[primary, ...comparisons]} />
+      <TopMajorsChart overview={primary} />
       <MajorBreakdown overview={primary} />
     </>
   );
