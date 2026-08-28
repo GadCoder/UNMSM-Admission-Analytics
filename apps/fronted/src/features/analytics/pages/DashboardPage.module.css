@@ -16,8 +16,8 @@
 .filtersPanel .resetButton { grid-column:1 / -1; }
 .control > label, .controlLabel { color:#9a898a; font-size:.62rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
 .control select { min-width:0; border:0; background:transparent; color:var(--color-text); font-size:.76rem; font-weight:600; outline:0; }
-.comparisonControl { position:relative; min-width:300px; padding:0; z-index:2; }
-.comparisonControl summary { display:flex; align-items:center; gap:.8rem; min-height:3.15rem; padding:.65rem .9rem; cursor:pointer; list-style:none; }
+.comparisonControl { position:relative; display:block; min-width:0; padding:0; z-index:2; }
+.comparisonControl summary { display:flex; align-items:center; box-sizing:border-box; width:100%; min-height:3.15rem; gap:.8rem; padding:.65rem .9rem; cursor:pointer; list-style:none; }
 .comparisonControl summary::-webkit-details-marker { display:none; }
 .comparisonValue { min-width:0; overflow:hidden; color:var(--color-text); font-size:.76rem; font-weight:600; text-overflow:ellipsis; white-space:nowrap; }
 .chevron { margin-left:auto; color:var(--color-primary); font-size:1rem; line-height:1; transition:transform .2s ease; }
