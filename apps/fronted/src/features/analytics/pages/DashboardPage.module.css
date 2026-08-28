@@ -72,6 +72,7 @@ tbody tr:hover { background:#fdfafa; }
 .majorApplicants { color:var(--color-text); font-size:.7rem; font-weight:700; font-variant-numeric:tabular-nums; }
 .majorRankingTrack { height:.4rem; margin:.3rem 0 .25rem 2rem; overflow:hidden; border-radius:999px; background:#f0e8e8; }
 .majorRankingTrack span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--color-primary),#b98184); }
+.majorRankingMeta { display:flex; justify-content:flex-start; gap:var(--space-3); margin-left:2rem; color:var(--color-muted); font-size:.62rem; }
 .majorComparisonRow { display:grid; grid-template-columns:minmax(6.5rem,auto) minmax(0,1fr); align-items:center; gap:var(--space-2); margin-top:.5rem; }
 .majorProcess { overflow:hidden; color:var(--color-muted); font-size:.62rem; text-overflow:ellipsis; white-space:nowrap; }
 .majorComparisonRow .majorRankingTrack { margin:0; }
