@@ -27,6 +27,7 @@ class LatestProcessOverviewView(APIView):
 
 class ComparativeOverviewView(APIView):
     max_processes = 6
+    max_id_digits = 10
 
     @extend_schema(
         parameters=[
@@ -79,26 +80,26 @@ class ComparativeOverviewView(APIView):
                 status=400,
             )
 
-        published_ids = set(
-            AdmissionProcess.objects.filter(
-                is_published=True, id__in=process_ids
-            ).values_list("id", flat=True)
-        )
-        if any(process_id not in published_ids for process_id in process_ids):
+        try:
+            overviews = process_overviews(process_ids)
+        except AdmissionProcess.DoesNotExist:
             return Response(
                 {"detail": "Admission process not found or is not published."},
                 status=404,
             )
 
         return Response(
-            ComparativeOverviewSerializer(
-                {"processes": process_overviews(process_ids)}
-            ).data
+            ComparativeOverviewSerializer({"processes": overviews}).data
         )
 
     @staticmethod
     def _parse_ids(value, parameter):
         values = [item.strip() for item in value.split(",")]
-        if any(not item.isdigit() or int(item) <= 0 for item in values):
+        if any(
+            not item.isdigit()
+            or len(item) > ComparativeOverviewView.max_id_digits
+            or int(item) <= 0
+            for item in values
+        ):
             return None, f"The {parameter} query parameter must contain positive integer IDs."
         return [int(item) for item in values], None

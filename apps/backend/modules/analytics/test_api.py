@@ -263,3 +263,45 @@ def test_comparative_overview_allows_six_unique_processes(client):
     )
 
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_comparative_overview_returns_empty_aggregate_for_process_without_results(client):
+    process = AdmissionProcess.objects.create(year=2025, sequence="25-2")
+
+    response = client.get(f"/api/v1/analytics/overview/?process={process.id}")
+
+    assert response.status_code == 200
+    overview = response.json()["processes"][0]
+    assert overview["total_results"] == 0
+    assert overview["admitted_count"] == 0
+    assert overview["absent_count"] == 0
+    assert overview["average_score"] is None
+    assert overview["highest_score"] is None
+    assert overview["majors"] == []
+
+
+@pytest.mark.django_db
+def test_comparative_overview_rejects_excessively_long_numeric_id(client):
+    response = client.get(f"/api/v1/analytics/overview/?process={'9' * 1000}")
+
+    assert response.status_code == 400
+    assert "positive integer IDs" in response.json()["detail"]
+
+
+@pytest.mark.django_db
+def test_comparative_overview_uses_bulk_aggregation_for_six_processes(
+    client, django_assert_num_queries
+):
+    processes = [
+        AdmissionProcess.objects.create(year=2020 + index, sequence=f"{index}-1")
+        for index in range(6)
+    ]
+
+    with django_assert_num_queries(3):
+        response = client.get(
+            "/api/v1/analytics/overview/?process="
+            + ",".join(str(process.id) for process in processes)
+        )
+
+    assert response.status_code == 200

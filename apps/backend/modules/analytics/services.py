@@ -3,6 +3,55 @@ from django.db.models import Avg, Count, Max, Q
 from modules.admission_processes.models import AdmissionProcess
 from modules.results.models import AdmissionResult
 
+_TOTAL_FIELDS = {
+    "total_results": 0,
+    "admitted_count": 0,
+    "absent_count": 0,
+    "average_score": None,
+    "highest_score": None,
+}
+
+
+def _aggregate_overviews(processes):
+    """Build process overviews from one totals query and one major query."""
+    process_ids = [process.id for process in processes]
+    results = AdmissionResult.objects.filter(process_id__in=process_ids)
+    total_rows = results.values("process_id").annotate(
+        total_results=Count("id"),
+        admitted_count=Count(
+            "id", filter=Q(status=AdmissionResult.Status.ADMITTED)
+        ),
+        absent_count=Count("id", filter=Q(status=AdmissionResult.Status.ABSENT)),
+        average_score=Avg("score"),
+        highest_score=Max("score"),
+    )
+    totals_by_process = {row["process_id"]: row for row in total_rows}
+
+    major_rows = results.values(
+        "process_id", "major_id", "major__code", "major__name"
+    ).annotate(
+        total_results=Count("id"),
+        admitted_count=Count(
+            "id", filter=Q(status=AdmissionResult.Status.ADMITTED)
+        ),
+        absent_count=Count("id", filter=Q(status=AdmissionResult.Status.ABSENT)),
+        average_score=Avg("score"),
+    ).order_by("process_id", "major__code")
+    majors_by_process = {}
+    for row in major_rows:
+        process_id = row.pop("process_id")
+        majors_by_process.setdefault(process_id, []).append(row)
+
+    return [
+        {
+            "process": process,
+            "majors": majors_by_process.get(process.id, []),
+            **_TOTAL_FIELDS,
+            **totals_by_process.get(process.id, {}),
+        }
+        for process in processes
+    ]
+
 
 def latest_process_overview():
     process = (
@@ -12,60 +61,19 @@ def latest_process_overview():
     )
     if process is None:
         return None
-
-    results = AdmissionResult.objects.filter(process=process)
-    totals = results.aggregate(
-        total_results=Count("id"),
-        admitted_count=Count(
-            "id", filter=Q(status=AdmissionResult.Status.ADMITTED)
-        ),
-        absent_count=Count("id", filter=Q(status=AdmissionResult.Status.ABSENT)),
-        average_score=Avg("score"),
-        highest_score=Max("score"),
-    )
-    majors = list(
-        results.values("major_id", "major__code", "major__name")
-        .annotate(
-            total_results=Count("id"),
-            admitted_count=Count(
-                "id", filter=Q(status=AdmissionResult.Status.ADMITTED)
-            ),
-            absent_count=Count("id", filter=Q(status=AdmissionResult.Status.ABSENT)),
-            average_score=Avg("score"),
-        )
-        .order_by("major__code")
-    )
-
-    return {"process": process, "majors": majors, **totals}
+    return _aggregate_overviews([process])[0]
 
 
 def process_overviews(process_ids):
-    processes = AdmissionProcess.objects.filter(is_published=True, id__in=process_ids)
-    processes_by_id = {process.id: process for process in processes}
-    overviews = []
-    for process_id in process_ids:
-        process = processes_by_id[process_id]
-        results = AdmissionResult.objects.filter(process=process)
-        totals = results.aggregate(
-            total_results=Count("id"),
-            admitted_count=Count(
-                "id", filter=Q(status=AdmissionResult.Status.ADMITTED)
-            ),
-            absent_count=Count("id", filter=Q(status=AdmissionResult.Status.ABSENT)),
-            average_score=Avg("score"),
-            highest_score=Max("score"),
+    processes_by_id = {
+        process.id: process
+        for process in AdmissionProcess.objects.filter(
+            is_published=True, id__in=process_ids
         )
-        majors = list(
-            results.values("major_id", "major__code", "major__name")
-            .annotate(
-                total_results=Count("id"),
-                admitted_count=Count(
-                    "id", filter=Q(status=AdmissionResult.Status.ADMITTED)
-                ),
-                absent_count=Count("id", filter=Q(status=AdmissionResult.Status.ABSENT)),
-                average_score=Avg("score"),
-            )
-            .order_by("major__code")
-        )
-        overviews.append({"process": process, "majors": majors, **totals})
-    return overviews
+    }
+    missing_ids = [process_id for process_id in process_ids if process_id not in processes_by_id]
+    if missing_ids:
+        raise AdmissionProcess.DoesNotExist
+
+    processes = [processes_by_id[process_id] for process_id in process_ids]
+    return _aggregate_overviews(processes)
