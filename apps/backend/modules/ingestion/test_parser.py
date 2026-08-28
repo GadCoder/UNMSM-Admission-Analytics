@@ -65,3 +65,16 @@ def test_parse_csv_rejects_rows_without_candidate_code():
 
     assert rows == []
     assert errors == ["row 2: missing candidate code"]
+
+
+def test_parse_csv_treats_regulatory_score_as_missing_score():
+    csv_text = (
+        "codigo,apellidos,nombres,carrera,puntaje,merito,observacion,modalidad\n"
+        "A004,PÉREZ,ANA,MEDICINA HUMANA,Art. 71º Reglamento,,ALCANZO VACANTE,ORDINARIO\n"
+    )
+
+    rows, errors = parse_csv(StringIO(csv_text), source_name="ingresantes.csv")
+
+    assert errors == []
+    assert rows[0]["score"] is None
+    assert rows[0]["status"] == "admitted"

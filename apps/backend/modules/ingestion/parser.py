@@ -31,7 +31,7 @@ def _clean(value: str | None) -> str:
 
 def _parse_score(value: str | None) -> str | None:
     value = _clean(value).replace(",", ".")
-    if not value or value.lower().startswith("articulo"):
+    if not value or value.lower().startswith(("articulo", "art.")):
         return None
     try:
         return f"{Decimal(value):.4f}"
@@ -41,7 +41,7 @@ def _parse_score(value: str | None) -> str | None:
 
 def _parse_merit(value: str | None) -> int | None:
     value = _clean(value)
-    if not value or value.lower().startswith("articulo"):
+    if not value or value.lower().startswith(("articulo", "art.")):
         return None
     try:
         merit = int(value)
