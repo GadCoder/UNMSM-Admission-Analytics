@@ -33,8 +33,10 @@ project.
    docker compose up -d postgres
    ```
 
-Application setup instructions will be added with the backend and web
-scaffolds.
+The backend and web application have separate setup instructions.
+
+For the frontend, see [`apps/web/README.md`](apps/web/README.md). From that
+directory, run `npm install` and `npm run dev`.
 
 ## Development Workflow
 
