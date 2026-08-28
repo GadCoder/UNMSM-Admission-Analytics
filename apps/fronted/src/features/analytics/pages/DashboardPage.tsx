@@ -95,11 +95,13 @@ export function DashboardPage() {
                 faculties={facultiesQuery.data ?? []}
                 modalities={modalitiesQuery.data ?? []}
                 filters={filters}
-                onFilterChange={(key, value) => {
+                onApply={(nextFilters) => {
                   const next = new URLSearchParams(params);
-                  const param = key === "academicArea" ? "academic_area" : key;
-                  if (value) next.set(param, value); else next.delete(param);
-                  if (key === "academicArea") next.delete("faculty");
+                  const filterParams = { academicArea: "academic_area", faculty: "faculty", modality: "modality" } as const;
+                  (Object.keys(filterParams) as Array<keyof typeof filterParams>).forEach((key) => {
+                    const value = nextFilters[key];
+                    if (value) next.set(filterParams[key], value); else next.delete(filterParams[key]);
+                  });
                   setParams(next);
                 }}
                 onReset={() => {

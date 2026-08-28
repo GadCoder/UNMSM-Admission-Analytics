@@ -129,6 +129,21 @@ describe("DashboardPage", () => {
     await waitFor(() => expect(screen.queryByLabelText("Facultad")).not.toBeVisible());
   });
 
+  it("keeps filter changes local until they are applied", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    const performanceSection = screen.getByRole("region", { name: "Desempeño por carrera" });
+    await user.click(within(performanceSection).getByText("Filtros"));
+    await user.selectOptions(screen.getByLabelText("Área académica"), "ING");
+
+    expect(screen.getByTestId("location")).toHaveTextContent("process=1");
+    expect(screen.getByRole("heading", { name: "Proceso 2025-II" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Aplicar filtros" }));
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("academic_area=ING"));
+  });
+
   it("filters and sorts the major breakdown", async () => {
     const user = userEvent.setup();
     const richerOverview = {

@@ -15,7 +15,7 @@ export type DashboardFilterControlsProps = {
   faculties: Faculty[];
   modalities: Modality[];
   filters: DashboardFilters;
-  onFilterChange: (key: keyof DashboardFilters, value: string) => void;
+  onApply: (filters: DashboardFilters) => void;
   onReset: () => void;
 };
 
@@ -75,12 +75,13 @@ export function DashboardControls({ processes, primaryId, comparisons, onChange 
   );
 }
 
-export function DashboardFilterControls({ areas, faculties, modalities, filters, onFilterChange, onReset }: DashboardFilterControlsProps) {
+export function DashboardFilterControls({ areas, faculties, modalities, filters, onApply, onReset }: DashboardFilterControlsProps) {
   const filtersRef = useRef<HTMLDetailsElement>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
-  const selectedArea = areas.find((area) => area.code === filters.academicArea);
+  const [draftFilters, setDraftFilters] = useState(filters);
+  const selectedArea = areas.find((area) => area.code === draftFilters.academicArea);
   const availableFaculties = selectedArea ? faculties.filter((faculty) => faculty.academic_area_id === selectedArea.id) : faculties;
-  const activeFilters = Object.values(filters).filter(Boolean).length;
+  const activeFilters = Object.values(draftFilters).filter(Boolean).length;
 
   useEffect(() => {
     const closeOnOutsidePointer = (event: PointerEvent) => {
@@ -90,13 +91,18 @@ export function DashboardFilterControls({ areas, faculties, modalities, filters,
     return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
   }, [filtersOpen]);
 
+  const updateDraftFilter = (key: keyof DashboardFilters, value: string) => setDraftFilters((current) => ({ ...current, [key]: value, ...(key === "academicArea" ? { faculty: "" } : {}) }));
+
   return <details ref={filtersRef} className={styles.filtersDisclosure} open={filtersOpen} onToggle={(event) => setFiltersOpen(event.currentTarget.open)}>
-    <summary><span>Filtros</span>{activeFilters > 0 && <small>{activeFilters} activos</small>}<span className={styles.chevron} aria-hidden="true">⌄</span></summary>
+    <summary onClick={(event) => { if (!filtersOpen) { event.preventDefault(); setDraftFilters(filters); setFiltersOpen(true); } }}><span>Filtros</span>{activeFilters > 0 && <small>{activeFilters} activos</small>}<span className={styles.chevron} aria-hidden="true">⌄</span></summary>
     <div className={styles.filtersPanel}>
-      <FilterSelect label="Área académica" value={filters.academicArea} options={areas.map((item) => [item.code, item.name])} onChange={(value) => onFilterChange("academicArea", value)} />
-      <FilterSelect label="Facultad" value={filters.faculty} options={availableFaculties.map((item) => [item.code, item.name])} onChange={(value) => onFilterChange("faculty", value)} />
-      <FilterSelect label="Modalidad" value={filters.modality} options={modalities.map((item) => [item.name, item.name])} onChange={(value) => onFilterChange("modality", value)} />
-      <button className={styles.resetButton} type="button" onClick={onReset}>↻ Restablecer filtros</button>
+      <FilterSelect label="Área académica" value={draftFilters.academicArea} options={areas.map((item) => [item.code, item.name])} onChange={(value) => updateDraftFilter("academicArea", value)} />
+      <FilterSelect label="Facultad" value={draftFilters.faculty} options={availableFaculties.map((item) => [item.code, item.name])} onChange={(value) => updateDraftFilter("faculty", value)} />
+      <FilterSelect label="Modalidad" value={draftFilters.modality} options={modalities.map((item) => [item.name, item.name])} onChange={(value) => updateDraftFilter("modality", value)} />
+      <div className={styles.filterActions}>
+        <button className={styles.resetButton} type="button" onClick={() => { onReset(); setFiltersOpen(false); }}>↻ Restablecer filtros</button>
+        <button className={styles.applyButton} type="button" onClick={() => { onApply(draftFilters); setFiltersOpen(false); }}>Aplicar filtros</button>
+      </div>
     </div>
   </details>;
 }
