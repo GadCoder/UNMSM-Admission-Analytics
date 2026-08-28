@@ -1,4 +1,4 @@
-import { Link, Outlet } from "react-router-dom";
+import { Link, NavLink, Outlet } from "react-router-dom";
 
 import styles from "./App.module.css";
 
@@ -10,17 +10,15 @@ export function App() {
           <span className={styles.brandMark}>UN</span>
           <span>
             <strong>Resultados UNMSM</strong>
-            <small>Admisión, datos claros</small>
+            <small>Admisión · datos claros</small>
           </span>
         </Link>
         <nav aria-label="Navegación principal">
-          <Link to="/">Resumen</Link>
-          <Link to="/resultados">Resultados</Link>
+          <NavLink to="/" end>Resumen</NavLink>
+          <NavLink to="/resultados">Resultados</NavLink>
         </nav>
       </header>
-      <main className={styles.main}>
-        <Outlet />
-      </main>
+      <main className={styles.main}><Outlet /></main>
     </div>
   );
 }

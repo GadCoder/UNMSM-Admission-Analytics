@@ -16,8 +16,8 @@ export function DashboardControls({
 }: DashboardControlsProps) {
   return (
     <div className={styles.controls} aria-label="Selección de procesos">
-      <label htmlFor="primary-process">
-        Proceso principal
+      <div className={styles.control}>
+        <label htmlFor="primary-process">Proceso</label>
         <select
           id="primary-process"
           value={primaryId}
@@ -29,9 +29,9 @@ export function DashboardControls({
             </option>
           ))}
         </select>
-      </label>
-      <label htmlFor="comparison-processes">
-        Comparar con
+      </div>
+      <div className={styles.control}>
+        <label htmlFor="comparison-processes">Comparar con</label>
         <select
           id="comparison-processes"
           multiple
@@ -51,8 +51,11 @@ export function DashboardControls({
               </option>
             ))}
         </select>
-        <small>Selecciona hasta 3 procesos.</small>
-      </label>
+        <small>Hasta 3 procesos</small>
+      </div>
+      <button className={styles.resetButton} type="button" onClick={() => onChange(primaryId, [])}>
+        ↻ Restablecer
+      </button>
     </div>
   );
 }
