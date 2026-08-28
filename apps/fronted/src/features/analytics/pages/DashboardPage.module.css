@@ -4,8 +4,16 @@
 .page h1 { max-width:680px; margin:0 0 .45rem; font-size:clamp(2rem,4vw,2.75rem); letter-spacing:-.055em; line-height:1.08; }
 .intro { max-width:650px; margin:0; color:var(--color-muted); font-size:.88rem; line-height:1.6; }
 .processBadge { flex:none; border:1px solid #dfcfd0; border-radius:999px; background:var(--color-primary-soft); color:var(--color-primary); padding:.65rem .9rem; font-size:.7rem; font-weight:700; }
-.controls { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-3); margin:0 0 var(--space-8); }
-.control { display:flex; align-items:center; gap:.7rem; min-width:190px; padding:.65rem .9rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); box-shadow:0 4px 14px rgb(45 34 35 / 4%); }
+.controls { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-3); margin:0 0 var(--space-5); }
+.control { display:flex; align-items:center; gap:.7rem; min-width:190px; padding:.55rem .75rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); box-shadow:0 4px 14px rgb(45 34 35 / 4%); }
+.primaryControl { flex:1 1 18rem; }
+.filtersDisclosure { position:relative; z-index:2; flex:0 1 auto; min-width:8rem; }
+.filtersDisclosure > summary { display:flex; align-items:center; gap:.6rem; min-height:2.65rem; padding:.55rem .75rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); color:var(--color-primary); cursor:pointer; font-size:.72rem; font-weight:700; list-style:none; }
+.filtersDisclosure > summary::-webkit-details-marker { display:none; }
+.filtersDisclosure > summary small { color:var(--color-muted); font-size:.64rem; font-weight:600; }
+.filtersPanel { position:absolute; top:calc(100% + .45rem); right:0; display:grid; grid-template-columns:repeat(3,minmax(12rem,1fr)); gap:var(--space-3); width:min(52rem,calc(100vw - 2rem)); padding:var(--space-3); border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); box-shadow:0 14px 30px rgb(45 34 35 / 12%); }
+.filtersPanel .comparisonControl { min-width:0; }
+.filtersPanel .resetButton { grid-column:1 / -1; }
 .control > label, .controlLabel { color:#9a898a; font-size:.62rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
 .control select { min-width:0; border:0; background:transparent; color:var(--color-text); font-size:.76rem; font-weight:600; outline:0; }
 .comparisonControl { position:relative; min-width:300px; padding:0; z-index:2; }
@@ -59,4 +67,4 @@ tbody tr:hover { background:#fdfafa; }
 .state { margin-top:var(--space-8); padding:var(--space-5); border-radius:var(--radius-md); background:var(--color-surface); color:var(--color-muted); }
 .visuallyHidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 @media (max-width:900px) { .kpis { grid-template-columns:repeat(3,1fr); } }
-@media (max-width:600px) { .page { padding:0; } .hero { align-items:flex-start; flex-direction:column; } .controls { align-items:stretch; flex-direction:column; } .control { width:100%; } .resetButton { align-self:flex-start; margin-left:0; } .kpis { grid-template-columns:repeat(2,1fr); } .heading { align-items:flex-start; flex-direction:column; } .chartRow { grid-template-columns:minmax(8rem,12rem) minmax(3rem,1fr) 2.5rem; gap:var(--space-2); } }
+@media (max-width:600px) { .page { padding:0; } .hero { align-items:flex-start; flex-direction:column; } .controls { align-items:stretch; flex-direction:column; } .primaryControl, .filtersDisclosure { width:100%; } .filtersPanel { position:static; grid-template-columns:1fr; width:auto; margin-top:.45rem; } .filtersPanel .resetButton { grid-column:auto; } .control { width:100%; } .resetButton { align-self:flex-start; margin-left:0; } .kpis { grid-template-columns:repeat(2,1fr); } .heading { align-items:flex-start; flex-direction:column; } .chartRow { grid-template-columns:minmax(8rem,12rem) minmax(3rem,1fr) 2.5rem; gap:var(--space-2); } }

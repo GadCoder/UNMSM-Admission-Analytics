@@ -16,10 +16,10 @@ export function KpiGrid({ overview }: KpiGridProps) {
     <div className={styles.kpis}>
       <Kpi label="Total de postulantes" value={formatNumber(overview.total_results)} />
       <Kpi label="Admitidos" value={formatNumber(overview.admitted_count)} />
-      <Kpi label="Ausentes" value={formatNumber(overview.absent_count)} />
       <Kpi label="Tasa de admisión" value={`${formatNumber(admissionRate, 1)}%`} />
-      <Kpi label="Promedio" value={formatNumber(overview.average_score, 2)} />
       <Kpi label="Puntaje más alto" value={formatNumber(overview.highest_score, 2)} />
+      <Kpi label="Promedio" value={formatNumber(overview.average_score, 2)} />
+      <Kpi label="Ausentes" value={formatNumber(overview.absent_count)} />
     </div>
   );
 }
