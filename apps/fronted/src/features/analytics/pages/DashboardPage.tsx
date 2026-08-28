@@ -1,15 +1,23 @@
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { useAnalyticsOverview, usePublishedProcesses } from "../api/analytics";
+import * as api from "../api/analytics";
 import { DashboardContent } from "../components/DashboardContent";
 import { DashboardControls } from "../components/DashboardControls";
 import styles from "./DashboardPage.module.css";
 
 export function DashboardPage() {
   const [params, setParams] = useSearchParams();
-  const processesQuery = usePublishedProcesses();
+  const processesQuery = api.usePublishedProcesses();
   const processes = processesQuery.data ?? [];
+  const areasQuery = api.useAcademicAreas();
+  const facultiesQuery = api.useFaculties();
+  const modalitiesQuery = api.useModalities();
+  const filters = {
+    academicArea: params.get("academic_area") ?? "",
+    faculty: params.get("faculty") ?? "",
+    modality: params.get("modality") ?? "",
+  };
   const latest = processes[0];
   const primaryId = params.get("process") ?? (latest ? String(latest.id) : "");
   const comparisons = (params.get("compare")?.split(",").filter(Boolean) ?? [])
@@ -24,7 +32,7 @@ export function DashboardPage() {
     }
   }, [latest, params, setParams]);
 
-  const overviewQuery = useAnalyticsOverview(primaryId, comparisons);
+  const overviewQuery = api.useAnalyticsOverview(primaryId, comparisons, filters);
   const selected = overviewQuery.data?.processes ?? [];
   const primary = selected[0];
   const processById = new Map(processes.map((process) => [String(process.id), process]));
@@ -69,7 +77,18 @@ export function DashboardPage() {
             processes={processes}
             primaryId={primaryId}
             comparisons={comparisons}
+            areas={areasQuery.data ?? []}
+            faculties={facultiesQuery.data ?? []}
+            modalities={modalitiesQuery.data ?? []}
+            filters={filters}
             onChange={updateSelection}
+            onFilterChange={(key, value) => {
+              const next = new URLSearchParams(params);
+              const param = key === "academicArea" ? "academic_area" : key;
+              if (value) next.set(param, value); else next.delete(param);
+              if (key === "academicArea") next.delete("faculty");
+              setParams(next);
+            }}
           />
           {overviewQuery.isPending && (
             <p role="status" className={styles.state}>Cargando indicadores…</p>

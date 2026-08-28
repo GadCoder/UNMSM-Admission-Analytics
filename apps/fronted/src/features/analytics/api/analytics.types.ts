@@ -5,6 +5,10 @@ export type AdmissionProcess = {
   name: string;
 };
 
+export type AcademicArea = { id: number; code: string; name: string };
+export type Faculty = { id: number; code: string; name: string; academic_area_id: number };
+export type Modality = { id: number; name: string };
+
 export type MajorOverview = {
   major_id: number;
   major_code: string;
@@ -25,6 +29,4 @@ export type ProcessOverview = {
   majors: MajorOverview[];
 };
 
-export type ComparativeOverview = {
-  processes: ProcessOverview[];
-};
+export type ComparativeOverview = { processes: ProcessOverview[] };

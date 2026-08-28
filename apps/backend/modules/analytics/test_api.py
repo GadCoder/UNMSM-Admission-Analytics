@@ -154,6 +154,25 @@ def test_comparative_overview_rejects_malformed_or_empty_process_ids(client):
 
 
 @pytest.mark.django_db
+def test_comparative_overview_filters_majors_by_faculty(client, majors):
+    nursing, pharmacy = majors
+    other_area = AcademicArea.objects.create(code="B", name="Salud")
+    other_faculty = Faculty.objects.create(code="F02", name="Otra Facultad", academic_area=other_area)
+    other_major = Major.objects.create(code="015", name="Odontología", faculty=other_faculty)
+    process = AdmissionProcess.objects.create(year=2026, sequence="26-1")
+    for index, major in enumerate((nursing, pharmacy, other_major)):
+        AdmissionResult.objects.create(
+            process=process, major=major, candidate_code=str(index),
+            last_names="DOE", given_names="TEST", status=AdmissionResult.Status.POSTULANT,
+        )
+
+    response = client.get(f"/api/v1/analytics/overview/?process={process.id}&faculty=F01")
+
+    assert response.status_code == 200
+    assert [major["major_code"] for major in response.json()["processes"][0]["majors"]] == ["013", "014"]
+
+
+@pytest.mark.django_db
 def test_comparative_overview_returns_not_found_for_missing_or_unpublished_process(client):
     unpublished = AdmissionProcess.objects.create(year=2025, sequence="25-2", is_published=False)
 

@@ -58,10 +58,16 @@ def _build_overviews(processes, totals_by_process, majors_by_process):
     ]
 
 
-def _aggregate_overviews(processes):
+def _aggregate_overviews(processes, *, academic_area=None, faculty=None, modality=None):
     """Build process overviews from one totals query and one major query."""
     process_ids = [process.id for process in processes]
     results = AdmissionResult.objects.filter(process_id__in=process_ids)
+    if academic_area:
+        results = results.filter(major__faculty__academic_area__code=academic_area)
+    if faculty:
+        results = results.filter(major__faculty__code=faculty)
+    if modality:
+        results = results.filter(modality__name=modality)
     return _build_overviews(
         processes,
         _aggregate_totals(results),
@@ -80,7 +86,7 @@ def latest_process_overview():
     return _aggregate_overviews([process])[0]
 
 
-def process_overviews(process_ids):
+def process_overviews(process_ids, *, academic_area=None, faculty=None, modality=None):
     processes_by_id = {
         process.id: process
         for process in AdmissionProcess.objects.filter(
@@ -94,4 +100,9 @@ def process_overviews(process_ids):
         raise AdmissionProcess.DoesNotExist
 
     processes = [processes_by_id[process_id] for process_id in process_ids]
-    return _aggregate_overviews(processes)
+    return _aggregate_overviews(
+        processes,
+        academic_area=academic_area,
+        faculty=faculty,
+        modality=modality,
+    )

@@ -45,6 +45,9 @@ class ComparativeOverviewView(APIView):
                 required=False,
                 description="Optional comma-separated positive integer process IDs (maximum 4 unique IDs total).",
             ),
+            OpenApiParameter(name="academic_area", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False),
+            OpenApiParameter(name="faculty", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False),
+            OpenApiParameter(name="modality", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False),
         ],
         responses={
             200: ComparativeOverviewSerializer,
@@ -81,7 +84,12 @@ class ComparativeOverviewView(APIView):
             )
 
         try:
-            overviews = process_overviews(process_ids)
+            overviews = process_overviews(
+                process_ids,
+                academic_area=request.query_params.get("academic_area"),
+                faculty=request.query_params.get("faculty"),
+                modality=request.query_params.get("modality"),
+            )
         except AdmissionProcess.DoesNotExist:
             return Response(
                 {"detail": "Admission process not found or is not published."},
