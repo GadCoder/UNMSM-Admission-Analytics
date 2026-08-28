@@ -14,7 +14,7 @@ export function KpiGrid({ overview }: KpiGridProps) {
 
   return (
     <div className={styles.kpis}>
-      <Kpi label="Total de resultados" value={formatNumber(overview.total_results)} />
+      <Kpi label="Total de postulantes" value={formatNumber(overview.total_results)} />
       <Kpi label="Admitidos" value={formatNumber(overview.admitted_count)} />
       <Kpi label="Ausentes" value={formatNumber(overview.absent_count)} />
       <Kpi label="Tasa de admisión" value={`${formatNumber(admissionRate, 1)}%`} />

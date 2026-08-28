@@ -18,7 +18,7 @@ export function ComparisonSummary({
       <strong>Comparación</strong>
       {comparisons.map((item) => (
         <span key={item.process.id}>
-          {processById.get(String(item.process.id))?.name ?? item.process.name}: {formatNumber(item.total_results)} resultados · {formatNumber(item.average_score, 2)} promedio
+          {processById.get(String(item.process.id))?.name ?? item.process.name}: {formatNumber(item.total_results)} postulantes · {formatNumber(item.average_score, 2)} promedio
         </span>
       ))}
     </aside>
