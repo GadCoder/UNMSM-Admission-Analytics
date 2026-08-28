@@ -91,6 +91,17 @@ describe("DashboardPage", () => {
     expect(within(faculty).queryByRole("option", { name: "Ingeniería de Sistemas" })).not.toBeInTheDocument();
   });
 
+  it("closes the filters panel when clicking outside it", async () => {
+    const user = userEvent.setup();
+    renderPage();
+
+    await user.click(screen.getByText("Filtros"));
+    expect(screen.getByLabelText("Facultad")).toBeVisible();
+
+    await user.click(document.body);
+    await waitFor(() => expect(screen.queryByLabelText("Facultad")).not.toBeVisible());
+  });
+
   it("filters and sorts the major breakdown", async () => {
     const user = userEvent.setup();
     const richerOverview = {

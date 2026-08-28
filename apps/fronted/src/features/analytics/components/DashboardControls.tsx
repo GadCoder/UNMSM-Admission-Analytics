@@ -1,3 +1,5 @@
+import { useEffect, useRef, useState } from "react";
+
 import type { AcademicArea, AdmissionProcess, Faculty, Modality } from "../api/analytics.types";
 import styles from "../pages/DashboardPage.module.css";
 
@@ -16,12 +18,22 @@ type DashboardControlsProps = {
 };
 
 export function DashboardControls({ processes, primaryId, comparisons, areas, faculties, modalities, filters, onChange, onFilterChange, onReset }: DashboardControlsProps) {
+  const filtersRef = useRef<HTMLDetailsElement>(null);
+  const [filtersOpen, setFiltersOpen] = useState(false);
   const comparisonOptions = processes.filter((process) => String(process.id) !== primaryId);
   const selectedProcesses = comparisonOptions.filter((process) => comparisons.includes(String(process.id)));
   const selectedArea = areas.find((area) => area.code === filters.academicArea);
   const availableFaculties = selectedArea ? faculties.filter((faculty) => faculty.academic_area_id === selectedArea.id) : faculties;
   const comparisonSummary = selectedProcesses.length === 1 ? selectedProcesses[0].name : selectedProcesses.length ? `${selectedProcesses.length} procesos seleccionados` : "Selecciona procesos";
   const activeFilters = Object.values(filters).filter(Boolean).length + selectedProcesses.length;
+
+  useEffect(() => {
+    const closeOnOutsidePointer = (event: PointerEvent) => {
+      if (filtersOpen && !filtersRef.current?.contains(event.target as Node)) setFiltersOpen(false);
+    };
+    document.addEventListener("pointerdown", closeOnOutsidePointer);
+    return () => document.removeEventListener("pointerdown", closeOnOutsidePointer);
+  }, [filtersOpen]);
 
   return (
     <div className={styles.controls} aria-label="Selección de procesos y filtros">
@@ -31,7 +43,7 @@ export function DashboardControls({ processes, primaryId, comparisons, areas, fa
           {processes.map((process) => <option key={process.id} value={process.id}>{process.name}</option>)}
         </select>
       </div>
-      <details className={styles.filtersDisclosure}>
+      <details ref={filtersRef} className={styles.filtersDisclosure} open={filtersOpen} onToggle={(event) => setFiltersOpen(event.currentTarget.open)}>
         <summary><span>Filtros</span>{activeFilters > 0 && <small>{activeFilters} activos</small>}<span className={styles.chevron} aria-hidden="true">⌄</span></summary>
         <div className={styles.filtersPanel}>
           <details className={`${styles.control} ${styles.comparisonControl}`}>
