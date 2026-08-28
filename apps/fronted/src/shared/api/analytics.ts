@@ -1,3 +1,5 @@
+import { useQuery } from "@tanstack/react-query";
+
 import { apiFetch } from "./client";
 
 export type AdmissionProcess = {
@@ -37,4 +39,16 @@ export function getAnalyticsOverview(primary: string | number, comparisons: Arra
   const params = new URLSearchParams({ process: String(primary) });
   if (comparisons.length) params.set("compare", comparisons.slice(0, 3).map(String).join(","));
   return apiFetch<ComparativeOverview>(`/api/v1/analytics/overview/?${params.toString()}`);
+}
+
+export function usePublishedProcesses() {
+  return useQuery({ queryKey: ["published-processes"], queryFn: getPublishedProcesses });
+}
+
+export function useAnalyticsOverview(primary: string, comparisons: string[]) {
+  return useQuery({
+    queryKey: ["analytics-overview", primary, comparisons],
+    queryFn: () => getAnalyticsOverview(primary, comparisons),
+    enabled: Boolean(primary),
+  });
 }

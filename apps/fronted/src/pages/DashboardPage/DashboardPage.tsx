@@ -1,8 +1,7 @@
-import { useQuery } from "@tanstack/react-query";
 import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { getAnalyticsOverview, getPublishedProcesses } from "../../shared/api/analytics";
+import { useAnalyticsOverview, usePublishedProcesses } from "../../shared/api/analytics";
 import type { AdmissionProcess, ProcessOverview } from "../../shared/api/analytics";
 import styles from "./DashboardPage.module.css";
 
@@ -10,7 +9,7 @@ const formatNumber = (value: number | string | null, digits = 0) => value === nu
 
 export function DashboardPage() {
   const [params, setParams] = useSearchParams();
-  const processesQuery = useQuery({ queryKey: ["published-processes"], queryFn: getPublishedProcesses });
+  const processesQuery = usePublishedProcesses();
   const processes = processesQuery.data ?? [];
   const latest = processes[0];
   const primaryId = params.get("process") ?? (latest ? String(latest.id) : "");
@@ -24,11 +23,7 @@ export function DashboardPage() {
     }
   }, [latest, params, setParams]);
 
-  const overviewQuery = useQuery({
-    queryKey: ["analytics-overview", primaryId, comparisons],
-    queryFn: () => getAnalyticsOverview(primaryId, comparisons),
-    enabled: Boolean(primaryId),
-  });
+  const overviewQuery = useAnalyticsOverview(primaryId, comparisons);
   const selected = overviewQuery.data?.processes ?? [];
   const primary = selected[0];
   const comparisonData = selected.slice(1);
