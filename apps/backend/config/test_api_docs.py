@@ -16,7 +16,7 @@ def test_openapi_schema_exposes_versioned_api_paths():
     assert "get" in schema["paths"]["/api/v1/analytics/latest/"]
     overview = schema["paths"]["/api/v1/analytics/overview/"]["get"]
     parameters = {parameter["name"]: parameter for parameter in overview["parameters"]}
-    assert set(parameters) == {"process", "compare"}
+    assert set(parameters) == {"process", "compare", "academic_area", "faculty", "modality"}
     assert parameters["process"]["required"] is True
     assert "comma-separated" in parameters["process"]["description"]
     assert parameters["compare"].get("required", False) is False

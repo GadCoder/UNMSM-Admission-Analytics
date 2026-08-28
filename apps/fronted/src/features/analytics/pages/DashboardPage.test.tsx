@@ -11,6 +11,9 @@ vi.mock("../api/analytics", async (importOriginal) => ({
   ...await importOriginal<typeof import("../api/analytics")>(),
   usePublishedProcesses: vi.fn(),
   useAnalyticsOverview: vi.fn(),
+  useAcademicAreas: vi.fn(),
+  useFaculties: vi.fn(),
+  useModalities: vi.fn(),
 }));
 
 const processes = [
@@ -28,11 +31,10 @@ function renderPage(entry = "/") {
 describe("DashboardPage", () => {
   beforeEach(() => {
     cleanup();
-    vi.mocked(api.usePublishedProcesses).mockReturnValue({
-      data: processes,
-      isPending: false,
-      isError: false,
-    } as unknown as ReturnType<typeof api.usePublishedProcesses>);
+    vi.mocked(api.usePublishedProcesses).mockReturnValue({ data: processes, isPending: false, isError: false } as unknown as ReturnType<typeof api.usePublishedProcesses>);
+    vi.mocked(api.useAcademicAreas).mockReturnValue({ data: [], isPending: false, isError: false } as unknown as ReturnType<typeof api.useAcademicAreas>);
+    vi.mocked(api.useFaculties).mockReturnValue({ data: [], isPending: false, isError: false } as unknown as ReturnType<typeof api.useFaculties>);
+    vi.mocked(api.useModalities).mockReturnValue({ data: [], isPending: false, isError: false } as unknown as ReturnType<typeof api.useModalities>);
     vi.mocked(api.useAnalyticsOverview).mockReturnValue({
       data: overview,
       isPending: false,
