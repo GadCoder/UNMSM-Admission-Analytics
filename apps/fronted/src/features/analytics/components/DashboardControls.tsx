@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 
 import type { AcademicArea, AdmissionProcess, Faculty, Modality } from "../api/analytics.types";
 import styles from "../pages/DashboardPage.module.css";
+import { useDebouncedValue } from "../utils/useDebouncedValue";
 
 export type DashboardFilters = { academicArea: string; faculty: string; modality: string };
 type DashboardControlsProps = {
@@ -15,7 +16,7 @@ export type DashboardFilterControlsProps = {
   faculties: Faculty[];
   modalities: Modality[];
   filters: DashboardFilters;
-  onApply: (filters: DashboardFilters) => void;
+  onChange: (filters: DashboardFilters) => void;
   onReset: () => void;
 };
 
@@ -75,13 +76,23 @@ export function DashboardControls({ processes, primaryId, comparisons, onChange 
   );
 }
 
-export function DashboardFilterControls({ areas, faculties, modalities, filters, onApply, onReset }: DashboardFilterControlsProps) {
+export function DashboardFilterControls({ areas, faculties, modalities, filters, onChange, onReset }: DashboardFilterControlsProps) {
   const filtersRef = useRef<HTMLDetailsElement>(null);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [draftFilters, setDraftFilters] = useState(filters);
+  const debouncedFilters = useDebouncedValue(draftFilters);
+  const initialized = useRef(false);
   const selectedArea = areas.find((area) => area.code === draftFilters.academicArea);
   const availableFaculties = selectedArea ? faculties.filter((faculty) => faculty.academic_area_id === selectedArea.id) : faculties;
   const activeFilters = Object.values(draftFilters).filter(Boolean).length;
+
+  useEffect(() => {
+    if (!initialized.current) {
+      initialized.current = true;
+      return;
+    }
+    onChange(debouncedFilters);
+  }, [debouncedFilters, onChange]);
 
   useEffect(() => {
     const closeOnOutsidePointer = (event: PointerEvent) => {
@@ -99,10 +110,7 @@ export function DashboardFilterControls({ areas, faculties, modalities, filters,
       <FilterSelect label="Área académica" value={draftFilters.academicArea} options={areas.map((item) => [item.code, item.name])} onChange={(value) => updateDraftFilter("academicArea", value)} />
       <FilterSelect label="Facultad" value={draftFilters.faculty} options={availableFaculties.map((item) => [item.code, item.name])} onChange={(value) => updateDraftFilter("faculty", value)} />
       <FilterSelect label="Modalidad" value={draftFilters.modality} options={modalities.map((item) => [item.name, item.name])} onChange={(value) => updateDraftFilter("modality", value)} />
-      <div className={styles.filterActions}>
-        <button className={styles.resetButton} type="button" onClick={() => { onReset(); setFiltersOpen(false); }}>↻ Restablecer filtros</button>
-        <button className={styles.applyButton} type="button" onClick={() => { onApply(draftFilters); setFiltersOpen(false); }}>Aplicar filtros</button>
-      </div>
+      <button className={styles.resetButton} type="button" onClick={() => { onReset(); setDraftFilters({ academicArea: "", faculty: "", modality: "" }); setFiltersOpen(false); }}>↻ Restablecer filtros</button>
     </div>
   </details>;
 }

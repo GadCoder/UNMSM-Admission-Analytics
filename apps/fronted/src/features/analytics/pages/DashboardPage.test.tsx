@@ -129,7 +129,7 @@ describe("DashboardPage", () => {
     await waitFor(() => expect(screen.queryByLabelText("Facultad")).not.toBeVisible());
   });
 
-  it("keeps filter changes local until they are applied", async () => {
+  it("debounces filter changes before updating the URL", async () => {
     const user = userEvent.setup();
     renderPage();
 
@@ -139,9 +139,9 @@ describe("DashboardPage", () => {
 
     expect(screen.getByTestId("location")).toHaveTextContent("process=1");
     expect(screen.getByRole("heading", { name: "Proceso 2025-II" })).toBeInTheDocument();
+    expect(screen.getByTestId("location")).not.toHaveTextContent("academic_area=ING");
 
-    await user.click(screen.getByRole("button", { name: "Aplicar filtros" }));
-    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("academic_area=ING"));
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("academic_area=ING"), { timeout: 1000 });
   });
 
   it("filters and sorts the major breakdown", async () => {
@@ -166,8 +166,10 @@ describe("DashboardPage", () => {
     const filter = await screen.findByRole("searchbox", { name: "Filtrar carreras" });
     await user.type(filter, "dere");
     const table = screen.getByRole("table");
-    expect(within(table).getByText("Derecho")).toBeInTheDocument();
-    expect(within(table).queryByText("Ingeniería")).not.toBeInTheDocument();
+    await waitFor(() => {
+      expect(within(table).getByText("Derecho")).toBeInTheDocument();
+      expect(within(table).queryByText("Ingeniería")).not.toBeInTheDocument();
+    });
 
     await user.clear(filter);
     await user.selectOptions(screen.getByRole("combobox", { name: "Ordenar carreras" }), "average_score-desc");

@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useCallback, useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import * as api from "../api/analytics";
@@ -48,6 +48,16 @@ export function DashboardPage() {
     setParams(next);
   };
 
+  const updateFilters = useCallback((nextFilters: { academicArea: string; faculty: string; modality: string }) => {
+    const next = new URLSearchParams(params);
+    const filterParams = { academicArea: "academic_area", faculty: "faculty", modality: "modality" } as const;
+    (Object.keys(filterParams) as Array<keyof typeof filterParams>).forEach((key) => {
+      const value = nextFilters[key];
+      if (value) next.set(filterParams[key], value); else next.delete(filterParams[key]);
+    });
+    setParams(next);
+  }, [params, setParams]);
+
   return (
     <section className={styles.page}>
       <div className={styles.hero}>
@@ -95,15 +105,7 @@ export function DashboardPage() {
                 faculties={facultiesQuery.data ?? []}
                 modalities={modalitiesQuery.data ?? []}
                 filters={filters}
-                onApply={(nextFilters) => {
-                  const next = new URLSearchParams(params);
-                  const filterParams = { academicArea: "academic_area", faculty: "faculty", modality: "modality" } as const;
-                  (Object.keys(filterParams) as Array<keyof typeof filterParams>).forEach((key) => {
-                    const value = nextFilters[key];
-                    if (value) next.set(filterParams[key], value); else next.delete(filterParams[key]);
-                  });
-                  setParams(next);
-                }}
+                onChange={updateFilters}
                 onReset={() => {
                   const next = new URLSearchParams(params);
                   next.delete("compare");
