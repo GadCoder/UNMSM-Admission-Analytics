@@ -22,13 +22,3 @@ export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
     <ul className={styles.chartSummary} aria-label="Datos de comparación">{overviews.map((overview) => <li key={overview.process.id}><strong>{overview.process.name}</strong>: {formatNumber(overview.total_results)} postulantes, {formatNumber(overview.admitted_count)} admitidos, {formatNumber(overview.absent_count)} ausentes.</li>)}</ul>
   </section>;
 }
-
-type MajorChartProps = { overview: ProcessOverview };
-export function TopMajorsChart({ overview }: MajorChartProps) {
-  const majors = [...overview.majors].sort((left, right) => right.total_results - left.total_results).slice(0, 6);
-  return <section className={styles.card} aria-labelledby="major-chart-heading">
-    <h2 id="major-chart-heading">Principales carreras por postulantes</h2>
-    <p className={styles.chartDescription}>Las seis carreras con más postulantes en {overview.process.name}.</p>
-    <ol className={styles.chartSummary} aria-label="Principales carreras por postulantes">{majors.map((major) => <li key={major.major_id}><strong>{major.major_name}</strong>: {formatNumber(major.total_results)} postulantes.</li>)}</ol>
-  </section>;
-}
