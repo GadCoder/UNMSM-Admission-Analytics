@@ -9,6 +9,7 @@ services:
       - "8000:8000"
     volumes:
       - ./apps/backend:/app
+      - backend_staticfiles:/app/staticfiles
     depends_on:
       postgres:
         condition: service_healthy
@@ -32,3 +33,4 @@ services:
 
 volumes:
   postgres_data:
+  backend_staticfiles:
