@@ -14,6 +14,16 @@ export function DashboardControls({
   comparisons,
   onChange,
 }: DashboardControlsProps) {
+  const comparisonOptions = processes.filter((process) => String(process.id) !== primaryId);
+  const selectedProcesses = comparisonOptions.filter((process) =>
+    comparisons.includes(String(process.id)),
+  );
+  const comparisonSummary = selectedProcesses.length
+    ? selectedProcesses.length === 1
+      ? selectedProcesses[0].name
+      : `${selectedProcesses.length} procesos seleccionados`
+    : "Selecciona procesos";
+
   return (
     <div className={styles.controls} aria-label="Selección de procesos">
       <div className={styles.control}>
@@ -30,29 +40,38 @@ export function DashboardControls({
           ))}
         </select>
       </div>
-      <div className={styles.control}>
-        <label htmlFor="comparison-processes">Comparar con</label>
-        <select
-          id="comparison-processes"
-          multiple
-          value={comparisons}
-          onChange={(event) =>
-            onChange(
-              primaryId,
-              Array.from(event.target.selectedOptions, (option) => option.value),
-            )
-          }
-        >
-          {processes
-            .filter((process) => String(process.id) !== primaryId)
-            .map((process) => (
-              <option key={process.id} value={process.id}>
-                {process.name}
-              </option>
-            ))}
-        </select>
-        <small>Hasta 3 procesos</small>
-      </div>
+      <details className={`${styles.control} ${styles.comparisonControl}`}>
+        <summary>
+          <span className={styles.controlLabel}>Comparar con</span>
+          <span className={styles.comparisonValue}>{comparisonSummary}</span>
+          <span className={styles.chevron} aria-hidden="true">⌄</span>
+        </summary>
+        <div className={styles.comparisonMenu} role="listbox" aria-label="Procesos para comparar" aria-multiselectable="true">
+          {comparisonOptions.map((process) => {
+            const value = String(process.id);
+            const checked = comparisons.includes(value);
+            const disabled = !checked && comparisons.length >= 3;
+            return (
+              <label className={styles.comparisonOption} key={process.id}>
+                <input
+                  type="checkbox"
+                  value={value}
+                  checked={checked}
+                  disabled={disabled}
+                  onChange={(event) => {
+                    const next = event.target.checked
+                      ? [...comparisons, value].slice(0, 3)
+                      : comparisons.filter((id) => id !== value);
+                    onChange(primaryId, next);
+                  }}
+                />
+                <span>{process.name}</span>
+              </label>
+            );
+          })}
+          <small>Selecciona hasta 3 procesos</small>
+        </div>
+      </details>
       <button className={styles.resetButton} type="button" onClick={() => onChange(primaryId, [])}>
         ↻ Restablecer
       </button>

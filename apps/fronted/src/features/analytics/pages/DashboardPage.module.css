@@ -6,9 +6,20 @@
 .processBadge { flex:none; border:1px solid #dfcfd0; border-radius:999px; background:var(--color-primary-soft); color:var(--color-primary); padding:.65rem .9rem; font-size:.7rem; font-weight:700; }
 .controls { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-3); margin:0 0 var(--space-8); }
 .control { display:flex; align-items:center; gap:.7rem; min-width:190px; padding:.65rem .9rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); box-shadow:0 4px 14px rgb(45 34 35 / 4%); }
-.control label { color:#9a898a; font-size:.62rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
+.control > label, .controlLabel { color:#9a898a; font-size:.62rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; white-space:nowrap; }
 .control select { min-width:0; border:0; background:transparent; color:var(--color-text); font-size:.76rem; font-weight:600; outline:0; }
-.control select[multiple] { min-height:2rem; padding:0; }
+.comparisonControl { position:relative; min-width:300px; padding:0; z-index:2; }
+.comparisonControl summary { display:flex; align-items:center; gap:.8rem; min-height:3.15rem; padding:.65rem .9rem; cursor:pointer; list-style:none; }
+.comparisonControl summary::-webkit-details-marker { display:none; }
+.comparisonValue { min-width:0; overflow:hidden; color:var(--color-text); font-size:.76rem; font-weight:600; text-overflow:ellipsis; white-space:nowrap; }
+.chevron { margin-left:auto; color:var(--color-primary); font-size:1rem; line-height:1; transition:transform .2s ease; }
+.comparisonControl[open] .chevron { transform:rotate(180deg); }
+.comparisonMenu { position:absolute; top:calc(100% + .45rem); right:0; left:0; display:grid; gap:.2rem; padding:.55rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); box-shadow:0 14px 30px rgb(45 34 35 / 12%); }
+.comparisonOption { display:flex; align-items:center; gap:.65rem; padding:.55rem .5rem; border-radius:.45rem; color:var(--color-text); cursor:pointer; font-size:.74rem; }
+.comparisonOption:hover { background:var(--color-primary-soft); }
+.comparisonOption input { width:1rem; height:1rem; accent-color:var(--color-primary); }
+.comparisonOption input:disabled + span { color:#b9acad; }
+.comparisonMenu small { padding:.35rem .5rem .15rem; border-top:1px solid var(--color-border); color:var(--color-muted); font-size:.66rem; }
 .controls small { color:var(--color-muted); font-size:.68rem; }
 .resetButton { margin-left:auto; border:0; background:transparent; color:var(--color-primary); cursor:pointer; font-size:.72rem; font-weight:700; }
 .heading { display:flex; align-items:end; justify-content:space-between; gap:var(--space-4); margin:0 0 var(--space-4); }
