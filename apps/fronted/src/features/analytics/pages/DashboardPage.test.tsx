@@ -20,6 +20,14 @@ const processes = [
   { id: 1, year: 2025, sequence: "2", name: "Proceso 2025-II" },
   { id: 2, year: 2025, sequence: "1", name: "Proceso 2025-I" },
 ];
+const academicAreas = [
+  { id: 1, code: "SALUD", name: "Ciencias de la Salud" },
+  { id: 2, code: "ING", name: "Ingenierías" },
+];
+const faculties = [
+  { id: 1, code: "MED", name: "Medicina", academic_area_id: 1 },
+  { id: 2, code: "SIS", name: "Ingeniería de Sistemas", academic_area_id: 2 },
+];
 const overview = { processes: [{ process: processes[0], total_results: 100, admitted_count: 20, absent_count: 10, average_score: "65.5", highest_score: "98.0", majors: [{ major_id: 1, major_code: "ING", major_name: "Ingeniería", total_results: 50, admitted_count: 12, absent_count: 5, average_score: "70" }] }] };
 const comparisonOverview = { processes: [overview.processes[0], { process: processes[1], total_results: 80, admitted_count: 16, absent_count: 8, average_score: "62.5", highest_score: "95.0", majors: [{ major_id: 1, major_code: "ING", major_name: "Ingeniería", total_results: 40, admitted_count: 10, absent_count: 4, average_score: "68" }] }] };
 function LocationProbe() { const location = useLocation(); return <output data-testid="location">{location.search}</output>; }
@@ -32,8 +40,8 @@ describe("DashboardPage", () => {
   beforeEach(() => {
     cleanup();
     vi.mocked(api.usePublishedProcesses).mockReturnValue({ data: processes, isPending: false, isError: false } as unknown as ReturnType<typeof api.usePublishedProcesses>);
-    vi.mocked(api.useAcademicAreas).mockReturnValue({ data: [], isPending: false, isError: false } as unknown as ReturnType<typeof api.useAcademicAreas>);
-    vi.mocked(api.useFaculties).mockReturnValue({ data: [], isPending: false, isError: false } as unknown as ReturnType<typeof api.useFaculties>);
+    vi.mocked(api.useAcademicAreas).mockReturnValue({ data: academicAreas, isPending: false, isError: false } as unknown as ReturnType<typeof api.useAcademicAreas>);
+    vi.mocked(api.useFaculties).mockReturnValue({ data: faculties, isPending: false, isError: false } as unknown as ReturnType<typeof api.useFaculties>);
     vi.mocked(api.useModalities).mockReturnValue({ data: [], isPending: false, isError: false } as unknown as ReturnType<typeof api.useModalities>);
     vi.mocked(api.useAnalyticsOverview).mockReturnValue({
       data: overview,
@@ -71,6 +79,16 @@ describe("DashboardPage", () => {
     expect(screen.getAllByText("Ingeniería").length).toBeGreaterThan(1);
     expect(screen.queryByText("ING")).not.toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Postulantes" })).toBeInTheDocument();
+  });
+
+  it("filters faculty options by the selected academic area", async () => {
+    const user = userEvent.setup();
+    renderPage("/?academic_area=SALUD");
+
+    await user.click(screen.getByText("Filtros"));
+    const faculty = await screen.findByLabelText("Facultad");
+    expect(within(faculty).getByRole("option", { name: "Medicina" })).toBeInTheDocument();
+    expect(within(faculty).queryByRole("option", { name: "Ingeniería de Sistemas" })).not.toBeInTheDocument();
   });
 
   it("filters and sorts the major breakdown", async () => {

@@ -18,6 +18,8 @@ type DashboardControlsProps = {
 export function DashboardControls({ processes, primaryId, comparisons, areas, faculties, modalities, filters, onChange, onFilterChange, onReset }: DashboardControlsProps) {
   const comparisonOptions = processes.filter((process) => String(process.id) !== primaryId);
   const selectedProcesses = comparisonOptions.filter((process) => comparisons.includes(String(process.id)));
+  const selectedArea = areas.find((area) => area.code === filters.academicArea);
+  const availableFaculties = selectedArea ? faculties.filter((faculty) => faculty.academic_area_id === selectedArea.id) : faculties;
   const comparisonSummary = selectedProcesses.length === 1 ? selectedProcesses[0].name : selectedProcesses.length ? `${selectedProcesses.length} procesos seleccionados` : "Selecciona procesos";
   const activeFilters = Object.values(filters).filter(Boolean).length + selectedProcesses.length;
 
@@ -45,7 +47,7 @@ export function DashboardControls({ processes, primaryId, comparisons, areas, fa
             </div>
           </details>
           <FilterSelect label="Área académica" value={filters.academicArea} options={areas.map((item) => [item.code, item.name])} onChange={(value) => onFilterChange("academicArea", value)} />
-          <FilterSelect label="Facultad" value={filters.faculty} options={faculties.map((item) => [item.code, item.name])} onChange={(value) => onFilterChange("faculty", value)} />
+          <FilterSelect label="Facultad" value={filters.faculty} options={availableFaculties.map((item) => [item.code, item.name])} onChange={(value) => onFilterChange("faculty", value)} />
           <FilterSelect label="Modalidad" value={filters.modality} options={modalities.map((item) => [item.name, item.name])} onChange={(value) => onFilterChange("modality", value)} />
           <button className={styles.resetButton} type="button" onClick={onReset}>↻ Restablecer filtros</button>
         </div>
