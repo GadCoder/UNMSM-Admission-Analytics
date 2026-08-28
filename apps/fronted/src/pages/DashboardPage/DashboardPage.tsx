@@ -2,8 +2,8 @@ import { useEffect } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { useAnalyticsOverview, usePublishedProcesses } from "../../shared/api/analytics";
-import type { AdmissionProcess } from "../../shared/api/analytics.types";
 import { DashboardContent } from "./DashboardContent";
+import { DashboardControls } from "./DashboardControls";
 import styles from "./DashboardPage.module.css";
 
 export function DashboardPage() {
@@ -27,13 +27,13 @@ export function DashboardPage() {
   const overviewQuery = useAnalyticsOverview(primaryId, comparisons);
   const selected = overviewQuery.data?.processes ?? [];
   const primary = selected[0];
-  const comparisonData = selected.slice(1);
   const processById = new Map(processes.map((process) => [String(process.id), process]));
 
   const updateSelection = (process: string, compare: string[]) => {
     const next = new URLSearchParams(params);
     if (process) next.set("process", process);
     else next.delete("process");
+
     const safeCompare = compare.filter((id) => id !== process).slice(0, 3);
     if (safeCompare.length) next.set("compare", safeCompare.join(","));
     else next.delete("compare");
@@ -48,67 +48,39 @@ export function DashboardPage() {
         Explora el desempeño de cada proceso de admisión y compara hasta tres convocatorias en un solo lugar.
       </p>
 
-      {processesQuery.isPending && <p role="status" className={styles.state}>Cargando procesos…</p>}
-      {processesQuery.isError && <p role="alert" className={styles.state}>No pudimos cargar los procesos. Intenta nuevamente.</p>}
+      {processesQuery.isPending && (
+        <p role="status" className={styles.state}>Cargando procesos…</p>
+      )}
+      {processesQuery.isError && (
+        <p role="alert" className={styles.state}>No pudimos cargar los procesos. Intenta nuevamente.</p>
+      )}
       {!processesQuery.isPending && !processesQuery.isError && processes.length === 0 && (
         <p className={styles.state}>Aún no hay procesos publicados.</p>
       )}
 
       {processes.length > 0 && (
         <>
-          <ProcessControls
+          <DashboardControls
             processes={processes}
             primaryId={primaryId}
             comparisons={comparisons}
             onChange={updateSelection}
           />
-          {overviewQuery.isPending && <p role="status" className={styles.state}>Cargando indicadores…</p>}
-          {overviewQuery.isError && <p role="alert" className={styles.state}>No pudimos cargar el resumen analítico.</p>}
+          {overviewQuery.isPending && (
+            <p role="status" className={styles.state}>Cargando indicadores…</p>
+          )}
+          {overviewQuery.isError && (
+            <p role="alert" className={styles.state}>No pudimos cargar el resumen analítico.</p>
+          )}
           {overviewQuery.isSuccess && primary && (
-            <DashboardContent primary={primary} comparisons={comparisonData} processById={processById} />
+            <DashboardContent
+              primary={primary}
+              comparisons={selected.slice(1)}
+              processById={processById}
+            />
           )}
         </>
       )}
     </section>
-  );
-}
-
-type ProcessControlsProps = {
-  processes: AdmissionProcess[];
-  primaryId: string;
-  comparisons: string[];
-  onChange: (process: string, comparisons: string[]) => void;
-};
-
-function ProcessControls({ processes, primaryId, comparisons, onChange }: ProcessControlsProps) {
-  return (
-    <div className={styles.controls} aria-label="Selección de procesos">
-      <label htmlFor="primary-process">
-        Proceso principal
-        <select
-          id="primary-process"
-          value={primaryId}
-          onChange={(event) => onChange(event.target.value, comparisons)}
-        >
-          {processes.map((process) => (
-            <option key={process.id} value={process.id}>{process.name}</option>
-          ))}
-        </select>
-      </label>
-      <label htmlFor="comparison-processes">
-        Comparar con
-        <select
-          id="comparison-processes"
-          multiple
-          value={comparisons}
-          onChange={(event) => onChange(primaryId, Array.from(event.target.selectedOptions, (option) => option.value))}
-        >
-          {processes
-            .filter((process) => String(process.id) !== primaryId)
-            .map((process) => <option key={process.id} value={process.id}>{process.name}</option>)}
-        </select>
-        <small>Selecciona hasta 3 procesos.</small>
-      </label>
-    </div>
   );
 }
