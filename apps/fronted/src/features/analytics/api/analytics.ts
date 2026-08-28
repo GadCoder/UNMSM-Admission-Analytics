@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { apiFetch } from "../../../shared/api/client";
 import type { AcademicArea, AdmissionProcess, ComparativeOverview, Faculty, Modality } from "./analytics.types";
@@ -25,5 +25,10 @@ export function useFaculties() { return useQuery({ queryKey: ["faculties"], quer
 export function useModalities() { return useQuery({ queryKey: ["modalities"], queryFn: getModalities, staleTime: 300000 }); }
 
 export function useAnalyticsOverview(primary: string, comparisons: string[], filters: AnalyticsFilters = {}) {
-  return useQuery({ queryKey: ["analytics-overview", primary, comparisons, filters], queryFn: () => getAnalyticsOverview(primary, comparisons, filters), enabled: Boolean(primary) });
+  return useQuery({
+    queryKey: ["analytics-overview", primary, comparisons, filters],
+    queryFn: () => getAnalyticsOverview(primary, comparisons, filters),
+    enabled: Boolean(primary),
+    placeholderData: keepPreviousData,
+  });
 }
