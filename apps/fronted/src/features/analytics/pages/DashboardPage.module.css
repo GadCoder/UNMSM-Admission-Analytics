@@ -72,7 +72,11 @@ tbody tr:hover { background:#fdfafa; }
 .majorApplicants { color:var(--color-text); font-size:.7rem; font-weight:700; font-variant-numeric:tabular-nums; }
 .majorRankingTrack { height:.4rem; margin:.3rem 0 .25rem 2rem; overflow:hidden; border-radius:999px; background:#f0e8e8; }
 .majorRankingTrack span { display:block; height:100%; border-radius:inherit; background:linear-gradient(90deg,var(--color-primary),#b98184); }
-.majorRankingMeta { display:flex; justify-content:flex-start; gap:var(--space-3); margin-left:2rem; color:var(--color-muted); font-size:.62rem; }
+.majorComparisonRow { display:grid; grid-template-columns:minmax(6.5rem,auto) minmax(0,1fr); align-items:center; gap:var(--space-2); margin-top:.5rem; }
+.majorProcess { overflow:hidden; color:var(--color-muted); font-size:.62rem; text-overflow:ellipsis; white-space:nowrap; }
+.majorComparisonRow .majorRankingTrack { margin:0; }
+.majorComparisonRow .majorRankingMeta { grid-column:2; margin:0; }
+.chartLegend { margin:-.75rem 0 0; color:var(--color-muted); font-size:.65rem; }
 .chartInsight { margin:var(--space-4) 0 0; padding:var(--space-3) var(--space-4); border-left:3px solid var(--color-primary); background:var(--color-primary-soft); color:var(--color-muted); font-size:.7rem; line-height:1.45; }
 .chartInsight strong { color:var(--color-primary); }
 .state { margin-top:var(--space-8); padding:var(--space-5); border-radius:var(--radius-md); background:var(--color-surface); color:var(--color-muted); }
