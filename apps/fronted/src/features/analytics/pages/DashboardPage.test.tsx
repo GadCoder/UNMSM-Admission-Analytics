@@ -108,7 +108,10 @@ describe("DashboardPage", () => {
     const user = userEvent.setup();
     renderPage("/?academic_area=SALUD");
 
-    await user.click(screen.getByText("Filtros"));
+    const performanceSection = screen.getByRole("region", { name: "Desempeño por carrera" });
+    expect(within(performanceSection).getByText("Filtros")).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Selección de procesos y filtros" })).not.toBeInTheDocument();
+    await user.click(within(performanceSection).getByText("Filtros"));
     const faculty = await screen.findByLabelText("Facultad");
     expect(within(faculty).getByRole("option", { name: "Medicina" })).toBeInTheDocument();
     expect(within(faculty).queryByRole("option", { name: "Ingeniería de Sistemas" })).not.toBeInTheDocument();
@@ -118,7 +121,8 @@ describe("DashboardPage", () => {
     const user = userEvent.setup();
     renderPage();
 
-    await user.click(screen.getByText("Filtros"));
+    const performanceSection = screen.getByRole("region", { name: "Desempeño por carrera" });
+    await user.click(within(performanceSection).getByText("Filtros"));
     expect(screen.getByLabelText("Facultad")).toBeVisible();
 
     await user.click(document.body);

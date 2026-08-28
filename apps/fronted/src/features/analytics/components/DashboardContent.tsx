@@ -1,4 +1,5 @@
 import type { AdmissionProcess, ProcessOverview } from "../api/analytics.types";
+import type { ReactNode } from "react";
 import { ProcessComparisonChart } from "./AnalyticsCharts";
 import { ComparisonSummary } from "./ComparisonSummary";
 import { KpiGrid } from "./KpiGrid";
@@ -10,12 +11,14 @@ type DashboardContentProps = {
   primary: ProcessOverview;
   comparisons: ProcessOverview[];
   processById: Map<string, AdmissionProcess>;
+  filterControls: ReactNode;
 };
 
 export function DashboardContent({
   primary,
   comparisons,
   processById,
+  filterControls,
 }: DashboardContentProps) {
   return (
     <>
@@ -27,7 +30,7 @@ export function DashboardContent({
       />
       <ProcessComparisonChart overviews={[primary, ...comparisons]} />
       <MajorDemandRanking overview={primary} comparisons={comparisons} />
-      <MajorBreakdown overview={primary} />
+      <MajorBreakdown overview={primary} filterControls={filterControls} />
     </>
   );
 }

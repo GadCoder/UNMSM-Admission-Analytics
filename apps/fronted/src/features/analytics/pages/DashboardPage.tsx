@@ -3,7 +3,7 @@ import { useSearchParams } from "react-router-dom";
 
 import * as api from "../api/analytics";
 import { DashboardContent } from "../components/DashboardContent";
-import { DashboardControls } from "../components/DashboardControls";
+import { DashboardControls, DashboardFilterControls } from "../components/DashboardControls";
 import styles from "./DashboardPage.module.css";
 
 export function DashboardPage() {
@@ -77,26 +77,7 @@ export function DashboardPage() {
             processes={processes}
             primaryId={primaryId}
             comparisons={comparisons}
-            areas={areasQuery.data ?? []}
-            faculties={facultiesQuery.data ?? []}
-            modalities={modalitiesQuery.data ?? []}
-            filters={filters}
             onChange={updateSelection}
-            onFilterChange={(key, value) => {
-              const next = new URLSearchParams(params);
-              const param = key === "academicArea" ? "academic_area" : key;
-              if (value) next.set(param, value); else next.delete(param);
-              if (key === "academicArea") next.delete("faculty");
-              setParams(next);
-            }}
-            onReset={() => {
-              const next = new URLSearchParams(params);
-              next.delete("compare");
-              next.delete("academic_area");
-              next.delete("faculty");
-              next.delete("modality");
-              setParams(next);
-            }}
           />
           {overviewQuery.isPending && (
             <p role="status" className={styles.state}>Cargando indicadores…</p>
@@ -109,6 +90,27 @@ export function DashboardPage() {
               primary={primary}
               comparisons={selected.slice(1)}
               processById={processById}
+              filterControls={<DashboardFilterControls
+                areas={areasQuery.data ?? []}
+                faculties={facultiesQuery.data ?? []}
+                modalities={modalitiesQuery.data ?? []}
+                filters={filters}
+                onFilterChange={(key, value) => {
+                  const next = new URLSearchParams(params);
+                  const param = key === "academicArea" ? "academic_area" : key;
+                  if (value) next.set(param, value); else next.delete(param);
+                  if (key === "academicArea") next.delete("faculty");
+                  setParams(next);
+                }}
+                onReset={() => {
+                  const next = new URLSearchParams(params);
+                  next.delete("compare");
+                  next.delete("academic_area");
+                  next.delete("faculty");
+                  next.delete("modality");
+                  setParams(next);
+                }}
+              />}
             />
           )}
         </>
