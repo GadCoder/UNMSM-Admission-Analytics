@@ -1,0 +1,797 @@
+{
+  "areas": [
+    {
+      "id": 1,
+      "name": "Ciencias de la Salud",
+      "slug": "A"
+    },
+    {
+      "id": 2,
+      "name": "Ciencias Básicas",
+      "slug": "B"
+    },
+    {
+      "id": 3,
+      "name": "Ingenierías",
+      "slug": "C"
+    },
+    {
+      "id": 4,
+      "name": "Ciencias Económicas y de la Gestión",
+      "slug": "D"
+    },
+    {
+      "id": 5,
+      "name": "Humanidades y Ciencias Jurídicas y Sociales",
+      "slug": "E"
+    }
+  ],
+  "faculties": [
+    {
+      "name": "Facultad de Educación",
+      "slug": "facultad-de-educacion",
+      "academic_area_name": "Humanidades y Ciencias Jurídicas y Sociales",
+      "code": "F1"
+    },
+    {
+      "name": "Facultad de Ciencias Administrativas",
+      "slug": "facultad-de-ciencias-administrativas",
+      "academic_area_name": "Ciencias Económicas y de la Gestión",
+      "code": "F2"
+    },
+    {
+      "name": "Facultad de Ciencias Biológicas",
+      "slug": "facultad-de-ciencias-biologicas",
+      "academic_area_name": "Ciencias Básicas",
+      "code": "F3"
+    },
+    {
+      "name": "Facultad de Ciencias Contables",
+      "slug": "facultad-de-ciencias-contables",
+      "academic_area_name": "Ciencias Económicas y de la Gestión",
+      "code": "F4"
+    },
+    {
+      "name": "Facultad de Ciencias Económicas",
+      "slug": "facultad-de-ciencias-economicas",
+      "academic_area_name": "Ciencias Económicas y de la Gestión",
+      "code": "F5"
+    },
+    {
+      "name": "Facultad de Ciencias Físicas",
+      "slug": "facultad-de-ciencias-fisicas",
+      "academic_area_name": "Ciencias Básicas",
+      "code": "F6"
+    },
+    {
+      "name": "Facultad de Ciencias Matemáticas",
+      "slug": "facultad-de-ciencias-matematicas",
+      "academic_area_name": "Ciencias Básicas",
+      "code": "F7"
+    },
+    {
+      "name": "Facultad de Ciencias Sociales",
+      "slug": "facultad-de-ciencias-sociales",
+      "academic_area_name": "Humanidades y Ciencias Jurídicas y Sociales",
+      "code": "F8"
+    },
+    {
+      "name": "Facultad de Derecho y Ciencia Política",
+      "slug": "facultad-de-derecho-y-ciencia-politica",
+      "academic_area_name": "Humanidades y Ciencias Jurídicas y Sociales",
+      "code": "F9"
+    },
+    {
+      "name": "Facultad de Farmacia y Bioquímica",
+      "slug": "facultad-de-farmacia-y-bioquimica",
+      "academic_area_name": "Ciencias de la Salud",
+      "code": "F10"
+    },
+    {
+      "name": "Facultad de Ingeniería de Sistemas e Informática",
+      "slug": "facultad-de-ingenieria-de-sistemas-e-informatica",
+      "academic_area_name": "Ingenierías",
+      "code": "F11"
+    },
+    {
+      "name": "Facultad de Ingeniería Electrónica y Eléctrica",
+      "slug": "facultad-de-ingenieria-electronica-y-electrica",
+      "academic_area_name": "Ingenierías",
+      "code": "F12"
+    },
+    {
+      "name": "Facultad de Ingeniería Geológica, Minera, Metalúrgica y Geográfica",
+      "slug": "facultad-de-ingenieria-geologica-minera-metalurgica-y-geografica",
+      "academic_area_name": "Ingenierías",
+      "code": "F13"
+    },
+    {
+      "name": "Facultad de Ingeniería Industrial",
+      "slug": "facultad-de-ingenieria-industrial",
+      "academic_area_name": "Ingenierías",
+      "code": "F14"
+    },
+    {
+      "name": "Facultad de Letras y Ciencias Humanas",
+      "slug": "facultad-de-letras-y-ciencias-humanas",
+      "academic_area_name": "Humanidades y Ciencias Jurídicas y Sociales",
+      "code": "F15"
+    },
+    {
+      "name": "Facultad de Medicina San Fernando",
+      "slug": "facultad-de-medicina-san-fernando",
+      "academic_area_name": "Ciencias de la Salud",
+      "code": "F16"
+    },
+    {
+      "name": "Facultad de Medicina Veterinaria",
+      "slug": "facultad-de-medicina-veterinaria",
+      "academic_area_name": "Ciencias de la Salud",
+      "code": "F17"
+    },
+    {
+      "name": "Facultad de Odontología",
+      "slug": "facultad-de-odontologia",
+      "academic_area_name": "Ciencias de la Salud",
+      "code": "F18"
+    },
+    {
+      "name": "Facultad de Psicología",
+      "slug": "facultad-de-psicologia",
+      "academic_area_name": "Ciencias de la Salud",
+      "code": "F19"
+    },
+    {
+      "name": "Facultad de Química e Ingeniería Química",
+      "slug": "facultad-de-quimica-e-ingenieria-quimica",
+      "academic_area_name": "Ingenierías",
+      "code": "F20"
+    }
+  ],
+  "majors": [
+    {
+      "name": "Ciencia de los Alimentos",
+      "slug": "ciencia-de-los-alimentos",
+      "code": "M1",
+      "faculty_slug": "facultad-de-farmacia-y-bioquimica",
+      "academic_area_slug": "A"
+    },
+    {
+      "name": "Enfermería",
+      "slug": "enfermeria",
+      "code": "M2",
+      "faculty_slug": "facultad-de-medicina-san-fernando",
+      "academic_area_slug": "A"
+    },
+    {
+      "name": "Farmacia y Bioquímica",
+      "slug": "farmacia-y-bioquimica",
+      "code": "M3",
+      "faculty_slug": "facultad-de-farmacia-y-bioquimica",
+      "academic_area_slug": "A"
+    },
+    {
+      "name": "Medicina Humana",
+      "slug": "medicina-humana",
+      "code": "M4",
+      "faculty_slug": "facultad-de-medicina-san-fernando",
+      "academic_area_slug": "A"
+    },
+    {
+      "name": "Medicina Veterinaria",
+      "slug": "medicina-veterinaria",
+      "code": "M5",
+      "faculty_slug": "facultad-de-medicina-veterinaria",
+      "academic_area_slug": "A"
+    },
+    {
+      "name": "Nutrición",
+      "slug": "nutricion",
+      "code": "M6",
+      "faculty_slug": "facultad-de-medicina-san-fernando",
+      "academic_area_slug": "A"
+    },
+    {
+      "name": "Obstetricia",
+      "slug": "obstetricia",
+      "code": "M7",
+      "faculty_slug": "facultad-de-medicina-san-fernando",
+      "academic_area_slug": "A"
+    },
+    {
+      "name": "Odontología",
+      "slug": "odontologia",
+      "code": "M8",
+      "faculty_slug": "facultad-de-odontologia",
+      "academic_area_slug": "A"
+    },
+    {
+      "name": "Psicología",
+      "slug": "psicologia",
+      "code": "M9",
+      "faculty_slug": "facultad-de-psicologia",
+      "academic_area_slug": "A"
+    },
+    {
+      "name": "Psicología Organizacional y de la Gestión Humana",
+      "slug": "psicologia-organizacional-y-de-la-gestion-humana",
+      "code": "M10",
+      "faculty_slug": "facultad-de-psicologia",
+      "academic_area_slug": "A"
+    },
+    {
+      "name": "Tecnología Médica",
+      "slug": "tecnologia-medica",
+      "code": "M11",
+      "faculty_slug": "facultad-de-medicina-san-fernando",
+      "academic_area_slug": "A"
+    },
+    {
+      "name": "Toxicología",
+      "slug": "toxicologia",
+      "code": "M12",
+      "faculty_slug": "facultad-de-farmacia-y-bioquimica",
+      "academic_area_slug": "A"
+    },
+    {
+      "name": "Ciencias Biológicas",
+      "slug": "ciencias-biologicas",
+      "code": "M13",
+      "faculty_slug": "facultad-de-ciencias-biologicas",
+      "academic_area_slug": "B"
+    },
+    {
+      "name": "Computación Científica",
+      "slug": "computacion-cientifica",
+      "code": "M14",
+      "faculty_slug": "facultad-de-ciencias-matematicas",
+      "academic_area_slug": "B"
+    },
+    {
+      "name": "Estadística",
+      "slug": "estadistica",
+      "code": "M15",
+      "faculty_slug": "facultad-de-ciencias-matematicas",
+      "academic_area_slug": "B"
+    },
+    {
+      "name": "Física",
+      "slug": "fisica",
+      "code": "M16",
+      "faculty_slug": "facultad-de-ciencias-fisicas",
+      "academic_area_slug": "B"
+    },
+    {
+      "name": "Genética y Biotecnología",
+      "slug": "genetica-y-biotecnologia",
+      "code": "M17",
+      "faculty_slug": "facultad-de-ciencias-biologicas",
+      "academic_area_slug": "B"
+    },
+    {
+      "name": "Geofísica",
+      "slug": "geofisica",
+      "code": "M18",
+      "faculty_slug": "facultad-de-ciencias-fisicas",
+      "academic_area_slug": "B"
+    },
+    {
+      "name": "Ingeniería Mecánica de Fluidos",
+      "slug": "ingenieria-mecanica-de-fluidos",
+      "code": "M19",
+      "faculty_slug": "facultad-de-ciencias-fisicas",
+      "academic_area_slug": "B"
+    },
+    {
+      "name": "Investigación Operativa",
+      "slug": "investigacion-operativa",
+      "code": "M20",
+      "faculty_slug": "facultad-de-ciencias-matematicas",
+      "academic_area_slug": "B"
+    },
+    {
+      "name": "Matemática",
+      "slug": "matematica",
+      "code": "M21",
+      "faculty_slug": "facultad-de-ciencias-matematicas",
+      "academic_area_slug": "B"
+    },
+    {
+      "name": "Microbiología y Parasitología",
+      "slug": "microbiologia-y-parasitologia",
+      "code": "M22",
+      "faculty_slug": "facultad-de-ciencias-biologicas",
+      "academic_area_slug": "B"
+    },
+    {
+      "name": "Arquitectura y Urbanismo",
+      "slug": "arquitectura-y-urbanismo",
+      "code": "M23",
+      "faculty_slug": "facultad-de-ingenieria-geologica-minera-metalurgica-y-geografica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ciencia de la Computación",
+      "slug": "ciencia-de-la-computacion",
+      "code": "M24",
+      "faculty_slug": "facultad-de-ingenieria-de-sistemas-e-informatica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería Agroindustrial",
+      "slug": "ingenieria-agroindustrial",
+      "code": "M25",
+      "faculty_slug": "facultad-de-quimica-e-ingenieria-quimica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería Ambiental",
+      "slug": "ingenieria-ambiental",
+      "code": "M26",
+      "faculty_slug": "facultad-de-ingenieria-geologica-minera-metalurgica-y-geografica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería Biomédica",
+      "slug": "ingenieria-biomedica",
+      "code": "M27",
+      "faculty_slug": "facultad-de-ingenieria-electronica-y-electrica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería Civil",
+      "slug": "ingenieria-civil",
+      "code": "M28",
+      "faculty_slug": "facultad-de-ingenieria-geologica-minera-metalurgica-y-geografica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería de Minas",
+      "slug": "ingenieria-de-minas",
+      "code": "M29",
+      "faculty_slug": "facultad-de-ingenieria-geologica-minera-metalurgica-y-geografica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería de Seguridad y Salud en el Trabajo",
+      "slug": "ingenieria-de-seguridad-y-salud-en-el-trabajo",
+      "code": "M30",
+      "faculty_slug": "facultad-de-ingenieria-industrial",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería de Sistemas",
+      "slug": "ingenieria-de-sistemas",
+      "code": "M31",
+      "faculty_slug": "facultad-de-ingenieria-de-sistemas-e-informatica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería de Software",
+      "slug": "ingenieria-de-software",
+      "code": "M32",
+      "faculty_slug": "facultad-de-ingenieria-de-sistemas-e-informatica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería de Telecomunicaciones",
+      "slug": "ingenieria-de-telecomunicaciones",
+      "code": "M33",
+      "faculty_slug": "facultad-de-ingenieria-electronica-y-electrica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería de Transportes y Sistemas Ferroviarios",
+      "slug": "ingenieria-de-transportes-y-sistemas-ferroviarios",
+      "code": "M34",
+      "faculty_slug": "facultad-de-ingenieria-industrial",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería del Agua y Tecnologías de Tratamientos",
+      "slug": "ingenieria-del-agua-y-tecnologias-de-tratamientos",
+      "code": "M35",
+      "faculty_slug": "facultad-de-quimica-e-ingenieria-quimica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería Eléctrica",
+      "slug": "ingenieria-electrica",
+      "code": "M36",
+      "faculty_slug": "facultad-de-ingenieria-electronica-y-electrica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería Electrónica",
+      "slug": "ingenieria-electronica",
+      "code": "M37",
+      "faculty_slug": "facultad-de-ingenieria-electronica-y-electrica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería Geográfica",
+      "slug": "ingenieria-geografica",
+      "code": "M38",
+      "faculty_slug": "facultad-de-ingenieria-geologica-minera-metalurgica-y-geografica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería Geológica",
+      "slug": "ingenieria-geologica",
+      "code": "M39",
+      "faculty_slug": "facultad-de-ingenieria-geologica-minera-metalurgica-y-geografica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería Industrial",
+      "slug": "ingenieria-industrial",
+      "code": "M40",
+      "faculty_slug": "facultad-de-ingenieria-industrial",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería Logística y Cadena de Suministro Digital",
+      "slug": "ingenieria-logistica-y-cadena-de-suministro-digital",
+      "code": "M41",
+      "faculty_slug": "facultad-de-ingenieria-industrial",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería Mecatrónica",
+      "slug": "ingenieria-mecatronica",
+      "code": "M42",
+      "faculty_slug": "facultad-de-ingenieria-electronica-y-electrica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería Metalúrgica",
+      "slug": "ingenieria-metalurgica",
+      "code": "M43",
+      "faculty_slug": "facultad-de-ingenieria-geologica-minera-metalurgica-y-geografica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería Nuclear",
+      "slug": "ingenieria-nuclear",
+      "code": "M44",
+      "faculty_slug": "facultad-de-ingenieria-electronica-y-electrica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería Química",
+      "slug": "ingenieria-quimica",
+      "code": "M45",
+      "faculty_slug": "facultad-de-quimica-e-ingenieria-quimica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Ingeniería Textil y Confecciones",
+      "slug": "ingenieria-textil-y-confecciones",
+      "code": "M46",
+      "faculty_slug": "facultad-de-ingenieria-industrial",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Inteligencia Artificial",
+      "slug": "inteligencia-artificial",
+      "code": "M47",
+      "faculty_slug": "facultad-de-ingenieria-de-sistemas-e-informatica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Química",
+      "slug": "quimica",
+      "code": "M48",
+      "faculty_slug": "facultad-de-quimica-e-ingenieria-quimica",
+      "academic_area_slug": "C"
+    },
+    {
+      "name": "Administración",
+      "slug": "administracion",
+      "code": "M49",
+      "faculty_slug": "facultad-de-ciencias-administrativas",
+      "academic_area_slug": "D"
+    },
+    {
+      "name": "Administración de la Gastronomía",
+      "slug": "administracion-de-la-gastronomia",
+      "code": "M50",
+      "faculty_slug": "facultad-de-ciencias-administrativas",
+      "academic_area_slug": "D"
+    },
+    {
+      "name": "Administración de Negocios Internacionales",
+      "slug": "administracion-de-negocios-internacionales",
+      "code": "M51",
+      "faculty_slug": "facultad-de-ciencias-administrativas",
+      "academic_area_slug": "D"
+    },
+    {
+      "name": "Administración de Turismo",
+      "slug": "administracion-de-turismo",
+      "code": "M52",
+      "faculty_slug": "facultad-de-ciencias-administrativas",
+      "academic_area_slug": "D"
+    },
+    {
+      "name": "Administración Marítima y Portuaria",
+      "slug": "administracion-maritima-y-portuaria",
+      "code": "M53",
+      "faculty_slug": "facultad-de-ciencias-administrativas",
+      "academic_area_slug": "D"
+    },
+    {
+      "name": "Auditoría Empresarial y del Sector Público",
+      "slug": "auditoria-empresarial-y-del-sector-publico",
+      "code": "M54",
+      "faculty_slug": "facultad-de-ciencias-contables",
+      "academic_area_slug": "D"
+    },
+    {
+      "name": "Contabilidad",
+      "slug": "contabilidad",
+      "code": "M55",
+      "faculty_slug": "facultad-de-ciencias-contables",
+      "academic_area_slug": "D"
+    },
+    {
+      "name": "Criminalística Financiera Forense",
+      "slug": "criminalistica-financiera-forense",
+      "code": "M56",
+      "faculty_slug": "facultad-de-ciencias-contables",
+      "academic_area_slug": "D"
+    },
+    {
+      "name": "Economía",
+      "slug": "economia",
+      "code": "M57",
+      "faculty_slug": "facultad-de-ciencias-economicas",
+      "academic_area_slug": "D"
+    },
+    {
+      "name": "Economía Internacional",
+      "slug": "economia-internacional",
+      "code": "M58",
+      "faculty_slug": "facultad-de-ciencias-economicas",
+      "academic_area_slug": "D"
+    },
+    {
+      "name": "Economía Pública",
+      "slug": "economia-publica",
+      "code": "M59",
+      "faculty_slug": "facultad-de-ciencias-economicas",
+      "academic_area_slug": "D"
+    },
+    {
+      "name": "Gestión Tributaria",
+      "slug": "gestion-tributaria",
+      "code": "M60",
+      "faculty_slug": "facultad-de-ciencias-contables",
+      "academic_area_slug": "D"
+    },
+    {
+      "name": "Marketing",
+      "slug": "marketing",
+      "code": "M61",
+      "faculty_slug": "facultad-de-ciencias-administrativas",
+      "academic_area_slug": "D"
+    },
+    {
+      "name": "Presupuesto y Finanzas Públicas",
+      "slug": "presupuesto-y-finanzas-publicas",
+      "code": "M62",
+      "faculty_slug": "facultad-de-ciencias-contables",
+      "academic_area_slug": "D"
+    },
+    {
+      "name": "Antropología",
+      "slug": "antropologia",
+      "code": "M63",
+      "faculty_slug": "facultad-de-ciencias-sociales",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Arqueología",
+      "slug": "arqueologia",
+      "code": "M64",
+      "faculty_slug": "facultad-de-ciencias-sociales",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Arte",
+      "slug": "arte",
+      "code": "M65",
+      "faculty_slug": "facultad-de-letras-y-ciencias-humanas",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Bibliotecología y Ciencias de la Información",
+      "slug": "bibliotecologia-y-ciencias-de-la-informacion",
+      "code": "M66",
+      "faculty_slug": "facultad-de-letras-y-ciencias-humanas",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Ciencia Política",
+      "slug": "ciencia-politica",
+      "code": "M67",
+      "faculty_slug": "facultad-de-derecho-y-ciencia-politica",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Comunicación Social",
+      "slug": "comunicacion-social",
+      "code": "M68",
+      "faculty_slug": "facultad-de-letras-y-ciencias-humanas",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Conservación y Restauración",
+      "slug": "conservacion-y-restauracion",
+      "code": "M69",
+      "faculty_slug": "facultad-de-letras-y-ciencias-humanas",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Danza",
+      "slug": "danza",
+      "code": "M70",
+      "faculty_slug": "facultad-de-letras-y-ciencias-humanas",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Derecho",
+      "slug": "derecho",
+      "code": "M71",
+      "faculty_slug": "facultad-de-derecho-y-ciencia-politica",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Educación",
+      "slug": "educacion",
+      "code": "M72",
+      "faculty_slug": "facultad-de-educacion",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Educación Física",
+      "slug": "educacion-fisica",
+      "code": "M73",
+      "faculty_slug": "facultad-de-educacion",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Filosofía",
+      "slug": "filosofia",
+      "code": "M74",
+      "faculty_slug": "facultad-de-letras-y-ciencias-humanas",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Geografía",
+      "slug": "geografia",
+      "code": "M75",
+      "faculty_slug": "facultad-de-ciencias-sociales",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Historia",
+      "slug": "historia",
+      "code": "M76",
+      "faculty_slug": "facultad-de-ciencias-sociales",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Lenguas, Traducción e Interpretación",
+      "slug": "lenguas-traduccion-e-interpretacion",
+      "code": "M77",
+      "faculty_slug": "facultad-de-letras-y-ciencias-humanas",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Lingüística",
+      "slug": "linguistica",
+      "code": "M78",
+      "faculty_slug": "facultad-de-letras-y-ciencias-humanas",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Literatura",
+      "slug": "literatura",
+      "code": "M79",
+      "faculty_slug": "facultad-de-letras-y-ciencias-humanas",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Sociología",
+      "slug": "sociologia",
+      "code": "M80",
+      "faculty_slug": "facultad-de-ciencias-sociales",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Trabajo Social",
+      "slug": "trabajo-social",
+      "code": "M81",
+      "faculty_slug": "facultad-de-ciencias-sociales",
+      "academic_area_slug": "E"
+    },
+    {
+      "name": "Ciencia de los Alimentos",
+      "slug": "ciencia-de-los-alimentos",
+      "faculty_slug": "facultad-de-farmacia-y-bioquimica",
+      "academic_area_slug": "A",
+      "code": "M82"
+    },
+    {
+      "name": "Educación Inicial",
+      "slug": "educación-inicial",
+      "faculty_slug": "facultad-de-educacion",
+      "academic_area_slug": "E",
+      "code": "M83"
+    },
+    {
+      "name": "Educación Primaria",
+      "slug": "educación-primaria",
+      "faculty_slug": "facultad-de-educacion",
+      "academic_area_slug": "E",
+      "code": "M84"
+    },
+    {
+      "name": "Educación Secundaria",
+      "slug": "educación-secundaria",
+      "faculty_slug": "facultad-de-educacion",
+      "academic_area_slug": "E",
+      "code": "M85"
+    },
+    {
+      "name": "Ingeniería del Agua y Tecnologías de Tratamientos",
+      "slug": "ingeniería-del-agua-y-tecnologías-de-tratamientos",
+      "faculty_slug": "facultad-de-quimica-e-ingenieria-quimica",
+      "academic_area_slug": "C",
+      "code": "M86"
+    },
+    {
+      "name": "Inteligencia Artificial",
+      "slug": "inteligencia-artificial",
+      "faculty_slug": "facultad-de-ingenieria-de-sistemas-e-informatica",
+      "academic_area_slug": "C",
+      "code": "M87"
+    },
+    {
+      "name": "Ingeniería Logística y Cadena de Suministro Digital",
+      "slug": "ingeniería-logística-y-cadena-de-suministro-digital",
+      "faculty_slug": "facultad-de-ingenieria-industrial",
+      "academic_area_slug": "C",
+      "code": "M88"
+    },
+    {
+      "name": "Tecnología Médica — Laboratorio Clínico y Anatomía Patológica",
+      "slug": "tecnología-médica-—-laboratorio-clínico-y-anatomía-patológica",
+      "faculty_slug": "facultad-de-medicina-san-fernando",
+      "academic_area_slug": "A",
+      "code": "M89"
+    },
+    {
+      "name": "Tecnología Médica — Radiología",
+      "slug": "tecnología-médica-—-radiología",
+      "faculty_slug": "facultad-de-medicina-san-fernando",
+      "academic_area_slug": "A",
+      "code": "M90"
+    },
+    {
+      "name": "Tecnología Médica — Terapia Física y Rehabilitación",
+      "slug": "tecnología-médica-—-terapia-física-y-rehabilitación",
+      "faculty_slug": "facultad-de-medicina-san-fernando",
+      "academic_area_slug": "A",
+      "code": "M91"
+    },
+    {
+      "name": "Tecnología Médica — Terapia Ocupacional",
+      "slug": "tecnología-médica-—-terapia-ocupacional",
+      "faculty_slug": "facultad-de-medicina-san-fernando",
+      "academic_area_slug": "A",
+      "code": "M92"
+    }
+  ]
+}
