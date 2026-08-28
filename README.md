@@ -38,7 +38,52 @@ The backend and fronted application have separate setup instructions.
 For the frontend, see [`apps/fronted/README.md`](apps/fronted/README.md). From that
 directory, run `npm install` and `npm run dev`.
 
-## Development Workflow
+## Validation
+
+Frontend checks:
+
+```bash
+cd apps/fronted
+npm test
+npm run lint
+npm run build
+```
+
+Backend checks:
+
+```bash
+cd apps/backend
+uv run pytest -q
+uv run ruff check .
+uv run python manage.py check --deploy
+```
+
+To validate the local containers, start the stack with PostgreSQL on an alternate
+host port when `5432` is already in use:
+
+```bash
+set -eu
+POSTGRES_PORT=55432 docker compose up -d postgres backend
+ready=false
+for i in $(seq 1 30); do
+  if curl -fsS http://localhost:8000/health/; then
+    ready=true
+    break
+  fi
+  sleep 1
+done
+$ready
+```
+
+The backend image collects static files as the non-root `appuser`; Compose keeps
+those files in the named `backend_staticfiles` volume so the development bind
+mount does not mask the writable directory.
+
+`check --deploy` intentionally reports HTTPS/cookie/HSTS warnings with local
+settings. Production must provide a strong `DJANGO_SECRET_KEY`, disable debug,
+and enable the relevant secure transport settings at the reverse proxy and
+Django configuration.
+
 
 The repository follows Gitflow:
 

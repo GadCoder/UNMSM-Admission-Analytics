@@ -12,6 +12,7 @@ RUN pip install --no-cache-dir .
 COPY . .
 
 RUN useradd --create-home --uid 10001 appuser \
+    && mkdir -p /app/staticfiles \
     && chown -R appuser:appuser /app
 
 USER appuser
