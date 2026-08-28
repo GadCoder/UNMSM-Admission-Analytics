@@ -235,10 +235,10 @@ def test_comparative_overview_returns_not_found_for_unpublished_compare_process(
 
 
 @pytest.mark.django_db
-def test_comparative_overview_rejects_more_than_six_unique_processes(client):
+def test_comparative_overview_rejects_more_than_four_unique_processes(client):
     processes = [
         AdmissionProcess.objects.create(year=2020 + index, sequence=f"{index}-1")
-        for index in range(7)
+        for index in range(5)
     ]
 
     response = client.get(
@@ -247,14 +247,14 @@ def test_comparative_overview_rejects_more_than_six_unique_processes(client):
     )
 
     assert response.status_code == 400
-    assert "6" in response.json()["detail"]
+    assert "4" in response.json()["detail"]
 
 
 @pytest.mark.django_db
-def test_comparative_overview_allows_six_unique_processes(client):
+def test_comparative_overview_allows_four_unique_processes(client):
     processes = [
         AdmissionProcess.objects.create(year=2020 + index, sequence=f"{index}-1")
-        for index in range(6)
+        for index in range(4)
     ]
 
     response = client.get(
@@ -290,12 +290,12 @@ def test_comparative_overview_rejects_excessively_long_numeric_id(client):
 
 
 @pytest.mark.django_db
-def test_comparative_overview_uses_bulk_aggregation_for_six_processes(
+def test_comparative_overview_uses_bulk_aggregation_for_four_processes(
     client, django_assert_num_queries
 ):
     processes = [
         AdmissionProcess.objects.create(year=2020 + index, sequence=f"{index}-1")
-        for index in range(6)
+        for index in range(4)
     ]
 
     with django_assert_num_queries(3):

@@ -26,7 +26,7 @@ class LatestProcessOverviewView(APIView):
 
 
 class ComparativeOverviewView(APIView):
-    max_processes = 6
+    max_processes = 4
     max_id_digits = 10
 
     @extend_schema(
@@ -36,14 +36,14 @@ class ComparativeOverviewView(APIView):
                 type=OpenApiTypes.STR,
                 location=OpenApiParameter.QUERY,
                 required=True,
-                description="Required comma-separated positive integer process IDs (maximum 6 unique IDs total).",
+                description="Required comma-separated positive integer process IDs (maximum 4 unique IDs total).",
             ),
             OpenApiParameter(
                 name="compare",
                 type=OpenApiTypes.STR,
                 location=OpenApiParameter.QUERY,
                 required=False,
-                description="Optional comma-separated positive integer process IDs (maximum 6 unique IDs total).",
+                description="Optional comma-separated positive integer process IDs (maximum 4 unique IDs total).",
             ),
         ],
         responses={
