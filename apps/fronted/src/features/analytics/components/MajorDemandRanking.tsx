@@ -22,7 +22,7 @@ function RankingBar({ major, overview }: { major: MajorOverview; overview: Proce
   return <div className={styles.majorComparisonRow}>
     <span className={styles.majorProcess}>{overview.process.name}</span>
     <div className={styles.majorRankingTrack} aria-hidden="true"><span style={{ width: `${Math.min(metrics.share, 100)}%` }} /></div>
-    <div className={styles.majorRankingMeta}><span>{formatNumber(major.total_results)} postulantes</span><span>{formatNumber(metrics.share, 1)}% del total</span></div>
+    <div className={styles.majorRankingMeta}><span>{formatNumber(major.total_results)} postulantes</span><span>{formatNumber(metrics.share, 1)}% del total de postulantes</span></div>
   </div>;
 }
 
@@ -31,7 +31,7 @@ function SingleProcessBar({ major, overview }: { major: MajorOverview; overview:
 
   return <>
     <div className={styles.majorRankingTrack} aria-hidden="true"><span style={{ width: `${Math.min(metrics.share, 100)}%` }} /></div>
-    <div className={styles.majorRankingMeta}><span>{formatNumber(metrics.share, 1)}% del total</span><span>{formatNumber(metrics.admissionRate, 1)}% admitidos</span></div>
+    <div className={styles.majorRankingMeta}><span>{formatNumber(metrics.share, 1)}% del total de postulantes</span><span>{formatNumber(metrics.admissionRate, 1)}% tasa de admisión</span></div>
   </>;
 }
 
