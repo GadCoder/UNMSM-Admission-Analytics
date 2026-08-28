@@ -1,7 +1,8 @@
 import type { AdmissionProcess, ProcessOverview } from "../api/analytics.types";
-import { ProcessComparisonChart, TopMajorsChart } from "./AnalyticsCharts";
+import { ProcessComparisonChart } from "./AnalyticsCharts";
 import { ComparisonSummary } from "./ComparisonSummary";
 import { KpiGrid } from "./KpiGrid";
+import { MajorDemandRanking } from "./MajorDemandRanking";
 import { MajorBreakdown } from "./MajorBreakdown";
 import { ProcessHeader } from "./ProcessHeader";
 
@@ -25,7 +26,7 @@ export function DashboardContent({
         processById={processById}
       />
       <ProcessComparisonChart overviews={[primary, ...comparisons]} />
-      <TopMajorsChart overview={primary} />
+      <MajorDemandRanking overview={primary} />
       <MajorBreakdown overview={primary} />
     </>
   );
