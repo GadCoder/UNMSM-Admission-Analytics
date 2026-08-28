@@ -42,11 +42,16 @@ export function DashboardPage() {
 
   return (
     <section className={styles.page}>
-      <p className={styles.eyebrow}>Admisión UNMSM · Analítica comparativa</p>
-      <h1>Resultados que se entienden.</h1>
-      <p className={styles.intro}>
-        Explora el desempeño de cada proceso de admisión y compara hasta tres convocatorias en un solo lugar.
-      </p>
+      <div className={styles.hero}>
+        <div>
+          <p className={styles.eyebrow}>Admisión UNMSM · Analítica comparativa</p>
+          <h1>Resultados que se entienden.</h1>
+          <p className={styles.intro}>
+            Explora el desempeño de cada proceso de admisión y compara hasta tres convocatorias en un solo lugar.
+          </p>
+        </div>
+        {latest && <span className={styles.processBadge}>Proceso principal · {latest.year}-{latest.sequence}</span>}
+      </div>
 
       {processesQuery.isPending && (
         <p role="status" className={styles.state}>Cargando procesos…</p>

@@ -1,24 +1,7 @@
-* {
-  box-sizing: border-box;
-}
+@import url("https://fonts.googleapis.com/css2?family=Lexend:wght@400;500;600;700;800&display=swap");
 
-html {
-  min-width: 320px;
-  background: var(--color-background);
-}
-
-body {
-  min-width: 320px;
-  margin: 0;
-}
-
-button,
-a,
-select {
-  font: inherit;
-}
-
-:focus-visible {
-  outline: 3px solid rgb(23 107 135 / 30%);
-  outline-offset: 3px;
-}
+* { box-sizing: border-box; }
+html { min-width: 320px; background: var(--color-background); }
+body { min-width: 320px; margin: 0; }
+button, a, select, input { font: inherit; }
+:focus-visible { outline: 3px solid rgb(143 86 88 / 30%); outline-offset: 3px; }
