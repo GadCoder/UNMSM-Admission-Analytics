@@ -3,6 +3,7 @@ import type { ReactNode } from "react";
 
 import type { MajorOverview, ProcessOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
+import { useDebouncedValue } from "../utils/useDebouncedValue";
 import styles from "../pages/DashboardPage.module.css";
 
 type MajorBreakdownProps = { overview: ProcessOverview; filterControls?: ReactNode };
@@ -15,17 +16,18 @@ function admissionRate(major: MajorOverview) {
 
 export function MajorBreakdown({ overview, filterControls }: MajorBreakdownProps) {
   const [query, setQuery] = useState("");
+  const debouncedQuery = useDebouncedValue(query);
   const [sortKey, setSortKey] = useState<SortKey>("total_results");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const majors = useMemo(() => {
-    const normalizedQuery = query.trim().toLocaleLowerCase();
+    const normalizedQuery = debouncedQuery.trim().toLocaleLowerCase();
     return [...overview.majors].filter((major) => major.major_name.toLocaleLowerCase().includes(normalizedQuery)).sort((left, right) => {
       if (sortKey === "major_name") return sortDirection === "asc" ? left.major_name.localeCompare(right.major_name, "es") : right.major_name.localeCompare(left.major_name, "es");
       const leftValue = sortKey === "admission_rate" ? admissionRate(left) : sortKey === "average_score" ? Number(left.average_score ?? -Infinity) : left[sortKey];
       const rightValue = sortKey === "admission_rate" ? admissionRate(right) : sortKey === "average_score" ? Number(right.average_score ?? -Infinity) : right[sortKey];
       return sortDirection === "asc" ? leftValue - rightValue : rightValue - leftValue;
     });
-  }, [overview.majors, query, sortDirection, sortKey]);
+  }, [debouncedQuery, overview.majors, sortDirection, sortKey]);
 
   const updateSort = (value: string) => {
     const [nextKey, nextDirection] = value.split("-") as [SortKey, SortDirection];
