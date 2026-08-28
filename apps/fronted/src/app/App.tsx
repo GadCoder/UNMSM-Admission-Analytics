@@ -9,13 +9,13 @@ export function App() {
         <Link className={styles.brand} to="/">
           <span className={styles.brandMark}>UN</span>
           <span>
-            <strong>Resultados UNMSM</strong>
+            <strong>Admisión UNMSM</strong>
             <small>Admisión · datos claros</small>
           </span>
         </Link>
         <nav aria-label="Navegación principal">
           <NavLink to="/" end>Resumen</NavLink>
-          <NavLink to="/resultados">Resultados</NavLink>
+          <NavLink to="/resultados">Postulantes</NavLink>
         </nav>
       </header>
       <main className={styles.main}><Outlet /></main>

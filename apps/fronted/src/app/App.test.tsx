@@ -12,8 +12,8 @@ describe("App shell", () => {
       </MemoryRouter>,
     );
 
-    expect(screen.getByText("Resultados UNMSM")).toBeInTheDocument();
+    expect(screen.getByText("Admisión UNMSM")).toBeInTheDocument();
     expect(screen.getByRole("link", { name: "Resumen" })).toHaveAttribute("href", "/");
-    expect(screen.getByRole("link", { name: "Resultados" })).toHaveAttribute("href", "/resultados");
+    expect(screen.getByRole("link", { name: "Postulantes" })).toHaveAttribute("href", "/resultados");
   });
 });

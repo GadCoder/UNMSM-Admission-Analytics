@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen, waitFor } from "@testing-library/react";
+import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -62,10 +62,44 @@ describe("DashboardPage", () => {
     } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
     renderPage("/?process=1&compare=2");
     expect(await screen.findByRole("heading", { name: "Comparación de procesos" })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /comparación de resultados/i })).toBeInTheDocument();
-    expect(screen.getAllByRole("listitem")[1]).toHaveTextContent("Proceso 2025-I: 80 resultados, 16 admitidos, 8 ausentes");
-    expect(screen.getByRole("heading", { name: "Principales carreras por resultados" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: /comparación de postulantes/i })).toBeInTheDocument();
+    expect(screen.getAllByRole("listitem")[1]).toHaveTextContent("Proceso 2025-I: 80 postulantes, 16 admitidos, 8 ausentes");
+    expect(screen.getByRole("heading", { name: "Principales carreras por postulantes" })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /principales carreras/i })).toBeInTheDocument();
+    expect(screen.getAllByText("Ingeniería").length).toBeGreaterThan(1);
+    expect(screen.queryByText("ING")).not.toBeInTheDocument();
+    expect(screen.getByRole("columnheader", { name: "Postulantes" })).toBeInTheDocument();
+  });
+
+  it("filters and sorts the major breakdown", async () => {
+    const user = userEvent.setup();
+    const richerOverview = {
+      processes: [{
+        ...overview.processes[0],
+        majors: [
+          overview.processes[0].majors[0],
+          { major_id: 2, major_code: "DER", major_name: "Derecho", total_results: 20, admitted_count: 8, absent_count: 2, average_score: "80" },
+        ],
+      }],
+    };
+    vi.mocked(api.useAnalyticsOverview).mockReturnValue({
+      data: richerOverview,
+      isPending: false,
+      isError: false,
+      isSuccess: true,
+    } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
+    renderPage();
+
+    const filter = await screen.findByRole("searchbox", { name: "Filtrar carreras" });
+    await user.type(filter, "dere");
+    const table = screen.getByRole("table");
+    expect(within(table).getByText("Derecho")).toBeInTheDocument();
+    expect(within(table).queryByText("Ingeniería")).not.toBeInTheDocument();
+
+    await user.clear(filter);
+    await user.selectOptions(screen.getByRole("combobox", { name: "Ordenar carreras" }), "average_score");
+    const rows = screen.getAllByRole("row");
+    expect(rows[1]).toHaveTextContent("Derecho");
   });
   it("shows loading and error states", async () => {
     vi.mocked(api.usePublishedProcesses).mockReturnValue({

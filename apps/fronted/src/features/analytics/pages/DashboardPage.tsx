@@ -45,7 +45,7 @@ export function DashboardPage() {
       <div className={styles.hero}>
         <div>
           <p className={styles.eyebrow}>Admisión UNMSM · Analítica comparativa</p>
-          <h1>Resultados que se entienden.</h1>
+          <h1>La admisión que se entiende.</h1>
           <p className={styles.intro}>
             Explora el desempeño de cada proceso de admisión y compara hasta tres convocatorias en un solo lugar.
           </p>
