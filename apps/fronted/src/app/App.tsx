@@ -1,4 +1,4 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, Outlet } from "react-router-dom";
 
 import styles from "./App.module.css";
 
@@ -13,10 +13,6 @@ export function App() {
             <small>Admisión · datos claros</small>
           </span>
         </Link>
-        <nav aria-label="Navegación principal">
-          <NavLink to="/" end>Resumen</NavLink>
-          <NavLink to="/resultados">Postulantes</NavLink>
-        </nav>
       </header>
       <main className={styles.main}><Outlet /></main>
     </div>
