@@ -176,6 +176,20 @@ describe("DashboardPage", () => {
     const rows = screen.getAllByRole("row");
     expect(rows[1]).toHaveTextContent("Derecho");
   });
+  it("shows visible feedback while refreshing existing analytics", async () => {
+    vi.mocked(api.useAnalyticsOverview).mockReturnValue({
+      data: overview,
+      isPending: false,
+      isFetching: true,
+      isError: false,
+      isSuccess: true,
+    } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
+    renderPage();
+
+    expect(screen.getByTestId("overview-refreshing")).toHaveTextContent("Actualizando indicadores");
+    expect(document.querySelector('[aria-busy="true"]')).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "2025-2" })).toBeInTheDocument();
+  });
   it("shows loading and error states", async () => {
     vi.mocked(api.usePublishedProcesses).mockReturnValue({
       data: undefined,

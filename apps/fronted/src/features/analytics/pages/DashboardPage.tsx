@@ -91,35 +91,41 @@ export function DashboardPage() {
             onChange={updateSelection}
           />
           {overviewQuery.isPending && !overviewQuery.data && (
-            <p role="status" className={styles.state}>Cargando indicadores…</p>
+            <p role="status" className={styles.loadingState}><span className={styles.spinner} aria-hidden="true" />Cargando indicadores…</p>
           )}
           {overviewQuery.isFetching && overviewQuery.data && (
-            <p role="status" className={styles.refreshingState}>Actualizando indicadores…</p>
+            <div role="status" className={styles.refreshingState} data-testid="overview-refreshing">
+              <span className={styles.spinner} aria-hidden="true" />
+              <span>Actualizando indicadores…</span>
+              <span className={styles.progressBar} aria-hidden="true" />
+            </div>
           )}
           {overviewQuery.isError && (
             <p role="alert" className={styles.state}>No pudimos cargar el resumen analítico.</p>
           )}
           {overviewQuery.isSuccess && primary && (
-            <DashboardContent
-              primary={primary}
-              comparisons={selected.slice(1)}
-              processById={processById}
-              filterControls={<DashboardFilterControls
-                areas={areasQuery.data ?? []}
-                faculties={facultiesQuery.data ?? []}
-                modalities={modalitiesQuery.data ?? []}
-                filters={filters}
-                onChange={updateFilters}
-                onReset={() => {
-                  const next = new URLSearchParams(params);
-                  next.delete("compare");
-                  next.delete("academic_area");
-                  next.delete("faculty");
-                  next.delete("modality");
-                  setParams(next);
-                }}
-              />}
-            />
+            <div aria-busy={overviewQuery.isFetching}>
+              <DashboardContent
+                primary={primary}
+                comparisons={selected.slice(1)}
+                processById={processById}
+                filterControls={<DashboardFilterControls
+                  areas={areasQuery.data ?? []}
+                  faculties={facultiesQuery.data ?? []}
+                  modalities={modalitiesQuery.data ?? []}
+                  filters={filters}
+                  onChange={updateFilters}
+                  onReset={() => {
+                    const next = new URLSearchParams(params);
+                    next.delete("compare");
+                    next.delete("academic_area");
+                    next.delete("faculty");
+                    next.delete("modality");
+                    setParams(next);
+                  }}
+                />}
+              />
+            </div>
           )}
         </>
       )}
