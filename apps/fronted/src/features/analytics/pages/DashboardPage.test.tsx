@@ -59,6 +59,7 @@ describe("DashboardPage", () => {
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("Ingeniería");
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("50 postulantes");
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("50% del total de postulantes");
+    expect(screen.getByRole("region", { name: "Carreras con mayor demanda" })).toHaveTextContent("Total: 100 postulantes presentes");
     const rankingBar = screen.getByRole("list", { name: "Principales carreras por postulantes" }).querySelector("span[style]");
     expect(rankingBar).toHaveStyle({ width: "50%" });
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("24% tasa de admisión");
