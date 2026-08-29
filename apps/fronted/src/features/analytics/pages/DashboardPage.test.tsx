@@ -58,6 +58,12 @@ describe("DashboardPage", () => {
     expect(await screen.findByRole("heading", { name: "2025-2" })).toBeInTheDocument();
     expect(await screen.findByText("100")).toBeInTheDocument();
     expect(screen.getByText("65.5")).toBeInTheDocument();
+    expect(screen.getAllByText("Postulantes").some((element) => element.closest("article") !== null)).toBe(true);
+    expect(screen.getByText("Ingresantes")).toBeInTheDocument();
+    expect(screen.getByText("Porcentaje de ingresantes")).toBeInTheDocument();
+    expect(screen.getByText("Puntaje máximo")).toBeInTheDocument();
+    expect(screen.getByText("Puntaje promedio")).toBeInTheDocument();
+    expect(screen.getByText("Postulantes ausentes")).toBeInTheDocument();
     expect(screen.getByRole("table")).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("Ingeniería");
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("50 postulantes");
