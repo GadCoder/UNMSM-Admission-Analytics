@@ -64,6 +64,14 @@ describe("DashboardPage", () => {
     expect(screen.getByText("Puntaje máximo")).toBeInTheDocument();
     expect(screen.getByText("Puntaje promedio")).toBeInTheDocument();
     expect(screen.getByText("Postulantes ausentes")).toBeInTheDocument();
+    expect(screen.getAllByRole("article").map((article) => article.querySelector("span")?.textContent)).toEqual([
+      "Postulantes",
+      "Postulantes ausentes",
+      "Ingresantes",
+      "Porcentaje de ingresantes",
+      "Puntaje máximo",
+      "Puntaje promedio",
+    ]);
     expect(screen.getByRole("table")).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("Ingeniería");
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("50 postulantes");
