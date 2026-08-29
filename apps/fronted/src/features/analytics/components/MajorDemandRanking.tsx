@@ -55,8 +55,6 @@ function RankingItem({ major, rank, overviews }: { major: MajorOverview; rank: n
 export function MajorDemandRanking({ overview, comparisons = [] }: MajorDemandRankingProps) {
   const overviews = [overview, ...comparisons];
   const majors = [...overview.majors].sort((left, right) => right.total_results - left.total_results).slice(0, 6);
-  const topMajor = majors[0];
-  const topMetrics = topMajor ? calculateMetrics(topMajor, overview.total_results) : null;
   const comparisonMode = comparisons.length > 0;
 
   return <section className={styles.card} aria-labelledby="major-chart-heading">
@@ -66,6 +64,5 @@ export function MajorDemandRanking({ overview, comparisons = [] }: MajorDemandRa
     <ol className={styles.majorRanking} aria-label="Principales carreras por postulantes">
       {majors.map((major, index) => <RankingItem key={major.major_id} major={major} rank={index + 1} overviews={overviews} />)}
     </ol>
-    {topMajor && topMetrics && <p className={styles.chartInsight}><strong>{topMajor.major_name}</strong> concentra el {formatNumber(topMetrics.share, 1)}% de los postulantes y registra una tasa de admisión de {formatNumber(topMetrics.admissionRate, 1)}%.</p>}
   </section>;
 }
