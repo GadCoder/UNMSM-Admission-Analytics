@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import type { AcademicArea, AdmissionProcess, Faculty, Modality } from "../api/analytics.types";
 import styles from "../pages/DashboardPage.module.css";
 import { useDebouncedValue } from "../utils/useDebouncedValue";
+import { formatProcessLabel } from "../utils/processLabels";
 
 export type DashboardFilters = { academicArea: string; faculty: string; modality: string };
 type DashboardControlsProps = {
@@ -46,7 +47,7 @@ export function DashboardControls({ processes, primaryId, comparisons, onChange 
       <div className={`${styles.control} ${styles.primaryControl}`}>
         <label htmlFor="primary-process">Proceso</label>
         <select id="primary-process" value={primaryId} onChange={(event) => onChange(event.target.value, comparisons)}>
-          {processes.map((process) => <option key={process.id} value={process.id}>{process.name}</option>)}
+          {processes.map((process) => <option key={process.id} value={process.id}>{formatProcessLabel(process)}</option>)}
         </select>
       </div>
       <div ref={comparisonRef} className={styles.comparisonDisclosure}>
@@ -61,7 +62,7 @@ export function DashboardControls({ processes, primaryId, comparisons, onChange 
             const value = String(process.id);
             const checked = comparisonDraft.includes(value);
             const disabled = !checked && comparisonDraft.length >= 3;
-            return <label className={styles.comparisonOption} key={process.id}><input type="checkbox" value={value} checked={checked} disabled={disabled} onChange={(event) => setComparisonDraft(event.target.checked ? [...comparisonDraft, value].slice(0, 3) : comparisonDraft.filter((id) => id !== value))} /><span>{process.name}</span></label>;
+            return <label className={styles.comparisonOption} key={process.id}><input type="checkbox" value={value} checked={checked} disabled={disabled} onChange={(event) => setComparisonDraft(event.target.checked ? [...comparisonDraft, value].slice(0, 3) : comparisonDraft.filter((id) => id !== value))} /><span>{formatProcessLabel(process)}</span></label>;
           })}
           <div className={styles.comparisonActions}>
             <button type="button" className={styles.secondaryButton} onClick={() => { setComparisonDraft(comparisons); setComparisonOpen(false); }}>Cancelar</button>
@@ -70,7 +71,7 @@ export function DashboardControls({ processes, primaryId, comparisons, onChange 
         </div>}
       </div>
       {selectedProcesses.length > 0 && <div className={styles.activeComparisons} aria-label="Procesos comparados">
-        {selectedProcesses.map((process) => <span className={styles.comparisonChip} key={process.id}>{process.name}<button type="button" aria-label={`Quitar comparación ${process.name}`} onClick={() => onChange(primaryId, comparisons.filter((id) => id !== String(process.id)))}>×</button></span>)}
+        {selectedProcesses.map((process) => <span className={styles.comparisonChip} key={process.id}>{formatProcessLabel(process)}<button type="button" aria-label={`Quitar comparación ${formatProcessLabel(process)}`} onClick={() => onChange(primaryId, comparisons.filter((id) => id !== String(process.id)))}>×</button></span>)}
       </div>}
     </div>
   );

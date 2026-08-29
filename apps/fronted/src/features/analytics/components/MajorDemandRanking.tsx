@@ -1,6 +1,7 @@
 import type { MajorOverview, ProcessOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
 import styles from "../pages/DashboardPage.module.css";
+import { formatProcessLabel } from "../utils/processLabels";
 
 type MajorDemandRankingProps = { overview: ProcessOverview; comparisons?: ProcessOverview[] };
 
@@ -20,7 +21,7 @@ function RankingBar({ major, overview }: { major: MajorOverview; overview: Proce
   const metrics = calculateMetrics(major, overview.total_results);
 
   return <div className={styles.majorComparisonRow}>
-    <span className={styles.majorProcess}>{overview.process.name}</span>
+    <span className={styles.majorProcess}>{formatProcessLabel(overview.process)}</span>
     <div className={styles.majorRankingTrack} aria-hidden="true"><span style={{ width: `${Math.min(metrics.share, 100)}%` }} /></div>
     <div className={styles.majorRankingMeta}><span>{formatNumber(major.total_results)} postulantes</span><span>{formatNumber(metrics.share, 1)}% del total de postulantes</span></div>
   </div>;
@@ -60,7 +61,7 @@ export function MajorDemandRanking({ overview, comparisons = [] }: MajorDemandRa
 
   return <section className={styles.card} aria-labelledby="major-chart-heading">
     <h2 id="major-chart-heading">Carreras con mayor demanda</h2>
-    <p className={styles.chartDescription}>{comparisonMode ? "Participación de cada carrera sobre el total de postulantes de cada proceso." : `Las seis carreras con más postulantes en ${overview.process.name}, con su peso sobre el total y tasa de admisión.`}</p>
+    <p className={styles.chartDescription}>{comparisonMode ? "Participación de cada carrera sobre el total de postulantes de cada proceso." : `Las seis carreras con más postulantes en ${formatProcessLabel(overview.process)}, con su peso sobre el total y tasa de admisión.`}</p>
     {comparisonMode && <p className={styles.chartLegend}>Cada proceso usa su propia escala del 0 al 100%.</p>}
     <ol className={styles.majorRanking} aria-label="Principales carreras por postulantes">
       {majors.map((major, index) => <RankingItem key={major.major_id} major={major} rank={index + 1} overviews={overviews} />)}

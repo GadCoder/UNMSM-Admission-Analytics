@@ -1,5 +1,6 @@
 import type { AdmissionProcess, ProcessOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
+import { formatProcessLabel } from "../utils/processLabels";
 import styles from "../pages/DashboardPage.module.css";
 
 type ComparisonSummaryProps = {
@@ -18,7 +19,7 @@ export function ComparisonSummary({
       <strong>Comparación</strong>
       {comparisons.map((item) => (
         <span key={item.process.id}>
-          {processById.get(String(item.process.id))?.name ?? item.process.name}: {formatNumber(item.total_results)} postulantes · {formatNumber(item.average_score, 2)} promedio
+          {formatProcessLabel(processById.get(String(item.process.id)) ?? item.process)}: {formatNumber(item.total_results)} postulantes · {formatNumber(item.average_score, 2)} promedio
         </span>
       ))}
     </aside>
