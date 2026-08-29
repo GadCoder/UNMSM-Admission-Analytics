@@ -63,7 +63,7 @@ export function DashboardPage() {
       <div className={styles.hero}>
         <div>
           <p className={styles.eyebrow}>Admisión UNMSM · Resultados y tendencias</p>
-          <h1>Entiende cada proceso de admisión.</h1>
+          <h1>Entiende cada proceso de admisión</h1>
           <p className={styles.intro}>
             Consulta postulantes, admitidos y resultados por carrera, y compara distintos procesos en un solo lugar.
           </p>

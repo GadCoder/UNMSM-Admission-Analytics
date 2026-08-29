@@ -53,7 +53,7 @@ describe("DashboardPage", () => {
   it("defaults to latest process and renders KPIs", async () => {
     renderPage();
     expect(screen.getByText("Admisión UNMSM · Resultados y tendencias")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Entiende cada proceso de admisión." })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Entiende cada proceso de admisión" })).toBeInTheDocument();
     expect(screen.getByText("Consulta postulantes, admitidos y resultados por carrera, y compara distintos procesos en un solo lugar.")).toBeInTheDocument();
     expect(await screen.findByRole("heading", { name: "2025-2" })).toBeInTheDocument();
     expect(await screen.findByText("100")).toBeInTheDocument();
