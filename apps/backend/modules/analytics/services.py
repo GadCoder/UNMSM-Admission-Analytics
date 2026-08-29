@@ -1,5 +1,6 @@
 from django.db.models import Avg, Count, Max, Q
 
+from modules.academics.models import Major
 from modules.admission_processes.models import AdmissionProcess
 from modules.results.models import AdmissionResult
 
@@ -106,3 +107,46 @@ def process_overviews(process_ids, *, academic_area=None, faculty=None, modality
         faculty=faculty,
         modality=modality,
     )
+
+
+def major_detail(major_id, selected_process_ids):
+    major = Major.objects.select_related("faculty__academic_area").get(
+        id=major_id, is_active=True
+    )
+    processes = list(
+        AdmissionProcess.objects.filter(is_published=True).order_by("-year", "-sequence")
+    )
+    process_by_id = {process.id: process for process in processes}
+    if any(process_id not in process_by_id for process_id in selected_process_ids):
+        raise AdmissionProcess.DoesNotExist
+
+    rows = (
+        AdmissionResult.objects.filter(major_id=major_id, process_id__in=process_by_id)
+        .values("process_id")
+        .annotate(
+            total_results=Count("id"),
+            admitted_count=Count("id", filter=Q(status=AdmissionResult.Status.ADMITTED)),
+            absent_count=Count("id", filter=Q(status=AdmissionResult.Status.ABSENT)),
+            average_score=Avg("score"),
+            highest_score=Max("score"),
+        )
+    )
+    aggregates = {row["process_id"]: row for row in rows}
+
+    def build(process):
+        return {"process": process, **_EMPTY_TOTALS, **aggregates.get(process.id, {})}
+
+    selected = [build(process_by_id[process_id]) for process_id in selected_process_ids]
+    selected_ids = set(selected_process_ids)
+    history = [build(process) for process in processes if process.id not in selected_ids]
+    return {
+        "major": {
+            "id": major.id,
+            "code": major.code,
+            "name": major.name,
+            "faculty": major.faculty.name,
+            "academic_area": major.faculty.academic_area.name,
+        },
+        "selected_processes": selected,
+        "history": history,
+    }
