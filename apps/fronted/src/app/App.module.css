@@ -5,8 +5,6 @@
 .brand strong, .brand small { display: block; }
 .brand strong { font-size: .92rem; }
 .brand small { margin-top: .15rem; color: var(--color-muted); font-size: .64rem; letter-spacing: .1em; text-transform: uppercase; }
-.header nav { display: flex; gap: var(--space-6); }
-.header nav a { color: var(--color-muted); font-size: .8rem; font-weight: 600; text-decoration: none; }
-.header nav a:hover, .header nav a:focus-visible { color: var(--color-primary); }
+
 .main { max-width: var(--content-width); margin: 0 auto; padding: var(--space-8) var(--space-6) var(--space-12); }
-@media (max-width: 640px) { .header { align-items: flex-start; flex-direction: column; } .header nav { gap: var(--space-4); } }
+@media (max-width: 640px) { .header { align-items: flex-start; flex-direction: column; } }
