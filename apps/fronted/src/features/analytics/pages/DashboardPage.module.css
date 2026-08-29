@@ -3,7 +3,7 @@
 .eyebrow, .cardLabel { margin:0 0 var(--space-3); color:var(--color-primary); font-size:.68rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
 .page h1 { max-width:680px; margin:0 0 .45rem; font-size:clamp(2rem,4vw,2.75rem); letter-spacing:-.055em; line-height:1.08; }
 .intro { max-width:650px; margin:0; color:var(--color-muted); font-size:.88rem; line-height:1.6; }
-.processBadge { flex:none; border:1px solid #dfcfd0; border-radius:999px; background:var(--color-primary-soft); color:var(--color-primary); padding:.65rem .9rem; font-size:.7rem; font-weight:700; }
+
 .controls { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-3); margin:0 0 var(--space-5); }
 .control { display:flex; align-items:center; gap:.7rem; min-width:190px; padding:.55rem .75rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); box-shadow:0 4px 14px rgb(45 34 35 / 4%); }
 .primaryControl { flex:1 1 18rem; }
@@ -40,7 +40,7 @@
 .sectionHeading { display:flex; align-items:center; justify-content:space-between; gap:var(--space-4); margin:0 0 var(--space-4); }
 .sectionHeading h2 { margin:0; font-size:1.05rem; letter-spacing:-.025em; }
 .heading h2 { margin:0; font-size:1.1rem; letter-spacing:-.025em; }
-.heading > span { color:var(--color-muted); font-size:.72rem; }
+
 .kpis { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:var(--space-3); margin-bottom:var(--space-5); }
 .kpi, .card, .comparison { border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-surface); box-shadow:0 4px 20px rgb(45 34 35 / 4%); }
 .kpi { min-height:7rem; padding:var(--space-4); }
