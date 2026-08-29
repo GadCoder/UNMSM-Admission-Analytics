@@ -56,7 +56,13 @@
 .tableFilter, .tableSort { display:grid; gap:.35rem; color:#8f7e7f; font-size:.62rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
 .tableFilter { flex:1 1 15rem; }
 .tableSort { flex:0 1 14rem; }
+.autocomplete { position:relative; }
 .tableFilter input, .tableSort select { min-height:2.35rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-background, #fff); color:var(--color-text); padding:.55rem .7rem; font:inherit; font-size:.74rem; letter-spacing:normal; text-transform:none; }
+.autocomplete input { width:100%; }
+.suggestions { position:absolute; z-index:4; top:calc(100% + .3rem); right:0; left:0; display:grid; max-height:15rem; overflow:auto; margin:0; padding:.3rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); box-shadow:0 12px 24px rgb(45 34 35 / 12%); list-style:none; }
+.suggestions button { display:flex; width:100%; align-items:center; justify-content:space-between; gap:.7rem; padding:.55rem .6rem; border:0; border-radius:.35rem; background:transparent; color:var(--color-text); cursor:pointer; font:inherit; font-size:.74rem; text-align:left; }
+.suggestions button:hover, .suggestions button:focus-visible { background:var(--color-primary-soft); outline:0; }
+.suggestions small { flex:none; color:var(--color-muted); font-size:.62rem; }
 table { width:100%; border-collapse:collapse; text-align:left; font-size:.78rem; }
 th, td { padding:.8rem .65rem; border-bottom:1px solid var(--color-border); }
 th { font-weight:700; } thead th { color:#8f7e7f; font-size:.62rem; letter-spacing:.08em; text-transform:uppercase; }
