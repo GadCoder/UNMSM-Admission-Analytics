@@ -34,8 +34,7 @@ export function MajorBreakdown({ overview, filterControls }: MajorBreakdownProps
     const normalizedQuery = debouncedQuery.trim().toLocaleLowerCase();
     if (!normalizedQuery) return [];
     return overview.majors
-      .filter((major) => major.major_name.toLocaleLowerCase().includes(normalizedQuery))
-      .slice(0, 8);
+      .filter((major) => major.major_name.toLocaleLowerCase().includes(normalizedQuery));
   }, [debouncedQuery, overview.majors]);
 
   const updateSort = (value: string) => {
