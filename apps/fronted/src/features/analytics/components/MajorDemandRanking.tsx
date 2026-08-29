@@ -61,7 +61,17 @@ export function MajorDemandRanking({ overview, comparisons = [] }: MajorDemandRa
 
   return <section className={styles.card} aria-labelledby="major-chart-heading">
     <h2 id="major-chart-heading">Carreras con mayor demanda</h2>
-    <p className={styles.chartDescription}>{comparisonMode ? "Participación de cada carrera sobre el total de postulantes de cada proceso." : `Las seis carreras con más postulantes en ${formatProcessLabel(overview.process)}, con su peso sobre el total y tasa de admisión.`}</p>
+    <p className={styles.chartDescription}>
+      {comparisonMode
+        ? "Participación de cada carrera sobre el total de postulantes de cada proceso."
+        : `Las seis carreras con más postulantes en ${formatProcessLabel(overview.process)}, con su peso sobre el total y tasa de admisión.`}
+      <strong className={styles.chartContext}>
+        {comparisonMode ? "Totales: " : "Total: "}
+        {overviews.map((item, index) => (
+          <span key={item.process.id}>{index > 0 ? " · " : ""}{formatNumber(item.total_results)} presentes en {formatProcessLabel(item.process)}</span>
+        ))}
+      </strong>
+    </p>
     {comparisonMode && <p className={styles.chartLegend}>Cada proceso usa su propia escala del 0 al 100%.</p>}
     <ol className={styles.majorRanking} aria-label="Principales carreras por postulantes">
       {majors.map((major, index) => <RankingItem key={major.major_id} major={major} rank={index + 1} overviews={overviews} />)}
