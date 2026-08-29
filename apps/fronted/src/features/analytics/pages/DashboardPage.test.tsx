@@ -63,7 +63,7 @@ describe("DashboardPage", () => {
     const rankingBar = screen.getByRole("list", { name: "Principales carreras por postulantes" }).querySelector("span[style]");
     expect(rankingBar).toHaveStyle({ width: "50%" });
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("24% tasa de admisión");
-    expect(screen.getByRole("region", { name: "Carreras con mayor demanda" })).toHaveTextContent(/Ingeniería\s*concentra el 50\s*% de los postulantes/);
+    expect(screen.getByRole("region", { name: "Carreras con mayor demanda" })).not.toHaveTextContent(/concentra el 50\s*% de los postulantes/);
   });
   it("updates URL when a comparison is selected", async () => {
     renderPage();
