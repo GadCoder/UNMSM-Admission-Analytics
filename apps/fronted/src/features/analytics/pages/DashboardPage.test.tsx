@@ -165,6 +165,11 @@ describe("DashboardPage", () => {
 
     const filter = await screen.findByRole("searchbox", { name: "Filtrar carreras" });
     await user.type(filter, "dere");
+    expect(screen.queryByRole("listbox", { name: "Carreras coincidentes" })).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.getByRole("listbox", { name: "Carreras coincidentes" })).toBeInTheDocument());
+    expect(screen.getByRole("option", { name: /Derecho/ })).toBeInTheDocument();
+    await user.click(screen.getByRole("option", { name: /Derecho/ }).querySelector("button")!);
+    expect(filter).toHaveValue("Derecho");
     const table = screen.getByRole("table");
     await waitFor(() => {
       expect(within(table).getByText("Derecho")).toBeInTheDocument();

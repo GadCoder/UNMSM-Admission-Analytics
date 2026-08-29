@@ -18,6 +18,7 @@ function admissionRate(major: MajorOverview) {
 export function MajorBreakdown({ overview, filterControls }: MajorBreakdownProps) {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
   const [sortKey, setSortKey] = useState<SortKey>("total_results");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const majors = useMemo(() => {
@@ -29,6 +30,13 @@ export function MajorBreakdown({ overview, filterControls }: MajorBreakdownProps
       return sortDirection === "asc" ? leftValue - rightValue : rightValue - leftValue;
     });
   }, [debouncedQuery, overview.majors, sortDirection, sortKey]);
+  const suggestions = useMemo(() => {
+    const normalizedQuery = debouncedQuery.trim().toLocaleLowerCase();
+    if (!normalizedQuery) return [];
+    return overview.majors
+      .filter((major) => major.major_name.toLocaleLowerCase().includes(normalizedQuery))
+      .slice(0, 8);
+  }, [debouncedQuery, overview.majors]);
 
   const updateSort = (value: string) => {
     const [nextKey, nextDirection] = value.split("-") as [SortKey, SortDirection];
@@ -42,7 +50,28 @@ export function MajorBreakdown({ overview, filterControls }: MajorBreakdownProps
       {filterControls}
     </div>
     <div className={styles.tableControls} aria-label="Filtros y orden de carreras">
-      <label className={styles.tableFilter}><span>Filtrar carreras</span><input type="search" aria-label="Filtrar carreras" placeholder="Busca por nombre" value={query} onChange={(event) => setQuery(event.target.value)} /></label>
+      <label className={styles.tableFilter}><span>Filtrar carreras</span><div className={styles.autocomplete}>
+        <input
+          type="search"
+          aria-label="Filtrar carreras"
+          aria-autocomplete="list"
+          aria-controls="major-suggestions"
+          aria-expanded={suggestionsOpen && suggestions.length > 0}
+          placeholder="Busca por nombre"
+          value={query}
+          onFocus={() => setSuggestionsOpen(true)}
+          onBlur={() => window.setTimeout(() => setSuggestionsOpen(false), 120)}
+          onKeyDown={(event) => { if (event.key === "Escape") setSuggestionsOpen(false); }}
+          onChange={(event) => { setQuery(event.target.value); setSuggestionsOpen(true); }}
+        />
+        {suggestionsOpen && suggestions.length > 0 && <ul id="major-suggestions" className={styles.suggestions} role="listbox" aria-label="Carreras coincidentes">
+          {suggestions.map((major) => <li key={major.major_id} role="option" aria-selected={false}>
+            <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => { setQuery(major.major_name); setSuggestionsOpen(false); }}>
+              <span>{major.major_name}</span><small>{formatNumber(major.total_results)} postulantes</small>
+            </button>
+          </li>)}
+        </ul>}
+      </div></label>
       <label className={styles.tableSort}><span>Ordenar carreras</span><select aria-label="Ordenar carreras" value={`${sortKey}-${sortDirection}`} onChange={(event) => updateSort(event.target.value)}>
         <option value="total_results-desc">Más postulantes</option><option value="total_results-asc">Menos postulantes</option>
         <option value="admitted_count-desc">Más admitidos</option><option value="admitted_count-asc">Menos admitidos</option>
