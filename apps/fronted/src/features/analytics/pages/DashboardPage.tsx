@@ -89,8 +89,11 @@ export function DashboardPage() {
             comparisons={comparisons}
             onChange={updateSelection}
           />
-          {overviewQuery.isPending && (
+          {overviewQuery.isPending && !overviewQuery.data && (
             <p role="status" className={styles.state}>Cargando indicadores…</p>
+          )}
+          {overviewQuery.isFetching && overviewQuery.data && (
+            <p role="status" className={styles.refreshingState}>Actualizando indicadores…</p>
           )}
           {overviewQuery.isError && (
             <p role="alert" className={styles.state}>No pudimos cargar el resumen analítico.</p>
