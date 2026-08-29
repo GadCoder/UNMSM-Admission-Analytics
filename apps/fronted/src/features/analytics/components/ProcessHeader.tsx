@@ -13,9 +13,6 @@ export function ProcessHeader({ process }: ProcessHeaderProps) {
         <span className={styles.cardLabel}>Proceso principal</span>
         <h2>{formatProcessLabel(process)}</h2>
       </div>
-      <span>
-        Proceso {formatProcessLabel(process)}
-      </span>
     </div>
   );
 }
