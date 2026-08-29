@@ -52,7 +52,7 @@ describe("DashboardPage", () => {
   });
   it("defaults to latest process and renders KPIs", async () => {
     renderPage();
-    expect(await screen.findByRole("heading", { name: "Proceso 2025-II" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "2025-2" })).toBeInTheDocument();
     expect(await screen.findByText("100")).toBeInTheDocument();
     expect(screen.getByText("65.5")).toBeInTheDocument();
     expect(screen.getByRole("table")).toBeInTheDocument();
@@ -67,7 +67,7 @@ describe("DashboardPage", () => {
   it("updates URL when a comparison is selected", async () => {
     renderPage();
     await screen.findByRole("table");
-    await userEvent.selectOptions(screen.getByDisplayValue("Proceso 2025-II"), "2");
+    await userEvent.selectOptions(screen.getByDisplayValue("2025-2"), "2");
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=2"));
   });
   it("renders accessible comparison and top-majors charts for selected processes", async () => {
@@ -80,11 +80,11 @@ describe("DashboardPage", () => {
     renderPage("/?process=1&compare=2");
     expect(await screen.findByRole("heading", { name: "Comparación de procesos" })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /comparación de postulantes/i })).toBeInTheDocument();
-    expect(screen.getAllByRole("listitem")[1]).toHaveTextContent("Proceso 2025-I: 80 postulantes, 16 admitidos, 8 ausentes");
+    expect(screen.getAllByRole("listitem")[1]).toHaveTextContent("2025-1: 80 postulantes, 16 admitidos, 8 ausentes");
     expect(screen.getByRole("heading", { name: "Carreras con mayor demanda" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toBeInTheDocument();
-    expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("Proceso 2025-II");
-    expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("Proceso 2025-I");
+    expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("2025-2");
+    expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("2025-1");
     expect(screen.getAllByRole("list", { name: "Principales carreras por postulantes" })[0].querySelectorAll("span[style]")).toHaveLength(2);
     expect(screen.getByText("Cada proceso usa su propia escala del 0 al 100%.")).toBeInTheDocument();
     expect(screen.queryByText("ING")).not.toBeInTheDocument();
@@ -97,11 +97,11 @@ describe("DashboardPage", () => {
 
     await user.click(screen.getByRole("button", { name: /Comparar procesos/ }));
     expect(screen.queryByText("Comparar con")).not.toBeInTheDocument();
-    await user.click(screen.getByRole("checkbox", { name: "Proceso 2025-I" }));
+    await user.click(screen.getByRole("checkbox", { name: "2025-1" }));
     expect(screen.getByTestId("location")).not.toHaveTextContent("compare=2");
     await user.click(screen.getByRole("button", { name: "Aplicar comparación" }));
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=1&compare=2"));
-    expect(screen.getByRole("button", { name: "Quitar comparación Proceso 2025-I" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Quitar comparación 2025-1" })).toBeInTheDocument();
   });
 
   it("filters faculty options by the selected academic area", async () => {
@@ -138,7 +138,7 @@ describe("DashboardPage", () => {
     await user.selectOptions(screen.getByLabelText("Área académica"), "ING");
 
     expect(screen.getByTestId("location")).toHaveTextContent("process=1");
-    expect(screen.getByRole("heading", { name: "Proceso 2025-II" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "2025-2" })).toBeInTheDocument();
     expect(screen.getByTestId("location")).not.toHaveTextContent("academic_area=ING");
 
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("academic_area=ING"), { timeout: 1000 });
