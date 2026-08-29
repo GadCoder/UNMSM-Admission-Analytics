@@ -62,10 +62,10 @@ export function DashboardPage() {
     <section className={styles.page}>
       <div className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>Admisión UNMSM · Analítica comparativa</p>
-          <h1>La admisión que se entiende.</h1>
+          <p className={styles.eyebrow}>Admisión UNMSM · resultados y tendencias</p>
+          <h1>Entiende cada proceso de admisión.</h1>
           <p className={styles.intro}>
-            Explora el desempeño de cada proceso de admisión y compara hasta tres convocatorias en un solo lugar.
+            Consulta postulantes, admitidos y resultados por carrera, y compara distintos procesos en un solo lugar.
           </p>
         </div>
       </div>
