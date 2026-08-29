@@ -5,6 +5,7 @@ import * as api from "../api/analytics";
 import { DashboardContent } from "../components/DashboardContent";
 import { DashboardControls, DashboardFilterControls } from "../components/DashboardControls";
 import styles from "./DashboardPage.module.css";
+import { formatProcessLabel } from "../utils/processLabels";
 
 export function DashboardPage() {
   const [params, setParams] = useSearchParams();
@@ -68,7 +69,7 @@ export function DashboardPage() {
             Explora el desempeño de cada proceso de admisión y compara hasta tres convocatorias en un solo lugar.
           </p>
         </div>
-        {latest && <span className={styles.processBadge}>Proceso principal · {latest.year}-{latest.sequence}</span>}
+        {latest && <span className={styles.processBadge}>Proceso principal · {formatProcessLabel(latest)}</span>}
       </div>
 
       {processesQuery.isPending && (

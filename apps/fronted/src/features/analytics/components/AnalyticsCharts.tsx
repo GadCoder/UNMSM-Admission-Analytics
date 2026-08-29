@@ -1,6 +1,7 @@
 import type { ProcessOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
 import styles from "../pages/DashboardPage.module.css";
+import { formatProcessLabel } from "../utils/processLabels";
 
 type ComparisonChartProps = { overviews: ProcessOverview[] };
 type ChartBarProps = { label: string; value: number; max: number; color: string };
@@ -17,8 +18,8 @@ export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
     <h2 id="comparison-chart-heading">Comparación de procesos</h2>
     <p className={styles.chartDescription}>Postulantes, admitidos y ausentes por proceso. Las cifras exactas también se muestran debajo del gráfico.</p>
     <div className={styles.chart} role="img" aria-label="Comparación de postulantes, admitidos y ausentes entre procesos">
-      {overviews.map((overview) => <div className={styles.processGroup} key={overview.process.id}><h3>{overview.process.name}</h3><ChartBar label="Postulantes" value={overview.total_results} max={max} color="var(--color-primary)" /><ChartBar label="Admitidos" value={overview.admitted_count} max={max} color="var(--color-success, #26734d)" /><ChartBar label="Ausentes" value={overview.absent_count} max={max} color="var(--color-warning, #a35d13)" /></div>)}
+      {overviews.map((overview) => <div className={styles.processGroup} key={overview.process.id}><h3>{formatProcessLabel(overview.process)}</h3><ChartBar label="Postulantes" value={overview.total_results} max={max} color="var(--color-primary)" /><ChartBar label="Admitidos" value={overview.admitted_count} max={max} color="var(--color-success, #26734d)" /><ChartBar label="Ausentes" value={overview.absent_count} max={max} color="var(--color-warning, #a35d13)" /></div>)}
     </div>
-    <ul className={styles.chartSummary} aria-label="Datos de comparación">{overviews.map((overview) => <li key={overview.process.id}><strong>{overview.process.name}</strong>: {formatNumber(overview.total_results)} postulantes, {formatNumber(overview.admitted_count)} admitidos, {formatNumber(overview.absent_count)} ausentes.</li>)}</ul>
+    <ul className={styles.chartSummary} aria-label="Datos de comparación">{overviews.map((overview) => <li key={overview.process.id}><strong>{formatProcessLabel(overview.process)}</strong>: {formatNumber(overview.total_results)} postulantes, {formatNumber(overview.admitted_count)} admitidos, {formatNumber(overview.absent_count)} ausentes.</li>)}</ul>
   </section>;
 }
