@@ -202,6 +202,79 @@ def test_comparative_overview_accepts_comma_separated_process_ids_and_excludes_u
 
 
 @pytest.mark.django_db
+def test_major_detail_returns_selected_processes_and_published_history(client, majors):
+    nursing, _ = majors
+    selected = AdmissionProcess.objects.create(year=2026, sequence="26-1")
+    history = AdmissionProcess.objects.create(year=2025, sequence="25-2")
+    unpublished = AdmissionProcess.objects.create(
+        year=2027, sequence="27-1", is_published=False
+    )
+    AdmissionResult.objects.create(
+        process=selected,
+        major=nursing,
+        candidate_code="selected",
+        last_names="DOE",
+        given_names="SELECTED",
+        status=AdmissionResult.Status.ADMITTED,
+        score=Decimal("900.0000"),
+    )
+    AdmissionResult.objects.create(
+        process=history,
+        major=nursing,
+        candidate_code="history",
+        last_names="DOE",
+        given_names="HISTORY",
+        status=AdmissionResult.Status.NOT_ADMITTED,
+        score=Decimal("700.0000"),
+    )
+
+    response = client.get(
+        f"/api/v1/analytics/majors/{nursing.id}/?process={selected.id}"
+    )
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["major"] == {
+        "id": nursing.id,
+        "code": "013",
+        "name": "Enfermería",
+        "faculty": "Facultad",
+        "academic_area": "Ciencias",
+    }
+    assert [item["process"]["id"] for item in payload["selected_processes"]] == [
+        selected.id
+    ]
+    assert payload["selected_processes"][0]["total_results"] == 1
+    assert [item["process"]["id"] for item in payload["history"]] == [history.id]
+    assert unpublished.id not in [item["process"]["id"] for item in payload["history"]]
+
+
+@pytest.mark.django_db
+def test_major_detail_uses_bulk_queries_for_history(client, majors, django_assert_num_queries):
+    nursing, _ = majors
+    processes = [
+        AdmissionProcess.objects.create(year=2024 + index, sequence=f"{index}-1")
+        for index in range(4)
+    ]
+    for index, process in enumerate(processes):
+        AdmissionResult.objects.create(
+            process=process,
+            major=nursing,
+            candidate_code=str(index),
+            last_names="DOE",
+            given_names="TEST",
+            status=AdmissionResult.Status.POSTULANT,
+        )
+
+    with django_assert_num_queries(3):
+        response = client.get(
+            f"/api/v1/analytics/majors/{nursing.id}/?process={processes[0].id}"
+        )
+
+    assert response.status_code == 200
+
+
+@pytest.mark.django_db
 def test_comparative_overview_deduplicates_ids_preserving_request_order(client):
     processes = [
         AdmissionProcess.objects.create(year=2025, sequence="25-2"),
