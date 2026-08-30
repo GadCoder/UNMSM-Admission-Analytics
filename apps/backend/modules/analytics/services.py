@@ -114,24 +114,20 @@ def major_detail(major_id, selected_process_ids):
         id=major_id, is_active=True
     )
     processes = list(
-        AdmissionProcess.objects.filter(is_published=True).order_by("-year", "-sequence")
+        AdmissionProcess.objects.filter(is_published=True)
+        .only("id", "year", "sequence", "name")
+        .order_by("-year", "-sequence")
     )
     process_by_id = {process.id: process for process in processes}
     if any(process_id not in process_by_id for process_id in selected_process_ids):
         raise AdmissionProcess.DoesNotExist
 
-    rows = (
-        AdmissionResult.objects.filter(major_id=major_id, process_id__in=process_by_id)
-        .values("process_id")
-        .annotate(
-            total_results=Count("id"),
-            admitted_count=Count("id", filter=Q(status=AdmissionResult.Status.ADMITTED)),
-            absent_count=Count("id", filter=Q(status=AdmissionResult.Status.ABSENT)),
-            average_score=Avg("score"),
-            highest_score=Max("score"),
-        )
+    process_ids = list(process_by_id)
+    results = AdmissionResult.objects.filter(
+        major_id=major_id,
+        process_id__in=process_ids,
     )
-    aggregates = {row["process_id"]: row for row in rows}
+    aggregates = _aggregate_totals(results)
 
     def build(process):
         return {"process": process, **_EMPTY_TOTALS, **aggregates.get(process.id, {})}

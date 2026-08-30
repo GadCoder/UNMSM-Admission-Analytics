@@ -3,10 +3,14 @@ from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_sche
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
-from modules.admission_processes.models import AdmissionProcess
 from modules.academics.models import Major
+from modules.admission_processes.models import AdmissionProcess
 
-from .serializers import ComparativeOverviewSerializer, MajorDetailSerializer, ProcessOverviewSerializer
+from .serializers import (
+    ComparativeOverviewSerializer,
+    MajorDetailSerializer,
+    ProcessOverviewSerializer,
+)
 from .services import latest_process_overview, major_detail, process_overviews
 
 
