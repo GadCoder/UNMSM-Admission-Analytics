@@ -100,4 +100,12 @@ describe("MajorDetailPage", () => {
     expect(table).toHaveTextContent("Puntaje promedio");
     expect(table).toHaveTextContent("2025-2");
   });
+
+  it("exposes the primary process and comparison controls", () => {
+    renderPage("/analytics/careers/42?process=2&compare=1");
+
+    expect(screen.getByLabelText("Proceso principal")).toHaveValue("2");
+    expect(screen.getByRole("checkbox", { name: "2025-2" })).toBeChecked();
+    expect(screen.getByRole("checkbox", { name: "2026-1" })).toBeDisabled();
+  });
 });

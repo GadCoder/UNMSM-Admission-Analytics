@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
 import * as api from "../api/analytics";
-import type { MajorDetailProcess } from "../api/analytics.types";
+import type { AdmissionProcess, MajorDetailProcess } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
 import { formatProcessLabel } from "../utils/processLabels";
 import styles from "./DashboardPage.module.css";
@@ -40,6 +40,48 @@ function HistoryTable({ items }: { items: MajorDetailProcess[] }) {
   </div>;
 }
 
+function ProcessControls({
+  processes,
+  primary,
+  comparisons,
+  onPrimaryChange,
+  onComparisonChange,
+}: {
+  processes: AdmissionProcess[];
+  primary: string;
+  comparisons: string[];
+  onPrimaryChange: (value: string) => void;
+  onComparisonChange: (processId: string, checked: boolean) => void;
+}) {
+  return <div className={`${styles.controls} ${styles.detailControls}`}>
+    <div className={`${styles.control} ${styles.primaryControl}`}>
+      <label htmlFor="detail-primary-process">Proceso principal</label>
+      <select id="detail-primary-process" value={primary} onChange={(event) => onPrimaryChange(event.target.value)}>
+        {processes.map((process) => <option key={process.id} value={process.id}>{formatProcessLabel(process)}</option>)}
+      </select>
+    </div>
+    <details className={styles.comparisonDisclosure} open={comparisons.length > 0}>
+      <summary className={styles.comparisonButton}>Comparar procesos <span aria-hidden="true">⌄</span></summary>
+      <div className={styles.comparisonMenu}>
+        <strong>Procesos para comparar</strong>
+        <small>Selecciona hasta tres procesos adicionales.</small>
+        {processes.map((process) => {
+          const processId = String(process.id);
+          return <label className={styles.comparisonOption} key={process.id}>
+            <input
+              type="checkbox"
+              checked={comparisons.includes(processId)}
+              disabled={processId === primary}
+              onChange={(event) => onComparisonChange(processId, event.target.checked)}
+            />
+            <span>{formatProcessLabel(process)}</span>
+          </label>;
+        })}
+      </div>
+    </details>
+  </div>;
+}
+
 export function MajorDetailPage() {
   const { majorId = "" } = useParams();
   const [params, setParams] = useSearchParams();
@@ -52,6 +94,15 @@ export function MajorDetailPage() {
   const detail = query.data;
   const selected = detail?.selected_processes ?? [];
   const current = selected[0];
+
+  const updateSelection = (nextPrimary: string, nextComparisons: string[]) => {
+    const next = new URLSearchParams(params);
+    next.set("process", nextPrimary);
+    const safeComparisons = nextComparisons.filter((id) => id !== nextPrimary).slice(0, 3);
+    if (safeComparisons.length) next.set("compare", safeComparisons.join(","));
+    else next.delete("compare");
+    setParams(next);
+  };
 
   useEffect(() => {
     if (latest && !params.get("process")) {
@@ -72,6 +123,13 @@ export function MajorDetailPage() {
   return <section className={styles.page} aria-label="Detalle de la carrera" aria-busy={query.isFetching}>
     {query.isFetching && <div role="status" className={styles.refreshingState}><span className={styles.spinner} aria-hidden="true" />Actualizando detalle…</div>}
     <Link className={styles.detailBack} to={`/?process=${current.process.id}`}>← Volver al desempeño por carrera</Link>
+    <ProcessControls
+      processes={processes}
+      primary={primary}
+      comparisons={comparisons}
+      onPrimaryChange={(nextPrimary) => updateSelection(nextPrimary, comparisons)}
+      onComparisonChange={(processId, checked) => updateSelection(primary, checked ? [...comparisons, processId] : comparisons.filter((id) => id !== processId))}
+    />
     <header className={styles.detailHero}>
       <div>
         <p className={styles.eyebrow}>Detalle de carrera · {detail.major.code}</p>
