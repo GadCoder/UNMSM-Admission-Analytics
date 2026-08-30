@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
 import * as api from "../api/analytics";
@@ -23,19 +24,35 @@ function ProcessMetrics({ item }: { item: MajorDetailProcess }) {
 
 export function MajorDetailPage() {
   const { majorId = "" } = useParams();
-  const [params] = useSearchParams();
-  const primary = params.get("process") ?? "";
+  const [params, setParams] = useSearchParams();
+  const processesQuery = api.usePublishedProcesses();
+  const processes = processesQuery.data ?? [];
+  const latest = processes[0];
+  const primary = params.get("process") ?? (latest ? String(latest.id) : "");
   const comparisons = (params.get("compare")?.split(",").filter((id) => id && id !== primary) ?? []).slice(0, 3);
   const query = api.useMajorDetail(majorId, primary, comparisons);
   const detail = query.data;
   const selected = detail?.selected_processes ?? [];
   const current = selected[0];
 
+  useEffect(() => {
+    if (latest && !params.get("process")) {
+      const next = new URLSearchParams(params);
+      next.set("process", String(latest.id));
+      setParams(next, { replace: true });
+    }
+  }, [latest, params, setParams]);
+
   if (query.isPending) return <section className={styles.page}><p role="status" className={styles.state}>Cargando detalle de la carrera…</p></section>;
   if (query.isError || !detail || !current) return <section className={styles.page}><p role="alert" className={styles.state}>No pudimos cargar el detalle de esta carrera.</p><Link className={styles.detailBack} to="/">Volver al dashboard</Link></section>;
 
   const rate = current.total_results ? (current.admitted_count / current.total_results) * 100 : 0;
-  return <section className={styles.page}>
+  const timeline = [...selected, ...(detail.history ?? [])].sort((left, right) => {
+    if (left.process.year !== right.process.year) return left.process.year - right.process.year;
+    return left.process.sequence.localeCompare(right.process.sequence);
+  });
+  return <section className={styles.page} aria-label="Detalle de la carrera" aria-busy={query.isFetching}>
+    {query.isFetching && <div role="status" className={styles.refreshingState}><span className={styles.spinner} aria-hidden="true" />Actualizando detalle…</div>}
     <Link className={styles.detailBack} to={`/?process=${current.process.id}`}>← Volver al desempeño por carrera</Link>
     <header className={styles.detailHero}>
       <div>
@@ -56,6 +73,6 @@ export function MajorDetailPage() {
     </div>
 
     {selected.length > 1 && <section className={styles.card} aria-labelledby="comparison-heading"><h2 id="comparison-heading">Comparación de procesos</h2><div className={styles.detailProcessList}>{selected.map((item) => <ProcessMetrics key={item.process.id} item={item} />)}</div></section>}
-    <section className={styles.card} aria-labelledby="history-heading"><h2 id="history-heading">Evolución de la carrera</h2><p className={styles.chartDescription}>Indicadores de la carrera en los procesos de admisión publicados.</p><div className={styles.detailHistory}>{[...selected, ...(detail.history ?? [])].map((item) => <ProcessMetrics key={item.process.id} item={item} />)}</div></section>
+    <section className={styles.card} aria-labelledby="history-heading"><h2 id="history-heading">Evolución de la carrera</h2><p className={styles.chartDescription}>Indicadores de la carrera en los procesos de admisión publicados.</p><div className={styles.detailHistory}>{timeline.map((item) => <ProcessMetrics key={item.process.id} item={item} />)}</div></section>
   </section>;
 }
