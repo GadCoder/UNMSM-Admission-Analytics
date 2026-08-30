@@ -30,3 +30,18 @@ export type ProcessOverview = {
 };
 
 export type ComparativeOverview = { processes: ProcessOverview[] };
+
+export type MajorDetailProcess = {
+  process: AdmissionProcess;
+  total_results: number;
+  admitted_count: number;
+  absent_count: number;
+  average_score: string | null;
+  highest_score: string | null;
+};
+
+export type MajorDetail = {
+  major: { id: number; code: string; name: string; faculty: string; academic_area: string };
+  selected_processes: MajorDetailProcess[];
+  history: MajorDetailProcess[];
+};

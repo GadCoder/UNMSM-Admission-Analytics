@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { apiFetch } from "../../../shared/api/client";
-import type { AcademicArea, AdmissionProcess, ComparativeOverview, Faculty, Modality } from "./analytics.types";
+import type { AcademicArea, AdmissionProcess, ComparativeOverview, Faculty, MajorDetail, Modality } from "./analytics.types";
 
 export type AnalyticsFilters = { academicArea?: string; faculty?: string; modality?: string };
 
@@ -20,6 +20,22 @@ export function getAnalyticsOverview(primary: string | number, comparisons: Arra
 }
 
 export function usePublishedProcesses() { return useQuery({ queryKey: ["published-processes"], queryFn: getPublishedProcesses }); }
+
+export function getMajorDetail(majorId: string | number, primary: string | number, comparisons: Array<string | number> = []): Promise<MajorDetail> {
+  const params = new URLSearchParams({ process: String(primary) });
+  if (comparisons.length) params.set("compare", comparisons.slice(0, 3).map(String).join(","));
+  return apiFetch<MajorDetail>(`/api/v1/analytics/majors/${majorId}/?${params.toString()}`);
+}
+
+export function useMajorDetail(majorId: string, primary: string, comparisons: string[]) {
+  return useQuery({
+    queryKey: ["major-detail", majorId, primary, comparisons],
+    queryFn: () => getMajorDetail(majorId, primary, comparisons),
+    enabled: Boolean(majorId && primary),
+    placeholderData: keepPreviousData,
+  });
+}
+
 export function useAcademicAreas() { return useQuery({ queryKey: ["academic-areas"], queryFn: getAcademicAreas, staleTime: 300000 }); }
 export function useFaculties() { return useQuery({ queryKey: ["faculties"], queryFn: getFaculties, staleTime: 300000 }); }
 export function useModalities() { return useQuery({ queryKey: ["modalities"], queryFn: getModalities, staleTime: 300000 }); }

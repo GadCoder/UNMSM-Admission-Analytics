@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import type { MajorOverview, ProcessOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
 import styles from "../pages/DashboardPage.module.css";
@@ -42,7 +44,9 @@ function RankingItem({ major, rank, overviews }: { major: MajorOverview; rank: n
   return <li className={styles.majorRankingItem}>
     <div className={styles.majorRankingHeader}>
       <span className={styles.majorRank}>{String(rank).padStart(2, "0")}</span>
-      <strong>{major.major_name}</strong>
+      <Link className={styles.majorDetailLink} to={`/analytics/careers/${major.major_id}?process=${overviews[0].process.id}${overviews.length > 1 ? `&compare=${overviews.slice(1).map((item) => item.process.id).join(",")}` : ""}`}>
+        <strong>{major.major_name}</strong>
+      </Link>
       {!comparisonMode && <span className={styles.majorApplicants}>{formatNumber(major.total_results)} postulantes</span>}
     </div>
     {comparisonMode ? overviews.map((overview) => {
