@@ -90,4 +90,14 @@ describe("MajorDetailPage", () => {
     const text = history.textContent ?? "";
     expect(text.indexOf("2025-2")).toBeLessThan(text.indexOf("2026-1"));
   });
+
+  it("renders history as a labeled data table", () => {
+    renderPage("/analytics/careers/42?process=2");
+
+    const table = screen.getByRole("table", { name: "Historial de resultados por proceso" });
+    expect(table).toHaveTextContent("Postulantes");
+    expect(table).toHaveTextContent("Tasa de ingreso");
+    expect(table).toHaveTextContent("Puntaje promedio");
+    expect(table).toHaveTextContent("2025-2");
+  });
 });
