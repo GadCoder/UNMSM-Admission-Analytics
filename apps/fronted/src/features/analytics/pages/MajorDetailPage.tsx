@@ -2,43 +2,12 @@ import { useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
 import * as api from "../api/analytics";
-import type { MajorDetailProcess } from "../api/analytics.types";
+import { HistoryTable } from "../components/MajorDetailHistory";
+import { MajorDetailControls } from "../components/MajorDetailControls";
+import { Metric, ProcessMetrics } from "../components/MajorDetailMetrics";
 import { formatNumber } from "../utils/formatters";
 import { formatProcessLabel } from "../utils/processLabels";
 import styles from "./DashboardPage.module.css";
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return <article className={styles.kpi}><span>{label}</span><strong>{value}</strong></article>;
-}
-
-function ProcessMetrics({ item }: { item: MajorDetailProcess }) {
-  const rate = item.total_results ? (item.admitted_count / item.total_results) * 100 : 0;
-  return <div className={styles.detailProcessMetrics}>
-    <strong>{formatProcessLabel(item.process)}</strong>
-    <span>{formatNumber(item.total_results)} postulantes</span>
-    <span>{formatNumber(item.admitted_count)} ingresantes</span>
-    <span>{formatNumber(rate, 1)}% de ingreso</span>
-    <span>{formatNumber(item.average_score, 2)} promedio</span>
-  </div>;
-}
-
-function HistoryTable({ items }: { items: MajorDetailProcess[] }) {
-  return <div className={styles.tableWrap}>
-    <table aria-label="Historial de resultados por proceso">
-      <thead><tr><th scope="col">Proceso</th><th scope="col">Postulantes</th><th scope="col">Ingresantes</th><th scope="col">Tasa de ingreso</th><th scope="col">Puntaje promedio</th></tr></thead>
-      <tbody>{items.map((item) => {
-        const rate = item.total_results ? (item.admitted_count / item.total_results) * 100 : 0;
-        return <tr key={item.process.id}>
-          <th scope="row">{formatProcessLabel(item.process)}</th>
-          <td>{formatNumber(item.total_results)}</td>
-          <td>{formatNumber(item.admitted_count)}</td>
-          <td>{formatNumber(rate, 1)}%</td>
-          <td>{formatNumber(item.average_score, 2)}</td>
-        </tr>;
-      })}</tbody>
-    </table>
-  </div>;
-}
 
 export function MajorDetailPage() {
   const { majorId = "" } = useParams();
@@ -52,6 +21,15 @@ export function MajorDetailPage() {
   const detail = query.data;
   const selected = detail?.selected_processes ?? [];
   const current = selected[0];
+
+  const updateSelection = (nextPrimary: string, nextComparisons: string[]) => {
+    const next = new URLSearchParams(params);
+    next.set("process", nextPrimary);
+    const safeComparisons = nextComparisons.filter((id) => id !== nextPrimary).slice(0, 3);
+    if (safeComparisons.length) next.set("compare", safeComparisons.join(","));
+    else next.delete("compare");
+    setParams(next);
+  };
 
   useEffect(() => {
     if (latest && !params.get("process")) {
@@ -72,6 +50,13 @@ export function MajorDetailPage() {
   return <section className={styles.page} aria-label="Detalle de la carrera" aria-busy={query.isFetching}>
     {query.isFetching && <div role="status" className={styles.refreshingState}><span className={styles.spinner} aria-hidden="true" />Actualizando detalle…</div>}
     <Link className={styles.detailBack} to={`/?process=${current.process.id}`}>← Volver al desempeño por carrera</Link>
+    <MajorDetailControls
+      processes={processes}
+      primary={primary}
+      comparisons={comparisons}
+      onPrimaryChange={(nextPrimary) => updateSelection(nextPrimary, comparisons)}
+      onComparisonChange={(processId, checked) => updateSelection(primary, checked ? [...comparisons, processId] : comparisons.filter((id) => id !== processId))}
+    />
     <header className={styles.detailHero}>
       <div>
         <p className={styles.eyebrow}>Detalle de carrera · {detail.major.code}</p>
