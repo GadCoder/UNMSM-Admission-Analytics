@@ -50,16 +50,9 @@ export function MajorDetailPage() {
   return <section className={styles.page} aria-label="Detalle de la carrera" aria-busy={query.isFetching}>
     {query.isFetching && <div role="status" className={styles.refreshingState}><span className={styles.spinner} aria-hidden="true" />Actualizando detalle…</div>}
     <Link className={styles.detailBack} to={`/?process=${current.process.id}`}>← Volver al desempeño por carrera</Link>
-    <MajorDetailControls
-      processes={processes}
-      primary={primary}
-      comparisons={comparisons}
-      onPrimaryChange={(nextPrimary) => updateSelection(nextPrimary, comparisons)}
-      onComparisonChange={(processId, checked) => updateSelection(primary, checked ? [...comparisons, processId] : comparisons.filter((id) => id !== processId))}
-    />
     <header className={styles.detailHero}>
       <div>
-        <p className={styles.eyebrow}>Detalle de carrera · {detail.major.code}</p>
+        <p className={styles.eyebrow}>Detalle de carrera</p>
         <h1>{detail.major.name}</h1>
         <p className={styles.intro}>{detail.major.faculty} · {detail.major.academic_area}</p>
       </div>
@@ -74,8 +67,15 @@ export function MajorDetailPage() {
       <Metric label="Puntaje máximo" value={formatNumber(current.highest_score, 2)} />
       <Metric label="Puntaje promedio" value={formatNumber(current.average_score, 2)} />
     </div>
+    <MajorDetailControls
+      processes={processes}
+      primary={primary}
+      comparisons={comparisons}
+      onPrimaryChange={(nextPrimary) => updateSelection(nextPrimary, comparisons)}
+      onComparisonChange={(processId, checked) => updateSelection(primary, checked ? [...comparisons, processId] : comparisons.filter((id) => id !== processId))}
+    />
 
-    {selected.length > 1 && <section className={styles.card} aria-labelledby="comparison-heading"><h2 id="comparison-heading">Comparación de procesos</h2><div className={styles.detailProcessList}>{selected.map((item) => <ProcessMetrics key={item.process.id} item={item} />)}</div></section>}
+    {selected.length > 1 && <section className={styles.card} aria-labelledby="comparison-heading"><h2 id="comparison-heading">Comparación de procesos</h2><p className={styles.chartDescription}>Diferencias respecto al proceso principal: {formatProcessLabel(current.process)}.</p><div className={styles.detailProcessList}>{selected.slice(1).map((item) => <ProcessMetrics key={item.process.id} item={item} baseline={current} />)}</div></section>}
     <section className={styles.card} aria-labelledby="history-heading"><h2 id="history-heading">Evolución de la carrera</h2><p className={styles.chartDescription}>Indicadores de la carrera en los procesos de admisión publicados.</p><HistoryTable items={timeline} /></section>
   </section>;
 }
