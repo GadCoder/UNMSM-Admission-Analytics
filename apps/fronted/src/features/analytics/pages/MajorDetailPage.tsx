@@ -2,85 +2,12 @@ import { useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
 import * as api from "../api/analytics";
-import type { AdmissionProcess, MajorDetailProcess } from "../api/analytics.types";
+import { HistoryTable } from "../components/MajorDetailHistory";
+import { MajorDetailControls } from "../components/MajorDetailControls";
+import { Metric, ProcessMetrics } from "../components/MajorDetailMetrics";
 import { formatNumber } from "../utils/formatters";
 import { formatProcessLabel } from "../utils/processLabels";
 import styles from "./DashboardPage.module.css";
-
-function Metric({ label, value }: { label: string; value: string }) {
-  return <article className={styles.kpi}><span>{label}</span><strong>{value}</strong></article>;
-}
-
-function ProcessMetrics({ item }: { item: MajorDetailProcess }) {
-  const rate = item.total_results ? (item.admitted_count / item.total_results) * 100 : 0;
-  return <div className={styles.detailProcessMetrics}>
-    <strong>{formatProcessLabel(item.process)}</strong>
-    <span>{formatNumber(item.total_results)} postulantes</span>
-    <span>{formatNumber(item.admitted_count)} ingresantes</span>
-    <span>{formatNumber(rate, 1)}% de ingreso</span>
-    <span>{formatNumber(item.average_score, 2)} promedio</span>
-  </div>;
-}
-
-function HistoryTable({ items }: { items: MajorDetailProcess[] }) {
-  return <div className={styles.tableWrap}>
-    <table aria-label="Historial de resultados por proceso">
-      <thead><tr><th scope="col">Proceso</th><th scope="col">Postulantes</th><th scope="col">Ingresantes</th><th scope="col">Tasa de ingreso</th><th scope="col">Puntaje promedio</th></tr></thead>
-      <tbody>{items.map((item) => {
-        const rate = item.total_results ? (item.admitted_count / item.total_results) * 100 : 0;
-        return <tr key={item.process.id}>
-          <th scope="row">{formatProcessLabel(item.process)}</th>
-          <td>{formatNumber(item.total_results)}</td>
-          <td>{formatNumber(item.admitted_count)}</td>
-          <td>{formatNumber(rate, 1)}%</td>
-          <td>{formatNumber(item.average_score, 2)}</td>
-        </tr>;
-      })}</tbody>
-    </table>
-  </div>;
-}
-
-function ProcessControls({
-  processes,
-  primary,
-  comparisons,
-  onPrimaryChange,
-  onComparisonChange,
-}: {
-  processes: AdmissionProcess[];
-  primary: string;
-  comparisons: string[];
-  onPrimaryChange: (value: string) => void;
-  onComparisonChange: (processId: string, checked: boolean) => void;
-}) {
-  return <div className={`${styles.controls} ${styles.detailControls}`}>
-    <div className={`${styles.control} ${styles.primaryControl}`}>
-      <label htmlFor="detail-primary-process">Proceso principal</label>
-      <select id="detail-primary-process" value={primary} onChange={(event) => onPrimaryChange(event.target.value)}>
-        {processes.map((process) => <option key={process.id} value={process.id}>{formatProcessLabel(process)}</option>)}
-      </select>
-    </div>
-    <details className={styles.comparisonDisclosure} open={comparisons.length > 0}>
-      <summary className={styles.comparisonButton}>Comparar procesos <span aria-hidden="true">⌄</span></summary>
-      <div className={styles.comparisonMenu}>
-        <strong>Procesos para comparar</strong>
-        <small>Selecciona hasta tres procesos adicionales.</small>
-        {processes.map((process) => {
-          const processId = String(process.id);
-          return <label className={styles.comparisonOption} key={process.id}>
-            <input
-              type="checkbox"
-              checked={comparisons.includes(processId)}
-              disabled={processId === primary}
-              onChange={(event) => onComparisonChange(processId, event.target.checked)}
-            />
-            <span>{formatProcessLabel(process)}</span>
-          </label>;
-        })}
-      </div>
-    </details>
-  </div>;
-}
 
 export function MajorDetailPage() {
   const { majorId = "" } = useParams();
@@ -123,7 +50,7 @@ export function MajorDetailPage() {
   return <section className={styles.page} aria-label="Detalle de la carrera" aria-busy={query.isFetching}>
     {query.isFetching && <div role="status" className={styles.refreshingState}><span className={styles.spinner} aria-hidden="true" />Actualizando detalle…</div>}
     <Link className={styles.detailBack} to={`/?process=${current.process.id}`}>← Volver al desempeño por carrera</Link>
-    <ProcessControls
+    <MajorDetailControls
       processes={processes}
       primary={primary}
       comparisons={comparisons}

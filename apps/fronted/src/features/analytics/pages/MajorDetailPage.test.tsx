@@ -16,6 +16,9 @@ vi.mock("../api/analytics", async (importOriginal) => ({
 const processes = [
   { id: 2, year: 2026, sequence: "26-1", name: "" },
   { id: 1, year: 2025, sequence: "25-2", name: "" },
+  { id: 3, year: 2025, sequence: "25-1", name: "" },
+  { id: 4, year: 2024, sequence: "24-2", name: "" },
+  { id: 5, year: 2024, sequence: "24-1", name: "" },
 ];
 
 const detailProcess = (process: typeof processes[number], total: number): MajorDetailProcess => ({
@@ -102,10 +105,11 @@ describe("MajorDetailPage", () => {
   });
 
   it("exposes the primary process and comparison controls", () => {
-    renderPage("/analytics/careers/42?process=2&compare=1");
+    renderPage("/analytics/careers/42?process=2&compare=1,3,4");
 
     expect(screen.getByLabelText("Proceso principal")).toHaveValue("2");
     expect(screen.getByRole("checkbox", { name: "2025-2" })).toBeChecked();
     expect(screen.getByRole("checkbox", { name: "2026-1" })).toBeDisabled();
+    expect(screen.getByRole("checkbox", { name: "2024-1" })).toBeDisabled();
   });
 });
