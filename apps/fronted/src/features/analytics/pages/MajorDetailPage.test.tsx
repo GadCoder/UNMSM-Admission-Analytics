@@ -104,6 +104,22 @@ describe("MajorDetailPage", () => {
     expect(table).toHaveTextContent("2025-2");
   });
 
+  it("compares each selected process against the primary process", () => {
+    vi.mocked(api.useMajorDetail).mockReturnValue({
+      data: { ...detail, selected_processes: [detailProcess(processes[0], 100), detailProcess(processes[1], 80)], history: [] },
+      isPending: false,
+      isFetching: false,
+      isError: false,
+      isSuccess: true,
+    } as unknown as ReturnType<typeof api.useMajorDetail>);
+
+    renderPage("/analytics/careers/42?process=2&compare=1");
+
+    expect(screen.getByText("Comparado con 2026-1")).toBeInTheDocument();
+    expect(screen.getByText("-20 vs principal")).toBeInTheDocument();
+    expect(screen.getByText("+2.5 pp vs principal")).toBeInTheDocument();
+  });
+
   it("exposes the primary process and comparison controls", () => {
     renderPage("/analytics/careers/42?process=2&compare=1,3,4");
 

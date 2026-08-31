@@ -7,13 +7,30 @@ export function Metric({ label, value }: { label: string; value: string }) {
   return <article className={styles.kpi}><span>{label}</span><strong>{value}</strong></article>;
 }
 
-export function ProcessMetrics({ item }: { item: MajorDetailProcess }) {
-  const rate = item.total_results ? (item.admitted_count / item.total_results) * 100 : 0;
-  return <div className={styles.detailProcessMetrics}>
-    <strong>{formatProcessLabel(item.process)}</strong>
-    <span>{formatNumber(item.total_results)} postulantes</span>
-    <span>{formatNumber(item.admitted_count)} ingresantes</span>
-    <span>{formatNumber(rate, 1)}% de ingreso</span>
-    <span>{formatNumber(item.average_score, 2)} promedio</span>
-  </div>;
+function signed(value: number, decimals = 0) {
+  return `${value > 0 ? "+" : ""}${formatNumber(value, decimals)}`;
+}
+
+function rate(item: MajorDetailProcess) {
+  return item.total_results ? (item.admitted_count / item.total_results) * 100 : 0;
+}
+
+export function ProcessMetrics({ item, baseline }: { item: MajorDetailProcess; baseline: MajorDetailProcess }) {
+  const metrics = [
+    ["Postulantes", formatNumber(item.total_results), `${signed(item.total_results - baseline.total_results)} vs principal`],
+    ["Ingresantes", formatNumber(item.admitted_count), `${signed(item.admitted_count - baseline.admitted_count)} vs principal`],
+    ["Tasa de ingreso", `${formatNumber(rate(item), 1)}%`, `${signed(rate(item) - rate(baseline), 1)} pp vs principal`],
+    ["Puntaje promedio", formatNumber(item.average_score, 2), `${signed(Number(item.average_score) - Number(baseline.average_score), 2)} vs principal`],
+  ];
+
+  return <article className={styles.detailProcessMetrics}>
+    <header><strong>{formatProcessLabel(item.process)}</strong><span>Comparado con {formatProcessLabel(baseline.process)}</span></header>
+    <div className={styles.comparisonMetricGrid}>
+      {metrics.map(([label, value, delta]) => <div className={styles.comparisonMetric} key={label}>
+        <span>{label}</span>
+        <strong>{value}</strong>
+        <small>{delta}</small>
+      </div>)}
+    </div>
+  </article>;
 }
