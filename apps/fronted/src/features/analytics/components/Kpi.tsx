@@ -11,8 +11,10 @@ export function Kpi({ label, value, trend }: KpiProps) {
   return (
     <article className={styles.kpi}>
       <span>{label}</span>
-      <strong>{value}</strong>
-      {trend && <KpiTrend {...trend} />}
+      <div className={styles.kpiValueRow}>
+        <strong>{value}</strong>
+        {trend && <KpiTrend {...trend} />}
+      </div>
     </article>
   );
 }

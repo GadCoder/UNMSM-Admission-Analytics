@@ -98,6 +98,8 @@ describe("DashboardPage", () => {
 
     expect(await screen.findByText("↑ +20")).toBeInTheDocument();
     expect(screen.getByText("vs 80 en 2025-1")).toBeInTheDocument();
+    expect(screen.getByText("100").parentElement?.tagName).toBe("DIV");
+    expect(screen.getByLabelText("Subió: +20").parentElement?.tagName).toBe("DIV");
     expect(screen.getByLabelText("Subió: +2.5 pp")).toBeInTheDocument();
     expect(screen.getByLabelText("Bajó: 2 ausentes")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Comparación de procesos" })).not.toBeInTheDocument();
