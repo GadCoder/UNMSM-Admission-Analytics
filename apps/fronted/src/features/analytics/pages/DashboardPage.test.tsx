@@ -82,6 +82,27 @@ describe("DashboardPage", () => {
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("24% tasa de admisión");
     expect(screen.getByRole("region", { name: "Carreras con mayor demanda" })).not.toHaveTextContent(/concentra el 50\s*% de los postulantes/);
   });
+  it("shows KPI trends against the previous process without rendering a comparison chart", async () => {
+    vi.mocked(api.useAnalyticsOverview).mockReturnValue({
+      data: {
+        processes: [
+          { ...overview.processes[0], absent_count: 6 },
+          { ...overview.processes[0], process: processes[1], total_results: 80, admitted_count: 14, absent_count: 8, average_score: "62.5", highest_score: "95.0" },
+        ],
+      },
+      isPending: false,
+      isError: false,
+      isSuccess: true,
+    } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
+    renderPage();
+
+    expect(await screen.findByText("↑ +20")).toBeInTheDocument();
+    expect(screen.getByText("vs 80 en 2025-1")).toBeInTheDocument();
+    expect(screen.getByLabelText("Subió: +2.5 pp")).toBeInTheDocument();
+    expect(screen.getByLabelText("Bajó: 2 ausentes")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Comparación de procesos" })).not.toBeInTheDocument();
+  });
+
   it("updates URL when a comparison is selected", async () => {
     renderPage();
     await screen.findByRole("table");

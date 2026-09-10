@@ -10,6 +10,7 @@ import { ProcessHeader } from "./ProcessHeader";
 type DashboardContentProps = {
   primary: ProcessOverview;
   comparisons: ProcessOverview[];
+  previous?: ProcessOverview;
   processById: Map<string, AdmissionProcess>;
   filterControls: ReactNode;
 };
@@ -17,13 +18,14 @@ type DashboardContentProps = {
 export function DashboardContent({
   primary,
   comparisons,
+  previous,
   processById,
   filterControls,
 }: DashboardContentProps) {
   return (
     <>
       <ProcessHeader process={primary.process} />
-      <KpiGrid overview={primary} />
+      <KpiGrid overview={primary} previous={previous} />
       <ComparisonSummary
         comparisons={comparisons}
         processById={processById}

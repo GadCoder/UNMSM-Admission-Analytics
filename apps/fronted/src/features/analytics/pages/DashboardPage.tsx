@@ -20,9 +20,14 @@ export function DashboardPage() {
   };
   const latest = processes[0];
   const primaryId = params.get("process") ?? (latest ? String(latest.id) : "");
-  const comparisons = (params.get("compare")?.split(",").filter(Boolean) ?? [])
+  const requestedComparisons = (params.get("compare")?.split(",").filter(Boolean) ?? [])
     .filter((id) => id !== primaryId)
     .slice(0, 3);
+  const primaryIndex = processes.findIndex((process) => String(process.id) === primaryId);
+  const previousProcess = primaryIndex >= 0 ? processes[primaryIndex + 1] : undefined;
+  const previousId = previousProcess ? String(previousProcess.id) : "";
+  const automaticComparison = previousId && !requestedComparisons.includes(previousId) ? [previousId] : [];
+  const overviewComparisons = [...requestedComparisons, ...automaticComparison].slice(0, 3);
 
   useEffect(() => {
     if (latest && !params.get("process")) {
@@ -32,9 +37,11 @@ export function DashboardPage() {
     }
   }, [latest, params, setParams]);
 
-  const overviewQuery = api.useAnalyticsOverview(primaryId, comparisons, filters);
+  const overviewQuery = api.useAnalyticsOverview(primaryId, overviewComparisons, filters);
   const selected = overviewQuery.data?.processes ?? [];
   const primary = selected[0];
+  const previous = selected.find((item) => String(item.process.id) === previousId);
+  const selectedComparisons = selected.slice(1).filter((item) => requestedComparisons.includes(String(item.process.id)));
   const processById = new Map(processes.map((process) => [String(process.id), process]));
 
   const updateSelection = (process: string, compare: string[]) => {
@@ -85,7 +92,7 @@ export function DashboardPage() {
           <DashboardControls
             processes={processes}
             primaryId={primaryId}
-            comparisons={comparisons}
+            comparisons={requestedComparisons}
             onChange={updateSelection}
           />
           {overviewQuery.isPending && !overviewQuery.data && (
@@ -105,7 +112,8 @@ export function DashboardPage() {
             <div aria-busy={overviewQuery.isFetching}>
               <DashboardContent
                 primary={primary}
-                comparisons={selected.slice(1)}
+                comparisons={selectedComparisons}
+                previous={previous}
                 processById={processById}
                 filterControls={<DashboardFilterControls
                   areas={areasQuery.data ?? []}
