@@ -49,6 +49,11 @@
 .kpi span { display:block; min-height:2.2em; color:#8f7e7f; font-size:.62rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
 .kpi strong { display:block; margin-top:.65rem; color:var(--color-text); font-size:1.35rem; letter-spacing:-.04em; }
 .kpi em { display:block; margin-top:.5rem; color:var(--color-success); font-size:.62rem; font-style:normal; font-weight:700; }
+.kpiTrend { display:grid; gap:.1rem; margin-top:.45rem; font-size:.62rem; font-weight:700; line-height:1.2; }
+.kpiTrend > span { white-space:nowrap; }
+.kpiTrend small { color:var(--color-muted); font-size:.58rem; font-weight:600; }
+.kpiTrendPositive > span { color:var(--color-success); }
+.kpiTrendNegative > span { color:#b54545; }
 .comparison { display:flex; flex-wrap:wrap; gap:var(--space-3) var(--space-6); margin:0 0 var(--space-5); padding:var(--space-4); background:var(--color-primary-soft); color:var(--color-muted); font-size:.72rem; }
 .comparison strong { color:var(--color-primary); }
 .card { margin-top:var(--space-5); padding:var(--space-5); }
