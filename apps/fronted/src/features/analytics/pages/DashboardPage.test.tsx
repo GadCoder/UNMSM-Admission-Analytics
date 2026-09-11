@@ -98,8 +98,11 @@ describe("DashboardPage", () => {
 
     expect(await screen.findByText("↑ +20")).toBeInTheDocument();
     expect(screen.getByText("vs 80 en 2025-1")).toBeInTheDocument();
-    expect(screen.getByText("100").parentElement?.tagName).toBe("DIV");
-    expect(screen.getByLabelText("Subió: +20").parentElement?.tagName).toBe("DIV");
+    const currentValue = screen.getByText("100");
+    const trendIndicator = screen.getByLabelText("Subió: +20");
+    const trendContext = screen.getByText("vs 80 en 2025-1");
+    expect(currentValue.parentElement).toBe(trendIndicator.parentElement?.parentElement);
+    expect(trendContext.parentElement?.parentElement).toBe(currentValue.parentElement);
     expect(screen.getByLabelText("Subió: +2.5 pp")).toBeInTheDocument();
     expect(screen.getByLabelText("Bajó: 2 ausentes")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Comparación de procesos" })).not.toBeInTheDocument();
