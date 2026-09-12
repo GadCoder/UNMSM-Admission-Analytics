@@ -95,11 +95,12 @@ describe("DashboardPage", () => {
       isSuccess: true,
     } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
     renderPage();
-
-    expect(await screen.findByText("+20 · vs 80 en 2025-1")).toBeInTheDocument();
+    expect(await screen.findByText("+20", { selector: "small" })).toBeInTheDocument();
+    expect(screen.queryByText("+20 · vs 80 en 2025-1")).not.toBeInTheDocument();
+    expect(screen.queryByText("vs 80 en 2025-1")).not.toBeInTheDocument();
     const currentValue = screen.getByText("100");
     const trendIndicator = screen.getByLabelText("Subió: +20");
-    const trendContext = screen.getByText("+20 · vs 80 en 2025-1");
+    const trendContext = screen.getByText("+20", { selector: "small" });
     expect(currentValue.parentElement).toBe(trendIndicator.parentElement?.parentElement);
     expect(trendContext.parentElement?.parentElement).toBe(currentValue.parentElement);
     expect(screen.getByLabelText("Subió: +2.5 pp")).toBeInTheDocument();
