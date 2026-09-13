@@ -3,7 +3,6 @@ import type { ReactNode } from "react";
 import { ProcessComparisonChart } from "./AnalyticsCharts";
 import { ComparisonSummary } from "./ComparisonSummary";
 import { KpiGrid } from "./KpiGrid";
-import { MajorDemandRanking } from "./MajorDemandRanking";
 import { MajorBreakdown } from "./MajorBreakdown";
 
 type DashboardContentProps = {
@@ -29,7 +28,6 @@ export function DashboardContent({
         processById={processById}
       />
       <ProcessComparisonChart overviews={[primary, ...comparisons]} />
-      <MajorDemandRanking overview={primary} comparisons={comparisons} />
       <MajorBreakdown overview={primary} filterControls={filterControls} />
     </>
   );
