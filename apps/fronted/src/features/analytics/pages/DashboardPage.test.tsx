@@ -76,18 +76,9 @@ describe("DashboardPage", () => {
       "Puntaje promedio",
     ]);
     expect(screen.getByRole("table")).toBeInTheDocument();
-    expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("Ingeniería");
-    expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("50");
-    expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("50% del total de postulantes");
-    expect(screen.getByRole("region", { name: "Carreras con mayor demanda" })).toHaveTextContent("Total: 100 presentes en 2025-2");
-    expect(screen.getByRole("heading", { name: "Ranking de postulantes" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Demanda y admisión" })).toBeInTheDocument();
-    expect(screen.getByRole("img", { name: "Matriz de demanda y tasa de admisión por carrera" })).toBeInTheDocument();
-    expect(screen.getByText(/Los números coinciden con el ranking de la izquierda/)).toBeInTheDocument();
-    expect(screen.getByText(/Lectura rápida:/)).toBeInTheDocument();
-    expect(screen.getByRole("list", { name: "Principales carreras por postulantes" }).querySelector("span[style]")).toBeNull();
-    expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).not.toHaveTextContent("24% tasa de admisión");
-    expect(screen.getByRole("region", { name: "Carreras con mayor demanda" })).not.toHaveTextContent(/concentra el 50\s*% de los postulantes/);
+    expect(screen.queryByRole("region", { name: "Carreras con mayor demanda" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Ranking de postulantes" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Demanda y admisión" })).not.toBeInTheDocument();
   });
   it("shows KPI trends against the previous process without rendering a comparison chart", async () => {
     vi.mocked(api.useAnalyticsOverview).mockReturnValue({
@@ -138,14 +129,8 @@ describe("DashboardPage", () => {
     expect(await screen.findByRole("heading", { name: "Comparación de procesos" })).toBeInTheDocument();
     expect(screen.getByRole("img", { name: /comparación de postulantes/i })).toBeInTheDocument();
     expect(screen.getAllByRole("listitem")[1]).toHaveTextContent("2025-1: 80 postulantes, 16 admitidos, 8 ausentes");
-    expect(screen.getByRole("heading", { name: "Carreras con mayor demanda" })).toBeInTheDocument();
-    expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toBeInTheDocument();
-    expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("2025-2");
-    expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("2025-1");
-    expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).not.toHaveTextContent("Cada proceso usa su propia escala");
-    expect(screen.getByRole("region", { name: "Carreras con mayor demanda" })).toHaveTextContent("100 presentes en 2025-2 · 80 presentes en 2025-1");
-    expect(screen.queryByText("ING")).not.toBeInTheDocument();
-    expect(screen.getByRole("columnheader", { name: "Postulantes" })).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Carreras con mayor demanda" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Ranking de postulantes" })).not.toBeInTheDocument();
   });
 
   it("opens comparison independently and applies selected processes", async () => {
