@@ -109,7 +109,23 @@ export function DashboardFilterControls({ areas, faculties, modalities, filters,
   const updateDraftFilter = (key: keyof DashboardFilters, value: string) => setDraftFilters((current) => ({ ...current, [key]: value, ...(key === "academicArea" ? { faculty: "" } : {}) }));
 
   return <details ref={filtersRef} className={styles.filtersDisclosure} open={filtersOpen} onToggle={(event) => setFiltersOpen(event.currentTarget.open)}>
-    <summary onClick={(event) => { if (!filtersOpen) { event.preventDefault(); setDraftFilters(filters); setFiltersOpen(true); } }}><span>Filtros</span>{activeFilters > 0 && <small>{activeFilters} activos</small>}<span className={styles.chevron} aria-hidden="true">⌄</span></summary>
+    <summary
+      aria-label={activeFilters > 0 ? `Filtros, ${activeFilters} activos` : "Filtros"}
+      title="Abrir filtros"
+      onClick={(event) => {
+        if (!filtersOpen) {
+          event.preventDefault();
+          setDraftFilters(filters);
+          setFiltersOpen(true);
+        }
+      }}
+    >
+      <span className={styles.filterIcon} aria-hidden="true">
+        <svg viewBox="0 0 24 24" focusable="false"><path d="M4 5h16M7 12h10m-7 7h4" /></svg>
+      </span>
+      <span className={styles.visuallyHidden}>Filtros</span>
+      {activeFilters > 0 && <span className={styles.filterBadge} aria-hidden="true">{activeFilters}</span>}
+    </summary>
     <div className={styles.filtersPanel}>
       <FilterSelect label="Área académica" value={draftFilters.academicArea} options={areas.map((item) => [item.code, item.name])} onChange={(value) => updateDraftFilter("academicArea", value)} />
       <FilterSelect label="Facultad" value={draftFilters.faculty} options={availableFaculties.map((item) => [item.code, item.name])} onChange={(value) => updateDraftFilter("faculty", value)} />
