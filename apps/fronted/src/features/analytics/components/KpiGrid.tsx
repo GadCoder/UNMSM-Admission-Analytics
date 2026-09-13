@@ -15,7 +15,7 @@ function trend(value: number | null, previous: number | null, digits: number, su
   const direction = difference > 0 ? "up" : difference < 0 ? "down" : "flat";
   return {
     direction,
-    value: `${difference > 0 ? "+" : ""}${formatNumber(Math.abs(difference), digits)}${suffix}`,
+    value: `${difference > 0 ? "+" : difference < 0 ? "-" : ""}${formatNumber(Math.abs(difference), digits)}${suffix}`,
     context: `vs ${formatNumber(previous, digits)}${label} en el proceso anterior`,
     isPositive: invert ? difference <= 0 : difference >= 0,
   } as const;
