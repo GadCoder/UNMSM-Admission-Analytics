@@ -52,9 +52,8 @@ describe("DashboardPage", () => {
   });
   it("defaults to latest process and renders KPIs", async () => {
     renderPage();
-    expect(screen.getByText("Admisión UNMSM · Resultados y tendencias")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Entiende cada proceso de admisión" })).toBeInTheDocument();
-    expect(screen.getByText("Consulta cuántas personas postulan, qué porcentaje ingresa y cómo se desempeña cada carrera. Compara distintos procesos de admisión en un solo lugar.")).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Resultados de admisión" })).toBeInTheDocument();
+    expect(screen.getByText("Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.")).toBeInTheDocument();
     expect(screen.getByText("Proceso analizado")).toBeInTheDocument();
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("1");
     expect(screen.queryByRole("heading", { name: "Resumen de 2025-2" })).not.toBeInTheDocument();

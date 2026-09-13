@@ -69,11 +69,8 @@ export function DashboardPage() {
     <section className={styles.page}>
       <div className={styles.hero}>
         <div>
-          <p className={styles.eyebrow}>Admisión UNMSM · Resultados y tendencias</p>
-          <h1>Entiende cada proceso de admisión</h1>
-          <p className={styles.intro}>
-            Consulta cuántas personas postulan, qué porcentaje ingresa y cómo se desempeña cada carrera. Compara distintos procesos de admisión en un solo lugar.
-          </p>
+          <h1>Resultados de admisión</h1>
+          <p className={styles.intro}>Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.</p>
         </div>
       </div>
 
