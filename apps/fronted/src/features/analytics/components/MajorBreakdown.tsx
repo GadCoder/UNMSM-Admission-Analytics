@@ -79,9 +79,9 @@ export function MajorBreakdown({ overview, filterControls }: MajorBreakdownProps
         <option value="major_name-asc">Nombre de carrera (A-Z)</option><option value="major_name-desc">Nombre de carrera (Z-A)</option>
       </select></label>
     </div>
-    <div className={styles.tableWrap}><table><caption className={styles.visuallyHidden}>Indicadores por carrera para {formatProcessLabel(overview.process)}</caption><thead><tr><th scope="col">Carrera</th><th scope="col">Postulantes</th><th scope="col">Admitidos</th><th scope="col">Tasa de admisión</th><th scope="col">Ausentes</th><th scope="col">Promedio</th></tr></thead><tbody>
-      {majors.map((major) => <tr key={major.major_id}><th scope="row">{major.major_name}</th><td>{formatNumber(major.total_results)}</td><td>{formatNumber(major.admitted_count)}</td><td>{formatNumber(admissionRate(major), 1)}%</td><td>{formatNumber(major.absent_count)}</td><td>{formatNumber(major.average_score, 2)}</td></tr>)}
-      {!majors.length && <tr><td colSpan={6}>No hay carreras que coincidan con la búsqueda.</td></tr>}
+    <div className={styles.tableWrap}><table className={styles.performanceTable}><caption className={styles.visuallyHidden}>Indicadores por carrera para {formatProcessLabel(overview.process)}</caption><thead><tr><th scope="col">#</th><th scope="col">Carrera</th><th scope="col">Postulantes</th><th scope="col">Admitidos</th><th scope="col">Tasa de admisión</th><th scope="col">Ausentes</th><th scope="col">Promedio</th></tr></thead><tbody>
+      {majors.map((major, index) => <tr key={major.major_id}><td className={styles.performanceRank}>{String(index + 1).padStart(2, "0")}</td><th scope="row">{major.major_name}</th><td>{formatNumber(major.total_results)}</td><td>{formatNumber(major.admitted_count)}</td><td>{formatNumber(admissionRate(major), 1)}%</td><td>{formatNumber(major.absent_count)}</td><td>{formatNumber(major.average_score, 2)}</td></tr>)}
+      {!majors.length && <tr><td colSpan={7}>No hay carreras que coincidan con la búsqueda.</td></tr>}
     </tbody></table></div>
   </section>;
 }
