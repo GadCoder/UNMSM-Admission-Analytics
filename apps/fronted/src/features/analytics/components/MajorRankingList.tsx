@@ -15,6 +15,13 @@ export function MajorRankingList({ majors, overviews }: MajorRankingListProps) {
 
   return (
     <>
+      {overviews.length === 1 && (
+        <div className={styles.majorRankingHeaderRow} aria-hidden="true">
+          <span>#</span>
+          <span>Carrera</span>
+          <span>Postulantes</span>
+        </div>
+      )}
       {comparisonMode && (
         <MajorComparisonHeader
           overviews={overviews}
