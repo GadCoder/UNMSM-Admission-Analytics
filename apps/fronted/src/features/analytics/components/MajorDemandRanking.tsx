@@ -34,6 +34,53 @@ function SingleProcessMetrics({ major, overview }: { major: MajorOverview; overv
   return <div className={styles.majorRankingMeta}><span>{formatNumber(metrics.share, 1)}% del total de postulantes</span><span>{formatNumber(metrics.admissionRate, 1)}% tasa de admisión</span></div>;
 }
 
+function DemandChart({ majors, totalApplicants, process }: { majors: MajorOverview[]; totalApplicants: number; process: ProcessOverview["process"] }) {
+  const maxShare = Math.max(...majors.map((major) => totalApplicants > 0 ? (major.total_results / totalApplicants) * 100 : 0), 1);
+  const maxAdmissionRate = Math.max(...majors.map((major) => major.total_results > 0 ? (major.admitted_count / major.total_results) * 100 : 0), 1);
+  const mostDemanded = majors[0];
+  const highestAdmission = majors.reduce((current, major) => {
+    const currentRate = current.total_results > 0 ? current.admitted_count / current.total_results : 0;
+    const majorRate = major.total_results > 0 ? major.admitted_count / major.total_results : 0;
+    return majorRate > currentRate ? major : current;
+  }, majors[0]);
+
+  return <section className={styles.demandChart} aria-labelledby="demand-chart-heading">
+    <div className={styles.demandChartHeader}>
+      <h3 id="demand-chart-heading">Demanda y admisión</h3>
+      <span>Proceso representado: {formatProcessLabel(process)}. Cada punto es una carrera. Más a la derecha significa más postulantes; más arriba, una mayor tasa de admisión. Los números coinciden con el ranking de la izquierda.</span>
+    </div>
+    <div className={styles.demandMatrix} role="img" aria-label="Matriz de demanda y tasa de admisión por carrera">
+      <span className={styles.demandMatrixYAxis}>Tasa de admisión</span>
+      <div className={styles.demandMatrixPlot}>
+        <span className={styles.demandMatrixHorizontalLabel}>Alta admisión</span>
+        <span className={styles.demandMatrixVerticalLabel}>Baja admisión</span>
+        {majors.map((major, index) => {
+          const share = totalApplicants > 0 ? (major.total_results / totalApplicants) * 100 : 0;
+          const admissionRate = major.total_results > 0 ? (major.admitted_count / major.total_results) * 100 : 0;
+          return <span
+            key={major.major_id}
+            className={styles.demandMatrixPoint}
+            style={{ left: `${Math.min(96, Math.max(4, (share / maxShare) * 100))}%`, bottom: `${Math.min(96, Math.max(4, (admissionRate / maxAdmissionRate) * 100))}%` }}
+            title={`${major.major_name}: ${formatNumber(share, 1)}% de postulantes, ${formatNumber(admissionRate, 1)}% de admisión`}
+          >
+            <span aria-hidden="true">{String(index + 1).padStart(2, "0")}</span>
+            <span className={styles.visuallyHidden}>{major.major_name}: {formatNumber(share, 1)}% de postulantes, {formatNumber(admissionRate, 1)}% de admisión</span>
+          </span>;
+        })}
+      </div>
+      <div className={styles.demandMatrixXAxis}><span>Menor demanda</span><span>Mayor demanda</span></div>
+    </div>
+    <ol className={styles.visuallyHidden} aria-label={`Datos de demanda y admisión de ${formatProcessLabel(process)}`}>
+      {majors.map((major, index) => {
+        const share = totalApplicants > 0 ? (major.total_results / totalApplicants) * 100 : 0;
+        const admissionRate = major.total_results > 0 ? (major.admitted_count / major.total_results) * 100 : 0;
+        return <li key={major.major_id}>{String(index + 1).padStart(2, "0")}: {major.major_name}, {formatNumber(share, 1)}% de postulantes y {formatNumber(admissionRate, 1)}% de admisión.</li>;
+      })}
+    </ol>
+    {mostDemanded && highestAdmission && <p className={styles.demandChartSummary}><strong>Lectura rápida:</strong> {mostDemanded.major_name} es la más demandada; {highestAdmission.major_name} tiene una de las mayores tasas de admisión entre estas carreras.</p>}
+  </section>;
+}
+
 function RankingItem({ major, rank, overviews }: { major: MajorOverview; rank: number; overviews: ProcessOverview[] }) {
   const comparisonMode = overviews.length > 1;
 
@@ -70,8 +117,14 @@ export function MajorDemandRanking({ overview, comparisons = [] }: MajorDemandRa
         ))}
       </strong>
     </p>
-    <ol className={styles.majorRanking} aria-label="Principales carreras por postulantes">
-      {majors.map((major, index) => <RankingItem key={major.major_id} major={major} rank={index + 1} overviews={overviews} />)}
-    </ol>
+    <div className={styles.majorDemandLayout}>
+      <div className={styles.majorMetricsPanel}>
+        <h3 className={styles.majorPanelHeading}>Ranking de postulantes</h3>
+        <ol className={styles.majorRanking} aria-label="Principales carreras por postulantes">
+          {majors.map((major, index) => <RankingItem key={major.major_id} major={major} rank={index + 1} overviews={overviews} />)}
+        </ol>
+      </div>
+      <DemandChart majors={majors} totalApplicants={overview.total_results} process={overview.process} />
+    </div>
   </section>;
 }
