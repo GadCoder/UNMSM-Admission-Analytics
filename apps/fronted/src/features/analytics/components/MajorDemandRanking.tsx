@@ -1,77 +1,52 @@
-import { Link } from "react-router-dom";
-
-import type { MajorOverview, ProcessOverview } from "../api/analytics.types";
+import type { ProcessOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
-import styles from "../pages/DashboardPage.module.css";
 import { formatProcessLabel } from "../utils/processLabels";
+import styles from "../pages/DashboardPage.module.css";
+import { MajorDemandChart } from "./MajorDemandChart";
+import { MajorRankingList } from "./MajorRankingList";
+import { getTopMajors } from "./majorDemandRanking.utils";
 
-type MajorDemandRankingProps = { overview: ProcessOverview; comparisons?: ProcessOverview[] };
-
-type RankingMetrics = {
-  share: number;
-  admissionRate: number;
+type MajorDemandRankingProps = {
+  overview: ProcessOverview;
+  comparisons?: ProcessOverview[];
 };
 
-function calculateMetrics(major: MajorOverview, totalApplicants: number): RankingMetrics {
-  return {
-    share: totalApplicants > 0 ? (major.total_results / totalApplicants) * 100 : 0,
-    admissionRate: major.total_results > 0 ? (major.admitted_count / major.total_results) * 100 : 0,
-  };
-}
-
-function ComparisonMetrics({ major, overview }: { major: MajorOverview; overview: ProcessOverview }) {
-  const metrics = calculateMetrics(major, overview.total_results);
-
-  return <div className={styles.majorComparisonRow}>
-    <span className={styles.majorProcess}>{formatProcessLabel(overview.process)}</span>
-    <div className={styles.majorRankingMeta}><span>{formatNumber(major.total_results)} postulantes</span><span>{formatNumber(metrics.share, 1)}% del total de postulantes</span></div>
-  </div>;
-}
-
-function SingleProcessMetrics({ major, overview }: { major: MajorOverview; overview: ProcessOverview }) {
-  const metrics = calculateMetrics(major, overview.total_results);
-
-  return <div className={styles.majorRankingMeta}><span>{formatNumber(metrics.share, 1)}% del total de postulantes</span><span>{formatNumber(metrics.admissionRate, 1)}% tasa de admisión</span></div>;
-}
-
-function RankingItem({ major, rank, overviews }: { major: MajorOverview; rank: number; overviews: ProcessOverview[] }) {
-  const comparisonMode = overviews.length > 1;
-
-  return <li className={styles.majorRankingItem}>
-    <div className={styles.majorRankingHeader}>
-      <span className={styles.majorRank}>{String(rank).padStart(2, "0")}</span>
-      <Link className={styles.majorDetailLink} to={`/analytics/careers/${major.major_id}?process=${overviews[0].process.id}${overviews.length > 1 ? `&compare=${overviews.slice(1).map((item) => item.process.id).join(",")}` : ""}`}>
-        <strong>{major.major_name}</strong>
-      </Link>
-      {!comparisonMode && <span className={styles.majorApplicants}>{formatNumber(major.total_results)} postulantes</span>}
-    </div>
-    {comparisonMode ? overviews.map((overview) => {
-      const processMajor = overview.majors.find((item) => item.major_id === major.major_id);
-      return processMajor ? <ComparisonMetrics key={overview.process.id} major={processMajor} overview={overview} /> : null;
-    }) : <SingleProcessMetrics major={major} overview={overviews[0]} />}
-  </li>;
-}
-
-export function MajorDemandRanking({ overview, comparisons = [] }: MajorDemandRankingProps) {
+export function MajorDemandRanking({
+  overview,
+  comparisons = [],
+}: MajorDemandRankingProps) {
   const overviews = [overview, ...comparisons];
-  const majors = [...overview.majors].sort((left, right) => right.total_results - left.total_results).slice(0, 6);
+  const majors = getTopMajors(overview.majors);
   const comparisonMode = comparisons.length > 0;
 
-  return <section className={styles.card} aria-labelledby="major-chart-heading">
-    <h2 id="major-chart-heading">Carreras con mayor demanda</h2>
-    <p className={styles.chartDescription}>
-      {comparisonMode
-        ? "Participación de cada carrera sobre el total de postulantes de cada proceso."
-        : `Las seis carreras con más postulantes en ${formatProcessLabel(overview.process)}, con su peso sobre el total y tasa de admisión.`}
-      <strong className={styles.chartContext}>
-        {comparisonMode ? "Totales: " : "Total: "}
-        {overviews.map((item, index) => (
-          <span key={item.process.id}>{index > 0 ? " · " : ""}{formatNumber(item.total_results)} presentes en {formatProcessLabel(item.process)}</span>
-        ))}
-      </strong>
-    </p>
-    <ol className={styles.majorRanking} aria-label="Principales carreras por postulantes">
-      {majors.map((major, index) => <RankingItem key={major.major_id} major={major} rank={index + 1} overviews={overviews} />)}
-    </ol>
-  </section>;
+  return (
+    <section className={styles.card} aria-labelledby="major-chart-heading">
+      <h2 id="major-chart-heading">Carreras con mayor demanda</h2>
+      <p className={styles.chartDescription}>
+        {comparisonMode
+          ? "Participación de cada carrera sobre el total de postulantes de cada proceso."
+          : `Las seis carreras con más postulantes en ${formatProcessLabel(overview.process)}, con su peso sobre el total y tasa de admisión.`}
+        <strong className={styles.chartContext}>
+          {comparisonMode ? "Totales: " : "Total: "}
+          {overviews.map((item, index) => (
+            <span key={item.process.id}>
+              {index > 0 ? " · " : ""}
+              {formatNumber(item.total_results)} presentes en {formatProcessLabel(item.process)}
+            </span>
+          ))}
+        </strong>
+      </p>
+      <div className={styles.majorDemandLayout}>
+        <div className={styles.majorMetricsPanel}>
+          <h3 className={styles.majorPanelHeading}>Ranking de postulantes</h3>
+          <MajorRankingList majors={majors} overviews={overviews} />
+        </div>
+        <MajorDemandChart
+          majors={majors}
+          totalApplicants={overview.total_results}
+          process={overview.process}
+        />
+      </div>
+    </section>
+  );
 }

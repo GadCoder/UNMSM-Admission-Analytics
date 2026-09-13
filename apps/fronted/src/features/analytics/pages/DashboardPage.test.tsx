@@ -80,6 +80,11 @@ describe("DashboardPage", () => {
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("50 postulantes");
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("50% del total de postulantes");
     expect(screen.getByRole("region", { name: "Carreras con mayor demanda" })).toHaveTextContent("Total: 100 presentes en 2025-2");
+    expect(screen.getByRole("heading", { name: "Ranking de postulantes" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Demanda y admisión" })).toBeInTheDocument();
+    expect(screen.getByRole("img", { name: "Matriz de demanda y tasa de admisión por carrera" })).toBeInTheDocument();
+    expect(screen.getByText(/Los números coinciden con el ranking de la izquierda/)).toBeInTheDocument();
+    expect(screen.getByText(/Lectura rápida:/)).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" }).querySelector("span[style]")).toBeNull();
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("24% tasa de admisión");
     expect(screen.getByRole("region", { name: "Carreras con mayor demanda" })).not.toHaveTextContent(/concentra el 50\s*% de los postulantes/);
