@@ -10,7 +10,6 @@ export function App() {
           <span className={styles.brandMark}>UN</span>
           <span>
             <strong>Admisión UNMSM</strong>
-            <small>Admisión · datos claros</small>
           </span>
         </Link>
       </header>

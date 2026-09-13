@@ -1,8 +1,8 @@
 .page { max-width: var(--content-width); padding: var(--space-3) 0; }
-.hero { display:flex; align-items:end; justify-content:space-between; gap:var(--space-6); margin-bottom:var(--space-8); }
+.hero { display:flex; align-items:end; justify-content:space-between; gap:var(--space-6); margin-bottom:var(--space-5); }
 .eyebrow, .cardLabel { margin:0 0 var(--space-3); color:var(--color-primary); font-size:.68rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
-.page h1 { max-width:680px; margin:0 0 .45rem; font-size:clamp(2rem,4vw,2.75rem); letter-spacing:-.055em; line-height:1.08; }
-.intro { max-width:650px; margin:0; color:var(--color-muted); font-size:.88rem; line-height:1.6; }
+.page h1 { max-width:680px; margin:0 0 .35rem; font-size:clamp(1.75rem,3.5vw,2.35rem); letter-spacing:-.045em; line-height:1.08; }
+.intro { max-width:650px; margin:0; color:var(--color-muted); font-size:.82rem; line-height:1.5; }
 
 .controls { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-3); margin:0 0 var(--space-5); }
 .processContext { display:grid; grid-template-columns:minmax(13rem,1fr) minmax(18rem,1.35fr); align-items:stretch; gap:var(--space-5); margin:0 0 var(--space-6); padding:var(--space-4); border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-surface); box-shadow:0 4px 20px rgb(45 34 35 / 4%); }
