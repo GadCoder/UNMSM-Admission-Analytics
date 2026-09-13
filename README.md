@@ -38,10 +38,6 @@ The backend and fronted application have separate setup instructions.
 For the frontend, see [`apps/fronted/README.md`](apps/fronted/README.md). From that
 directory, run `npm install` and `npm run dev`.
 
-For repeatable local desktop/mobile captures and guidance on tracing a route to its
-React component, see [`docs/frontend-visual-exploration.md`](docs/frontend-visual-exploration.md)
-and run `scripts/capture-dashboard.sh`.
-
 ## Validation
 
 Frontend checks:
