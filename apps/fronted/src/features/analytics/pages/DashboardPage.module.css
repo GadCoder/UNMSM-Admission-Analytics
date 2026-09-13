@@ -43,6 +43,7 @@
 .sectionHeading h2 { margin:0; font-size:1.05rem; letter-spacing:-.025em; }
 .heading h2 { margin:0; font-size:1.1rem; letter-spacing:-.025em; }
 
+.kpiComparisonContext { margin:0 0 .55rem; color:var(--color-muted); font-size:.68rem; font-weight:700; }
 .kpis { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:var(--space-3); margin-bottom:var(--space-5); }
 .kpi, .card, .comparison { border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-surface); box-shadow:0 4px 20px rgb(45 34 35 / 4%); }
 .kpi { display:flex; flex-direction:column; align-items:stretch; justify-content:center; min-width:0; min-height:7rem; padding:var(--space-4); text-align:left; }
