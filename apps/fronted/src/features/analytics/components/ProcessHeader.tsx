@@ -9,10 +9,7 @@ type ProcessHeaderProps = {
 export function ProcessHeader({ process }: ProcessHeaderProps) {
   return (
     <div className={styles.heading}>
-      <div>
-        <span className={styles.cardLabel}>Proceso principal</span>
-        <h2>{formatProcessLabel(process)}</h2>
-      </div>
+      <h2>Resumen de {formatProcessLabel(process)}</h2>
     </div>
   );
 }

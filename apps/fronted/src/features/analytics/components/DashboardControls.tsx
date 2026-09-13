@@ -43,21 +43,27 @@ export function DashboardControls({ processes, primaryId, comparisons, onChange 
   };
 
   return (
-    <div className={styles.controls} aria-label="Selección de procesos">
-      <div className={`${styles.control} ${styles.primaryControl}`}>
-        <label htmlFor="primary-process">Proceso</label>
+    <section className={styles.processContext} aria-label="Contexto del análisis">
+      <div className={styles.primaryProcessControl}>
+        <label htmlFor="primary-process">Proceso analizado</label>
         <select id="primary-process" value={primaryId} onChange={(event) => onChange(event.target.value, comparisons)}>
           {processes.map((process) => <option key={process.id} value={process.id}>{formatProcessLabel(process)}</option>)}
         </select>
       </div>
       <div ref={comparisonRef} className={styles.comparisonDisclosure}>
-        <button className={styles.comparisonButton} type="button" aria-expanded={comparisonOpen} onClick={() => { setComparisonDraft(comparisons); setComparisonOpen((open) => !open); }}>
-          <span>{selectedProcesses.length ? `Comparando ${selectedProcesses.length} proceso${selectedProcesses.length === 1 ? "" : "s"}` : "＋ Comparar procesos"}</span>
-          <span className={styles.chevron} aria-hidden="true">⌄</span>
-        </button>
+        <div className={styles.comparisonHeader}>
+          <span>Comparar con</span>
+          <button className={styles.comparisonButton} type="button" aria-expanded={comparisonOpen} aria-label="Añadir proceso para comparar" onClick={() => { setComparisonDraft(comparisons); setComparisonOpen((open) => !open); }}>
+            <span>＋ Añadir proceso</span>
+            <span className={styles.chevron} aria-hidden="true">⌄</span>
+          </button>
+        </div>
+        {selectedProcesses.length > 0 && <div className={styles.activeComparisons} aria-label="Procesos comparados">
+          {selectedProcesses.map((process) => <span className={styles.comparisonChip} key={process.id}>{formatProcessLabel(process)}<button type="button" aria-label={`Quitar comparación ${formatProcessLabel(process)}`} onClick={() => onChange(primaryId, comparisons.filter((id) => id !== String(process.id)))}>×</button></span>)}
+        </div>}
         {comparisonOpen && <div className={styles.comparisonMenu} role="dialog" aria-label="Comparar procesos">
-          <strong>Comparar procesos</strong>
-          <small>Selecciona hasta 3 procesos</small>
+          <strong>Comparar con</strong>
+          <small>Selecciona hasta 3 procesos adicionales.</small>
           {comparisonOptions.map((process) => {
             const value = String(process.id);
             const checked = comparisonDraft.includes(value);
@@ -70,10 +76,7 @@ export function DashboardControls({ processes, primaryId, comparisons, onChange 
           </div>
         </div>}
       </div>
-      {selectedProcesses.length > 0 && <div className={styles.activeComparisons} aria-label="Procesos comparados">
-        {selectedProcesses.map((process) => <span className={styles.comparisonChip} key={process.id}>{formatProcessLabel(process)}<button type="button" aria-label={`Quitar comparación ${formatProcessLabel(process)}`} onClick={() => onChange(primaryId, comparisons.filter((id) => id !== String(process.id)))}>×</button></span>)}
-      </div>}
-    </div>
+    </section>
   );
 }
 
