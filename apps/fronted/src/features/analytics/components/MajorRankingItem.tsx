@@ -29,7 +29,7 @@ export function MajorRankingItem({
 
   return (
     <li
-      className={styles.majorRankingItem}
+      className={`${styles.majorRankingItem} ${comparisonMode ? styles.majorRankingComparisonItem : styles.majorRankingSingleItem}`}
       style={comparisonMode ? comparisonGridStyle : undefined}
     >
       <div className={styles.majorRankingHeader}>
