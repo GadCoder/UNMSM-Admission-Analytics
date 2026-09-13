@@ -106,7 +106,8 @@ describe("DashboardPage", () => {
     expect(currentValue.parentElement?.parentElement).toBe(trendIndicator.parentElement?.parentElement);
     expect(trendContext.parentElement).toBe(trendIndicator.parentElement);
     expect(screen.getByLabelText("Subió: +2.5 pp")).toBeInTheDocument();
-    expect(screen.getByLabelText("Bajó: 2 ausentes")).toBeInTheDocument();
+    expect(screen.getByLabelText("Bajó: -2 ausentes")).toBeInTheDocument();
+    expect(screen.getByText("-2 ausentes", { selector: "small" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Comparación de procesos" })).not.toBeInTheDocument();
   });
 
