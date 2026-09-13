@@ -98,6 +98,7 @@ describe("DashboardPage", () => {
     renderPage();
     expect(await screen.findByText("+20", { selector: "small" })).toBeInTheDocument();
     expect(screen.getByText("Variaciones respecto a 2025-1")).toBeInTheDocument();
+    expect(screen.getAllByText("Postulantes").find((element) => element.className.includes("kpiLabel"))).toBeInTheDocument();
     expect(screen.queryByText("+20 · vs 80 en 2025-1")).not.toBeInTheDocument();
     expect(screen.queryByText("vs 80 en 2025-1")).not.toBeInTheDocument();
     const currentValue = screen.getByText("100");

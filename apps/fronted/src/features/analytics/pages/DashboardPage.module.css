@@ -47,13 +47,14 @@
 .kpis { display:grid; grid-template-columns:repeat(6,minmax(0,1fr)); gap:var(--space-3); margin-bottom:var(--space-5); }
 .kpi, .card, .comparison { border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-surface); box-shadow:0 4px 20px rgb(45 34 35 / 4%); }
 .kpi { display:flex; flex-direction:column; align-items:stretch; justify-content:center; min-width:0; min-height:7rem; padding:var(--space-4); text-align:left; }
-.kpi > span { display:block; min-height:2.2em; color:#8f7e7f; font-size:.62rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
 .kpi strong { display:block; min-width:0; color:var(--color-text); font-size:clamp(1.25rem,2vw,1.6rem); letter-spacing:-.05em; line-height:1; font-variant-numeric:tabular-nums; }
-.kpiValueBlock { display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-rows:auto auto; align-items:stretch; gap:.35rem .65rem; width:100%; min-width:0; margin-top:.35rem; }
+.kpiValueBlock { display:grid; grid-template-columns:minmax(0,1fr) auto; grid-template-rows:auto auto auto; align-items:stretch; gap:.35rem .65rem; width:100%; min-width:0; margin-top:.35rem; }
+.kpiLabel { grid-column:1; grid-row:1; display:block; min-height:2.2em; color:#8f7e7f; font-size:.62rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
 .kpiValuePrimary { display:contents; }
+.kpiValuePrimary > strong { grid-column:1; grid-row:2; }
 .kpiTrendRail { display:contents; }
-.kpiTrendArrow { grid-column:2; grid-row:1 / span 2; display:flex; align-items:center; justify-content:center; align-self:center; padding-block:.1rem; font-size:2.15rem; line-height:1; }
-.kpiTrendRail > small { grid-column:1; grid-row:2; align-self:start; color:var(--color-muted); font-size:.58rem; font-weight:700; line-height:1.1; text-align:left; white-space:nowrap; }
+.kpiTrendArrow { grid-column:2; grid-row:1 / span 3; display:flex; align-items:center; justify-content:center; align-self:center; padding-block:.1rem; font-size:2.15rem; line-height:1; }
+.kpiTrendRail > small { grid-column:1; grid-row:3; align-self:start; color:var(--color-muted); font-size:.58rem; font-weight:700; line-height:1.1; text-align:left; white-space:nowrap; }
 .kpi em { display:block; margin-top:.5rem; color:var(--color-success); font-size:.62rem; font-style:normal; font-weight:700; }
 .kpiTrendPositive > span { color:var(--color-success); }
 .kpiTrendNegative > span { color:#b54545; }

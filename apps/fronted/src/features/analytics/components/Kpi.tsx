@@ -10,8 +10,8 @@ type KpiProps = {
 export function Kpi({ label, value, trend }: KpiProps) {
   return (
     <article className={styles.kpi}>
-      <span>{label}</span>
       <div className={styles.kpiValueBlock}>
+        <span className={styles.kpiLabel}>{label}</span>
         <div className={styles.kpiValuePrimary}>
           <strong>{value}</strong>
         </div>
