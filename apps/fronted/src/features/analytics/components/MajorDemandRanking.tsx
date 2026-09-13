@@ -19,23 +19,19 @@ function calculateMetrics(major: MajorOverview, totalApplicants: number): Rankin
   };
 }
 
-function RankingBar({ major, overview }: { major: MajorOverview; overview: ProcessOverview }) {
+function ComparisonMetrics({ major, overview }: { major: MajorOverview; overview: ProcessOverview }) {
   const metrics = calculateMetrics(major, overview.total_results);
 
   return <div className={styles.majorComparisonRow}>
     <span className={styles.majorProcess}>{formatProcessLabel(overview.process)}</span>
-    <div className={styles.majorRankingTrack} aria-hidden="true"><span style={{ width: `${Math.min(metrics.share, 100)}%` }} /></div>
     <div className={styles.majorRankingMeta}><span>{formatNumber(major.total_results)} postulantes</span><span>{formatNumber(metrics.share, 1)}% del total de postulantes</span></div>
   </div>;
 }
 
-function SingleProcessBar({ major, overview }: { major: MajorOverview; overview: ProcessOverview }) {
+function SingleProcessMetrics({ major, overview }: { major: MajorOverview; overview: ProcessOverview }) {
   const metrics = calculateMetrics(major, overview.total_results);
 
-  return <>
-    <div className={styles.majorRankingTrack} aria-hidden="true"><span style={{ width: `${Math.min(metrics.share, 100)}%` }} /></div>
-    <div className={styles.majorRankingMeta}><span>{formatNumber(metrics.share, 1)}% del total de postulantes</span><span>{formatNumber(metrics.admissionRate, 1)}% tasa de admisión</span></div>
-  </>;
+  return <div className={styles.majorRankingMeta}><span>{formatNumber(metrics.share, 1)}% del total de postulantes</span><span>{formatNumber(metrics.admissionRate, 1)}% tasa de admisión</span></div>;
 }
 
 function RankingItem({ major, rank, overviews }: { major: MajorOverview; rank: number; overviews: ProcessOverview[] }) {
@@ -51,8 +47,8 @@ function RankingItem({ major, rank, overviews }: { major: MajorOverview; rank: n
     </div>
     {comparisonMode ? overviews.map((overview) => {
       const processMajor = overview.majors.find((item) => item.major_id === major.major_id);
-      return processMajor ? <RankingBar key={overview.process.id} major={processMajor} overview={overview} /> : null;
-    }) : <SingleProcessBar major={major} overview={overviews[0]} />}
+      return processMajor ? <ComparisonMetrics key={overview.process.id} major={processMajor} overview={overview} /> : null;
+    }) : <SingleProcessMetrics major={major} overview={overviews[0]} />}
   </li>;
 }
 
@@ -74,7 +70,6 @@ export function MajorDemandRanking({ overview, comparisons = [] }: MajorDemandRa
         ))}
       </strong>
     </p>
-    {comparisonMode && <p className={styles.chartLegend}>Cada proceso usa su propia escala del 0 al 100%.</p>}
     <ol className={styles.majorRanking} aria-label="Principales carreras por postulantes">
       {majors.map((major, index) => <RankingItem key={major.major_id} major={major} rank={index + 1} overviews={overviews} />)}
     </ol>

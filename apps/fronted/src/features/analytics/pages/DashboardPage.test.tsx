@@ -80,8 +80,7 @@ describe("DashboardPage", () => {
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("50 postulantes");
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("50% del total de postulantes");
     expect(screen.getByRole("region", { name: "Carreras con mayor demanda" })).toHaveTextContent("Total: 100 presentes en 2025-2");
-    const rankingBar = screen.getByRole("list", { name: "Principales carreras por postulantes" }).querySelector("span[style]");
-    expect(rankingBar).toHaveStyle({ width: "50%" });
+    expect(screen.getByRole("list", { name: "Principales carreras por postulantes" }).querySelector("span[style]")).toBeNull();
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("24% tasa de admisión");
     expect(screen.getByRole("region", { name: "Carreras con mayor demanda" })).not.toHaveTextContent(/concentra el 50\s*% de los postulantes/);
   });
@@ -138,8 +137,7 @@ describe("DashboardPage", () => {
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toBeInTheDocument();
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("2025-2");
     expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).toHaveTextContent("2025-1");
-    expect(screen.getAllByRole("list", { name: "Principales carreras por postulantes" })[0].querySelectorAll("span[style]")).toHaveLength(2);
-    expect(screen.getByText("Cada proceso usa su propia escala del 0 al 100%.")).toBeInTheDocument();
+    expect(screen.getByRole("list", { name: "Principales carreras por postulantes" })).not.toHaveTextContent("Cada proceso usa su propia escala");
     expect(screen.getByRole("region", { name: "Carreras con mayor demanda" })).toHaveTextContent("100 presentes en 2025-2 · 80 presentes en 2025-1");
     expect(screen.queryByText("ING")).not.toBeInTheDocument();
     expect(screen.getByRole("columnheader", { name: "Postulantes" })).toBeInTheDocument();
