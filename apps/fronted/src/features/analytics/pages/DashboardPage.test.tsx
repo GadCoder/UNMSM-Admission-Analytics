@@ -101,9 +101,9 @@ describe("DashboardPage", () => {
     const currentValue = screen.getByText("100");
     const trendIndicator = screen.getByLabelText("Subió: +20");
     const trendContext = screen.getByText("+20", { selector: "small" });
-    expect(currentValue.parentElement?.className).toContain("kpiValuePrimaryCentered");
-    expect(currentValue.parentElement).toBe(trendIndicator.parentElement?.parentElement);
-    expect(trendContext.parentElement?.parentElement?.parentElement).toBe(currentValue.parentElement?.parentElement);
+    expect(currentValue.parentElement?.className).toContain("kpiValuePrimary");
+    expect(currentValue.parentElement?.parentElement).toBe(trendIndicator.parentElement?.parentElement);
+    expect(trendContext.parentElement).toBe(trendIndicator.parentElement);
     expect(screen.getByLabelText("Subió: +2.5 pp")).toBeInTheDocument();
     expect(screen.getByLabelText("Bajó: 2 ausentes")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Comparación de procesos" })).not.toBeInTheDocument();
