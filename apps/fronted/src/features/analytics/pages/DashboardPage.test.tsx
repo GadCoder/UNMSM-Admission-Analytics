@@ -102,6 +102,7 @@ describe("DashboardPage", () => {
     const trendIndicator = screen.getByLabelText("Subió: +20");
     const trendContext = screen.getByText("+20", { selector: "small" });
     expect(currentValue.parentElement?.className).toContain("kpiValuePrimary");
+    expect(trendIndicator.parentElement?.className).toContain("kpiTrendRail");
     expect(currentValue.parentElement?.parentElement).toBe(trendIndicator.parentElement?.parentElement);
     expect(trendContext.parentElement).toBe(trendIndicator.parentElement);
     expect(screen.getByLabelText("Subió: +2.5 pp")).toBeInTheDocument();

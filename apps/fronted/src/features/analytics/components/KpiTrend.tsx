@@ -12,7 +12,7 @@ export function KpiTrend({ direction, value, context, isPositive }: KpiTrendProp
   const directionIcon = direction === "up" ? "↑" : direction === "down" ? "↓" : "→";
 
   return (
-    <div className={`${styles.kpiTrend} ${isPositive ? styles.kpiTrendPositive : styles.kpiTrendNegative}`}>
+    <div className={`${styles.kpiTrendRail} ${isPositive ? styles.kpiTrendPositive : styles.kpiTrendNegative}`}>
       <span aria-label={`${directionLabel}: ${value}`}>
         {directionIcon}
       </span>
