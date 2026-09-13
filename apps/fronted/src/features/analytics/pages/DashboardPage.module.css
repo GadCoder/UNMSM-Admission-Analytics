@@ -80,6 +80,13 @@
 table { width:100%; border-collapse:collapse; text-align:left; font-size:.78rem; }
 th, td { padding:.8rem .65rem; border-bottom:1px solid var(--color-border); }
 th { font-weight:700; } thead th { color:#8f7e7f; font-size:.62rem; letter-spacing:.08em; text-transform:uppercase; }
+.performanceTable { min-width:58rem; border:1px solid var(--color-border); border-radius:var(--radius-md); overflow:hidden; }
+.performanceTable thead { background:var(--color-primary); }
+.performanceTable thead th { color:#fff; border-bottom:0; }
+.performanceTable th, .performanceTable td { padding:.65rem .6rem; }
+.performanceTable tbody tr:nth-child(even) { background:#fbfcfd; }
+.performanceTable tbody tr:hover { background:var(--color-primary-soft); }
+.performanceRank { color:var(--color-muted); font-size:.68rem; font-weight:800; font-variant-numeric:tabular-nums; }
 tbody tr:hover { background:#fdfafa; }
 .chartDescription { margin:0 0 var(--space-5); color:var(--color-muted); font-size:.76rem; line-height:1.5; }
 .chartContext { display:block; margin-top:.35rem; color:var(--color-text); font-size:.7rem; }
