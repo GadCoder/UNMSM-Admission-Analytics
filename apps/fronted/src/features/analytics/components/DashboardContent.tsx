@@ -5,7 +5,6 @@ import { ComparisonSummary } from "./ComparisonSummary";
 import { KpiGrid } from "./KpiGrid";
 import { MajorDemandRanking } from "./MajorDemandRanking";
 import { MajorBreakdown } from "./MajorBreakdown";
-import { ProcessHeader } from "./ProcessHeader";
 
 type DashboardContentProps = {
   primary: ProcessOverview;
@@ -24,7 +23,6 @@ export function DashboardContent({
 }: DashboardContentProps) {
   return (
     <>
-      <ProcessHeader process={primary.process} />
       <KpiGrid overview={primary} previous={previous} />
       <ComparisonSummary
         comparisons={comparisons}
