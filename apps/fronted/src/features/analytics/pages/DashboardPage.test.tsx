@@ -64,6 +64,7 @@ describe("DashboardPage", () => {
     expect(screen.getByText("Puntaje máximo")).toBeInTheDocument();
     expect(screen.getByText("Puntaje promedio")).toBeInTheDocument();
     expect(screen.getByText("Postulantes ausentes")).toBeInTheDocument();
+    expect(screen.queryByText(/Variaciones respecto a/)).not.toBeInTheDocument();
     expect(screen.getAllByRole("article").map((article) => article.querySelector("span")?.textContent)).toEqual([
       "Postulantes",
       "Postulantes ausentes",
@@ -96,6 +97,7 @@ describe("DashboardPage", () => {
     } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
     renderPage();
     expect(await screen.findByText("+20", { selector: "small" })).toBeInTheDocument();
+    expect(screen.getByText("Variaciones respecto a 2025-1")).toBeInTheDocument();
     expect(screen.queryByText("+20 · vs 80 en 2025-1")).not.toBeInTheDocument();
     expect(screen.queryByText("vs 80 en 2025-1")).not.toBeInTheDocument();
     const currentValue = screen.getByText("100");
