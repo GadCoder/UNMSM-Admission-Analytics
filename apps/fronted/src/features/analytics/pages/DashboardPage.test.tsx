@@ -57,7 +57,7 @@ describe("DashboardPage", () => {
     expect(screen.getByText("Consulta cuántas personas postulan, qué porcentaje ingresa y cómo se desempeña cada carrera. Compara distintos procesos de admisión en un solo lugar.")).toBeInTheDocument();
     expect(screen.getByText("Proceso analizado")).toBeInTheDocument();
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("1");
-    expect(await screen.findByRole("heading", { name: "Resumen de 2025-2" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Resumen de 2025-2" })).not.toBeInTheDocument();
     expect(screen.queryByText("Proceso principal")).not.toBeInTheDocument();
     expect(await screen.findByText("100")).toBeInTheDocument();
     expect(screen.getByText("65.5")).toBeInTheDocument();
@@ -193,7 +193,7 @@ describe("DashboardPage", () => {
     await user.selectOptions(screen.getByLabelText("Área académica"), "ING");
 
     expect(screen.getByTestId("location")).toHaveTextContent("process=1");
-    expect(screen.getByRole("heading", { name: "Resumen de 2025-2" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Resumen de 2025-2" })).not.toBeInTheDocument();
     expect(screen.getByTestId("location")).not.toHaveTextContent("academic_area=ING");
 
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("academic_area=ING"), { timeout: 1000 });
@@ -248,7 +248,7 @@ describe("DashboardPage", () => {
 
     expect(screen.getByTestId("overview-refreshing")).toHaveTextContent("Actualizando indicadores");
     expect(document.querySelector('[aria-busy="true"]')).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Resumen de 2025-2" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Resumen de 2025-2" })).not.toBeInTheDocument();
   });
   it("shows loading and error states", async () => {
     vi.mocked(api.usePublishedProcesses).mockReturnValue({
