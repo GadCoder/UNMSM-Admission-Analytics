@@ -103,6 +103,7 @@ describe("DashboardPage", () => {
     const currentValue = screen.getByText("100");
     const trendIndicator = screen.getByLabelText("Subió: +20");
     const trendContext = screen.getByText("+20", { selector: "small" });
+    expect(trendIndicator.className).toContain("kpiTrendArrow");
     expect(currentValue.parentElement?.className).toContain("kpiValuePrimary");
     expect(trendIndicator.parentElement?.className).toContain("kpiTrendRail");
     expect(currentValue.parentElement?.parentElement).toBe(trendIndicator.parentElement?.parentElement);
