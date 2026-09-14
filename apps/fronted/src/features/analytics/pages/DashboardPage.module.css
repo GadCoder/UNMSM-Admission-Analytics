@@ -203,7 +203,7 @@ tbody tr:hover { background:#fdfafa; }
   .performanceCardToggle { color:var(--color-primary); font-size:.65rem; font-weight:800; white-space:nowrap; }
   .performanceCardToggle > span[aria-hidden="true"] { display:inline-block; transition:transform .18s ease; }
   .performanceCardDetails { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.55rem; margin:0; padding:.7rem .75rem .8rem; border-top:1px solid var(--color-border); background:#fbfcfd; }
-  .performanceCardDetails div { display:grid; gap:.2rem; min-width:0; }
+  .performanceCardDetails div { display:grid; gap:.2rem; min-width:0; text-align:center; }
   .performanceCardDetails dt { color:var(--color-muted); font-size:.58rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
   .performanceCardDetails dd { margin:0; color:var(--color-text); font-size:.82rem; font-variant-numeric:tabular-nums; }
 }
