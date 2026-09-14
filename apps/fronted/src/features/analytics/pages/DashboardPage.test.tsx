@@ -76,6 +76,10 @@ describe("DashboardPage", () => {
       "Puntaje promedio",
     ]);
     expect(screen.getByRole("table")).toBeInTheDocument();
+    expect(screen.getByText("50 postulantes · 12 admitidos")).toBeInTheDocument();
+    const firstPerformanceCard = screen.getByText("Ver más").closest("details");
+    expect(firstPerformanceCard).not.toBeNull();
+    expect(firstPerformanceCard).not.toHaveAttribute("open");
     expect(screen.queryByRole("region", { name: "Carreras con mayor demanda" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Ranking de postulantes" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Demanda y admisión" })).not.toBeInTheDocument();
