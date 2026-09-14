@@ -29,7 +29,7 @@ export function MajorDetailControls({
       </select>
     </div>
     <details className={styles.comparisonDisclosure} open={isOpen} onToggle={(event) => setIsOpen(event.currentTarget.open)}>
-      <summary className={styles.comparisonButton}>Comparar procesos <span aria-hidden="true">⌄</span></summary>
+      <summary className={styles.comparisonButton}>Comparar procesos <span className={styles.chevron} aria-hidden="true">⌄</span></summary>
       <div className={styles.comparisonMenu}>
         <strong>Procesos para comparar</strong>
         <small>Selecciona hasta tres procesos adicionales.</small>
