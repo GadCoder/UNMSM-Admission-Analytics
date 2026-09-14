@@ -55,7 +55,6 @@ export function DashboardControls({ processes, primaryId, comparisons, onChange 
           <span>Comparar con</span>
           <button className={styles.comparisonButton} type="button" aria-expanded={comparisonOpen} aria-label="Añadir proceso para comparar" onClick={() => { setComparisonDraft(comparisons); setComparisonOpen((open) => !open); }}>
             <span>＋ Añadir proceso</span>
-            <span className={styles.chevron} aria-hidden="true">⌄</span>
           </button>
         </div>
         {selectedProcesses.length > 0 && <div className={styles.activeComparisons} aria-label="Procesos comparados">
