@@ -72,6 +72,14 @@ export function DashboardPage() {
           <h1>Resultados de admisión</h1>
           <p className={styles.intro}>Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.</p>
         </div>
+        {processes.length > 0 && (
+          <DashboardControls
+            processes={processes}
+            primaryId={primaryId}
+            comparisons={requestedComparisons}
+            onChange={updateSelection}
+          />
+        )}
       </div>
 
       {processesQuery.isPending && (
@@ -86,12 +94,6 @@ export function DashboardPage() {
 
       {processes.length > 0 && (
         <>
-          <DashboardControls
-            processes={processes}
-            primaryId={primaryId}
-            comparisons={requestedComparisons}
-            onChange={updateSelection}
-          />
           {overviewQuery.isPending && !overviewQuery.data && (
             <p role="status" className={styles.loadingState}><span className={styles.spinner} aria-hidden="true" />Cargando indicadores…</p>
           )}
