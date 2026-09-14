@@ -7,7 +7,7 @@
 .controls { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-3); margin:0 0 var(--space-5); }
 .processContext { display:grid; grid-template-columns:minmax(8.5rem,11rem) minmax(0,1fr); align-items:start; gap:var(--space-6); margin:0 0 var(--space-6); padding:var(--space-4); border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-surface); box-shadow:0 4px 20px rgb(45 34 35 / 4%); }
 .primaryProcessControl, .comparisonHeader { display:grid; gap:.45rem; min-width:0; }
-.primaryProcessControl label, .comparisonHeader > span { color:#8f7e7f; font-size:.62rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+.primaryProcessControl label, .comparisonHeader > span { display:block; min-height:.75rem; color:#8f7e7f; font-size:.62rem; font-weight:800; letter-spacing:.08em; line-height:1.2; text-transform:uppercase; }
 .primaryProcessControl select { width:100%; min-width:0; min-height:2.65rem; padding:.55rem .7rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-background, #fff); color:var(--color-text); font-size:.8rem; font-weight:700; }
 .control { display:grid; gap:.35rem; min-width:0; padding:.55rem .75rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); box-shadow:0 4px 14px rgb(45 34 35 / 4%); }
 .primaryControl { flex:1 1 18rem; }
