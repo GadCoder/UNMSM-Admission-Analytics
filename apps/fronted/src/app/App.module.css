@@ -1,10 +1,10 @@
 .app { min-height: 100vh; background: var(--color-background); color: var(--color-text); }
-.header { display: flex; align-items: center; justify-content: space-between; gap: var(--space-6); max-width: var(--content-width); margin: 0 auto; padding: 1.1rem var(--space-6); border-bottom: 1px solid var(--color-border); background: var(--color-surface); }
-.brand { display: flex; align-items: center; gap: var(--space-3); color: inherit; text-decoration: none; }
-.brandMark { display: grid; width: 2.4rem; height: 2.4rem; place-items: center; border-radius: var(--radius-md); background: var(--color-primary); color: white; font-size: .72rem; font-weight: 800; }
-.brand strong, .brand small { display: block; }
-.brand strong { font-size: .92rem; }
-.brand small { margin-top: .15rem; color: var(--color-muted); font-size: .64rem; letter-spacing: .1em; text-transform: uppercase; }
+.header { display:flex; align-items:center; justify-content:space-between; gap:var(--space-6); max-width:none; margin:0; padding:1rem max(var(--space-6), calc((100vw - var(--content-width)) / 2)); border-bottom:0; background:#27212d; color:#fff; }
+.brand { display:flex; align-items:center; gap:var(--space-3); color:inherit; text-decoration:none; }
+.brandMark { display:grid; min-width:4.4rem; height:2.4rem; place-items:center; padding:0 .6rem; border:1px solid rgb(255 255 255 / 28%); border-radius:var(--radius-md); background:#3a3042; color:#fff; font-size:.68rem; font-weight:800; letter-spacing:.08em; }
+.brand strong, .brand small { display:block; }
+.brand strong { font-size:.92rem; }
+.brand small { margin-top:.15rem; color:rgb(255 255 255 / 68%); font-size:.64rem; letter-spacing:.1em; text-transform:uppercase; }
 
-.main { max-width: var(--content-width); margin: 0 auto; padding: var(--space-8) var(--space-6) var(--space-12); }
-@media (max-width: 640px) { .header { align-items: flex-start; flex-direction: column; } }
+.main { max-width:var(--content-width); margin:0 auto; padding:var(--space-8) var(--space-6) var(--space-12); }
+@media (max-width:640px) { .header { padding:1rem var(--space-4); } }
