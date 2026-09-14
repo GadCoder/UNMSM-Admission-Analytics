@@ -197,9 +197,9 @@ tbody tr:hover { background:#fdfafa; }
   .performanceCard summary::-webkit-details-marker { display:none; }
   .performanceCard summary:focus-visible { outline:2px solid var(--color-primary); outline-offset:-2px; }
   .performanceCardRank { color:var(--color-muted); font-size:.68rem; font-weight:800; font-variant-numeric:tabular-nums; }
-  .performanceCardMain { display:grid; min-width:0; gap:.2rem; text-align:center; }
+  .performanceCardMain { display:grid; min-width:0; gap:.2rem; }
   .performanceCardMain strong { overflow-wrap:anywhere; font-size:.82rem; line-height:1.25; }
-  .performanceCardMain span { color:var(--color-muted); font-size:.68rem; }
+  .performanceCardMain span { color:var(--color-muted); font-size:.68rem; text-align:center; }
   .performanceCardToggle { color:var(--color-primary); font-size:.65rem; font-weight:800; white-space:nowrap; }
   .performanceCardToggle > span[aria-hidden="true"] { display:inline-block; transition:transform .18s ease; }
   .performanceCardDetails { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:.55rem; margin:0; padding:.7rem .75rem .8rem; border-top:1px solid var(--color-border); background:#fbfcfd; }
