@@ -1,6 +1,6 @@
 import type { AdmissionProcess, ProcessOverview } from "../api/analytics.types";
 import type { ReactNode } from "react";
-import { ProcessComparisonChart } from "./AnalyticsCharts";
+import { ProcessComparisonChart } from "./ProcessComparison";
 import { ComparisonSummary } from "./ComparisonSummary";
 import { KpiGrid } from "./KpiGrid";
 import { MajorBreakdown } from "./MajorBreakdown";
