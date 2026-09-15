@@ -4,6 +4,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import * as api from "../api/analytics";
 import { HistoryTable } from "../components/MajorDetailHistory";
 import { MajorDetailControls } from "../components/MajorDetailControls";
+import { MajorDetailLoadingSkeleton } from "../components/LoadingSkeletons";
 import { Metric, ProcessMetrics } from "../components/MajorDetailMetrics";
 import { formatNumber } from "../utils/formatters";
 import { formatProcessLabel } from "../utils/processLabels";
@@ -39,7 +40,7 @@ export function MajorDetailPage() {
     }
   }, [latest, params, setParams]);
 
-  if (query.isPending) return <section className={styles.page}><p role="status" className={styles.state}>Cargando detalle de la carrera…</p></section>;
+  if (query.isPending) return <section className={styles.page}><MajorDetailLoadingSkeleton /></section>;
   if (query.isError || !detail || !current) return <section className={styles.page}><p role="alert" className={styles.state}>No pudimos cargar el detalle de esta carrera.</p><Link className={styles.detailBack} to="/">Volver al dashboard</Link></section>;
 
   const rate = current.total_results ? (current.admitted_count / current.total_results) * 100 : 0;
