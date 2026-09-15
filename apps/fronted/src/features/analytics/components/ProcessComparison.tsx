@@ -15,11 +15,7 @@ export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
   return (
     <section className={`${styles.card} ${styles.comparisonCard}`} aria-labelledby="comparison-chart-heading">
       <header className={styles.comparisonCardHeader}>
-        <div>
-          <span className={styles.sectionEyebrow}>Vista comparativa</span>
-          <h2 id="comparison-chart-heading">Comparación de procesos</h2>
-          <p className={styles.chartDescription}>Compara volumen, resultados y rendimiento entre procesos sin perder el contexto.</p>
-        </div>
+        <h2 id="comparison-chart-heading" className={styles.comparisonSectionTitle}>Vista comparativa</h2>
       </header>
 
       <p className={styles.comparisonLegend}><span className={styles.metricWinnerSwatch} aria-hidden="true" /> Mayor valor en cada métrica</p>
