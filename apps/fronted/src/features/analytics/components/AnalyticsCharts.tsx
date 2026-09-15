@@ -32,6 +32,7 @@ export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
     admitted: overviews.map((item) => item.admitted_count),
     admissionRate: overviews.map((item) => percentage(item.admitted_count, item.total_results)),
     absent: overviews.map((item) => item.absent_count),
+    absenceRate: overviews.map((item) => percentage(item.absent_count, item.total_results)),
     average: overviews.map((item) => scoreValue(item.average_score)),
     highest: overviews.map((item) => scoreValue(item.highest_score)),
   };
@@ -63,7 +64,8 @@ export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
               <dl className={styles.processMetricList}>
                 <div><dt>Admitidos</dt><dd className={comparisonClass(metricValues.admitted[index], metricValues.admitted)} title={comparisonLabel(metricValues.admitted[index], metricValues.admitted)}>{formatNumber(overview.admitted_count)}</dd></div>
                 <div><dt>Tasa de admisión</dt><dd className={comparisonClass(metricValues.admissionRate[index], metricValues.admissionRate)} title={comparisonLabel(metricValues.admissionRate[index], metricValues.admissionRate)}>{formatNumber(admissionRate, 1)}%</dd></div>
-                <div><dt>Ausentes</dt><dd className={comparisonClass(metricValues.absent[index], metricValues.absent)} title={comparisonLabel(metricValues.absent[index], metricValues.absent)}><span>{formatNumber(overview.absent_count)}</span><small className={styles.metricSecondary}>{formatNumber(absenceRate, 1)}% del total</small></dd></div>
+                <div><dt>Ausentes</dt><dd className={comparisonClass(metricValues.absent[index], metricValues.absent)} title={comparisonLabel(metricValues.absent[index], metricValues.absent)}>{formatNumber(overview.absent_count)}</dd></div>
+                <div><dt>% de ausentes</dt><dd className={comparisonClass(metricValues.absenceRate[index], metricValues.absenceRate)} title={comparisonLabel(metricValues.absenceRate[index], metricValues.absenceRate)}>{formatNumber(absenceRate, 1)}%</dd></div>
                 <div><dt>Promedio</dt><dd className={comparisonClass(metricValues.average[index], metricValues.average)} title={comparisonLabel(metricValues.average[index], metricValues.average)}>{overview.average_score === null ? "—" : formatNumber(Number(overview.average_score), 2)}</dd></div>
                 <div><dt>Máximo</dt><dd className={comparisonClass(metricValues.highest[index], metricValues.highest)} title={comparisonLabel(metricValues.highest[index], metricValues.highest)}>{overview.highest_score === null ? "—" : formatNumber(Number(overview.highest_score), 2)}</dd></div>
               </dl>
