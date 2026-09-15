@@ -120,10 +120,6 @@ tbody tr:hover { background:#fdfafa; }
 .comparisonCardHeader { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-6); }
 .sectionEyebrow { display:block; margin-bottom:.35rem; color:var(--color-primary); font-size:.62rem; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
 .comparisonCardHeader h2 { margin:0 0 .45rem; }
-.comparisonInsight { display:grid; gap:.18rem; min-width:12rem; padding:.8rem .9rem; border:1px solid #dfcfd0; border-radius:var(--radius-md); background:var(--color-primary-soft); }
-.comparisonInsight span { color:var(--color-muted); font-size:.6rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
-.comparisonInsight strong { color:var(--color-primary); font-size:.86rem; }
-.comparisonInsight small { color:var(--color-muted); font-size:.66rem; }
 .processComparisonGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-4); }
 .processComparisonCard { display:grid; gap:var(--space-3); min-width:0; padding:var(--space-4); border:1px solid var(--color-border); border-radius:var(--radius-md); background:#fff; }
 .processComparisonHeader { display:grid; grid-template-columns:minmax(0,1fr); align-items:start; gap:.25rem; padding-bottom:var(--space-3); border-bottom:1px solid var(--color-border); }
@@ -140,7 +136,6 @@ tbody tr:hover { background:#fdfafa; }
 .comparisonLegend { display:flex; align-items:center; gap:.4rem; margin:calc(var(--space-2) * -1) 0 0; color:var(--color-muted); font-size:.66rem; }
 .metricWinnerSwatch { width:.45rem; height:.45rem; border-radius:50%; background:var(--color-primary); box-shadow:0 0 0 3px #f3e8e8; }
 .metricWinner { padding:0; color:var(--color-primary) !important; text-decoration:underline; text-decoration-color:#d9b3b5; text-decoration-thickness:2px; text-underline-offset:.18rem; }
-.comparisonFootnote { margin:0; padding-top:var(--space-4); border-top:1px solid var(--color-border); color:var(--color-muted); font-size:.68rem; line-height:1.5; }
 
 .majorDemandLayout { display:grid; grid-template-columns:minmax(0,1fr) minmax(18rem,.9fr); gap:var(--space-6); align-items:start; }
 .majorMetricsPanel { min-width:0; }

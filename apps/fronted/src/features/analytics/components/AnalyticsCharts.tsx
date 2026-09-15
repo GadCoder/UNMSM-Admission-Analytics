@@ -27,11 +27,6 @@ function comparisonClass(value: number | null, values: Array<number | null>) {
 export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
   if (overviews.length < 2) return null;
 
-  const rankedByAdmissionRate = [...overviews].sort(
-    (left, right) => percentage(right.admitted_count, right.total_results) - percentage(left.admitted_count, left.total_results),
-  );
-  const bestAdmissionRate = rankedByAdmissionRate[0];
-  const bestRate = percentage(bestAdmissionRate.admitted_count, bestAdmissionRate.total_results);
   const metricValues = {
     applicants: overviews.map((item) => item.total_results),
     admitted: overviews.map((item) => item.admitted_count),
@@ -49,11 +44,6 @@ export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
           <h2 id="comparison-chart-heading">Comparación de procesos</h2>
           <p className={styles.chartDescription}>Compara volumen, resultados y rendimiento entre procesos sin perder el contexto.</p>
         </div>
-        <aside className={styles.comparisonInsight} aria-label="Lectura rápida de la comparación">
-          <span>Mejor tasa de admisión</span>
-          <strong>{formatProcessLabel(bestAdmissionRate.process)}</strong>
-          <small>{formatNumber(bestRate, 1)}% de postulantes admitidos</small>
-        </aside>
       </header>
 
       <p className={styles.comparisonLegend}><span className={styles.metricWinnerSwatch} aria-hidden="true" /> Mayor valor en cada métrica</p>
@@ -85,7 +75,6 @@ export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
       <ul className={styles.visuallyHidden} aria-label="Datos de comparación">
         {overviews.map((overview) => <li key={overview.process.id}>{formatProcessLabel(overview.process)}: {formatNumber(overview.total_results)} postulantes, {formatNumber(overview.admitted_count)} admitidos, {formatNumber(overview.absent_count)} ausentes.</li>)}
       </ul>
-      <p className={styles.comparisonFootnote}>La tasa de admisión muestra qué proporción de postulantes terminó admitida; es más útil para comparar procesos de distinto tamaño que el conteo absoluto.</p>
     </section>
   );
 }
