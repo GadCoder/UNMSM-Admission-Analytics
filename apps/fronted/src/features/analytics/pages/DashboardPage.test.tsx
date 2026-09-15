@@ -135,8 +135,15 @@ describe("DashboardPage", () => {
     expect(screen.queryByText("Compara volumen, resultados y rendimiento entre procesos sin perder el contexto.")).not.toBeInTheDocument();
     const comparisonTable = screen.getByRole("table", { name: /comparación de postulantes/i });
     expect(comparisonTable).toBeInTheDocument();
-    expect(within(comparisonTable).getByRole("columnheader", { name: /Analizado.*2025-2/i })).toBeInTheDocument();
-    expect(within(comparisonTable).getByRole("columnheader", { name: /Comparado.*2025-1/i })).toBeInTheDocument();
+    expect(screen.getByText("La columna destacada corresponde al proceso seleccionado.")).toBeInTheDocument();
+    const baseHeader = within(comparisonTable).getByRole("columnheader", { name: /Base.*proceso seleccionado.*2025-2/i });
+    expect(baseHeader).toBeInTheDocument();
+    expect(baseHeader.className).toContain("comparisonBaseColumn");
+    expect(within(comparisonTable).getByRole("columnheader", { name: /2025-1/i })).toBeInTheDocument();
+    expect(within(comparisonTable).queryByText("Comparación 1")).not.toBeInTheDocument();
+    expect(within(comparisonTable).queryByText("Comp. 1")).not.toBeInTheDocument();
+    expect(within(comparisonTable).queryByText("Analizado")).not.toBeInTheDocument();
+    expect(within(comparisonTable).queryByText("Comparado")).not.toBeInTheDocument();
     expect(within(comparisonTable).getByRole("row", { name: /Postulantes ausentes/ })).toHaveTextContent("10");
     expect(within(comparisonTable).getByRole("row", { name: /Ingresantes/ })).toHaveTextContent("16");
     expect(screen.queryByRole("img", { name: /comparación de postulantes/i })).not.toBeInTheDocument();
