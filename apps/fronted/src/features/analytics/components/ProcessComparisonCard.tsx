@@ -16,7 +16,6 @@ type ProcessComparisonCardProps = {
 
 export function ProcessComparisonCard({ overview, index, metricValues }: ProcessComparisonCardProps) {
   const admissionRate = percentage(overview.admitted_count, overview.total_results);
-  const absenceRate = percentage(overview.absent_count, overview.total_results);
 
   return (
     <article className={styles.processComparisonCard}>
@@ -27,17 +26,17 @@ export function ProcessComparisonCard({ overview, index, metricValues }: Process
           >
             {formatNumber(overview.total_results)}
           </strong>
-          <span>postulantes</span>
+          <span>Postulantes</span>
         </div>
         <h3>{formatProcessLabel(overview.process)}</h3>
       </header>
       <dl className={styles.processMetricList}>
-        <Metric label="Admitidos" value={formatNumber(overview.admitted_count)} comparison={metricValues.admitted} index={index} />
-        <Metric label="Tasa de admisión" value={`${formatNumber(admissionRate, 1)}%`} comparison={metricValues.admissionRate} index={index} />
-        <Metric label="Ausentes" value={formatNumber(overview.absent_count)} comparison={metricValues.absent} index={index} />
-        <Metric label="% de ausentes" value={`${formatNumber(absenceRate, 1)}%`} comparison={metricValues.absenceRate} index={index} />
-        <Metric label="Promedio" value={overview.average_score === null ? "—" : formatNumber(Number(overview.average_score), 2)} comparison={metricValues.average} index={index} />
-        <Metric label="Máximo" value={overview.highest_score === null ? "—" : formatNumber(Number(overview.highest_score), 2)} comparison={metricValues.highest} index={index} />
+        <Metric label="Postulantes ausentes" value={formatNumber(overview.absent_count)} comparison={metricValues.absent} index={index} />
+        <Metric label="Porcentaje de ausentes" value={`${formatNumber(percentage(overview.absent_count, overview.total_results), 1)}%`} comparison={metricValues.absentRate} index={index} />
+        <Metric label="Ingresantes" value={formatNumber(overview.admitted_count)} comparison={metricValues.entrants} index={index} />
+        <Metric label="Porcentaje de ingresantes" value={`${formatNumber(admissionRate, 1)}%`} comparison={metricValues.admissionRate} index={index} />
+        <Metric label="Puntaje máximo" value={overview.highest_score === null ? "—" : formatNumber(Number(overview.highest_score), 2)} comparison={metricValues.highest} index={index} />
+        <Metric label="Puntaje promedio" value={overview.average_score === null ? "—" : formatNumber(Number(overview.average_score), 2)} comparison={metricValues.average} index={index} />
       </dl>
     </article>
   );
