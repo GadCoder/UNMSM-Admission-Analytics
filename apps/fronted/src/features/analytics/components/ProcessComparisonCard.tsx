@@ -20,6 +20,10 @@ export function ProcessComparisonCard({ overview, index, metricValues }: Process
   return (
     <article className={styles.processComparisonCard}>
       <header className={styles.processComparisonHeader}>
+        <div className={styles.processComparisonMeta}>
+          <span>{index === 0 ? "Proceso analizado" : "Proceso comparado"}</span>
+          <h3>{formatProcessLabel(overview.process)}</h3>
+        </div>
         <div className={styles.processTotalMetric}>
           <strong
             className={isHighestValue(metricValues.applicants[index], metricValues.applicants) ? styles.metricWinner : ""}
@@ -28,7 +32,6 @@ export function ProcessComparisonCard({ overview, index, metricValues }: Process
           </strong>
           <span>Postulantes</span>
         </div>
-        <h3>{formatProcessLabel(overview.process)}</h3>
       </header>
       <dl className={styles.processMetricList}>
         <Metric label="Postulantes ausentes" value={formatNumber(overview.absent_count)} comparison={metricValues.absent} index={index} />
