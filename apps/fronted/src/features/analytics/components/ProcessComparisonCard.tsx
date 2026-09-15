@@ -3,7 +3,7 @@ import { formatNumber } from "../utils/formatters";
 import { formatProcessLabel } from "../utils/processLabels";
 import styles from "../pages/DashboardPage.module.css";
 import {
-  comparisonState,
+  isHighestValue,
   type ComparisonMetricValues,
   percentage,
 } from "./comparisonMetrics";
@@ -17,15 +17,13 @@ type ProcessComparisonCardProps = {
 export function ProcessComparisonCard({ overview, index, metricValues }: ProcessComparisonCardProps) {
   const admissionRate = percentage(overview.admitted_count, overview.total_results);
   const absenceRate = percentage(overview.absent_count, overview.total_results);
-  const applicantsComparison = comparisonState(metricValues.applicants[index], metricValues.applicants);
 
   return (
     <article className={styles.processComparisonCard}>
       <header className={styles.processComparisonHeader}>
         <div className={styles.processTotalMetric}>
           <strong
-            className={applicantsComparison.isWinner ? styles.metricWinner : ""}
-            title={applicantsComparison.label}
+            className={isHighestValue(metricValues.applicants[index], metricValues.applicants) ? styles.metricWinner : ""}
           >
             {formatNumber(overview.total_results)}
           </strong>
@@ -54,13 +52,11 @@ type MetricProps = {
 
 function Metric({ label, value, comparison, index }: MetricProps) {
   const currentValue = comparison[index];
-  const comparisonResult = comparisonState(currentValue, comparison);
   return (
     <div>
       <dt>{label}</dt>
       <dd
-        className={comparisonResult.isWinner ? styles.metricWinner : ""}
-        title={comparisonResult.label}
+        className={isHighestValue(currentValue, comparison) ? styles.metricWinner : ""}
       >
         {value}
       </dd>

@@ -16,14 +16,10 @@ export function percentage(value: number, total: number) {
   return total > 0 ? (value / total) * 100 : 0;
 }
 
-export function comparisonState(value: ComparableValue, values: ComparableValue[]) {
-  if (value === null) return { label: "—", isWinner: false };
+export function isHighestValue(value: ComparableValue, values: ComparableValue[]) {
+  if (value === null) return false;
   const comparable = values.filter((item): item is number => item !== null);
-  if (comparable.length < 2 || comparable.every((item) => item === comparable[0])) {
-    return { label: "Igual", isWinner: false };
-  }
-  const isWinner = value === Math.max(...comparable);
-  return { label: isWinner ? "Mayor" : "Menor", isWinner };
+  return comparable.length > 1 && value === Math.max(...comparable);
 }
 
 export function scoreValue(value: string | null) {
