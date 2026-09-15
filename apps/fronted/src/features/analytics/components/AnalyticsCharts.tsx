@@ -65,13 +65,12 @@ export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
             <article className={styles.processComparisonCard} key={overview.process.id}>
               <header>
                 <div>
-                  <span className={styles.processComparisonRole}>{index === 0 ? "Proceso analizado" : "Proceso comparado"}</span>
                   <h3>{formatProcessLabel(overview.process)}</h3>
                 </div>
               </header>
               <div className={styles.processTotalMetric}>
-                <span>Postulantes</span>
                 <strong className={comparisonClass(metricValues.applicants[index], metricValues.applicants)} title={comparisonLabel(metricValues.applicants[index], metricValues.applicants)}>{formatNumber(overview.total_results)}</strong>
+                <span>postulantes</span>
               </div>
               <dl className={styles.processMetricList}>
                 <div><dt>Admitidos</dt><dd className={comparisonClass(metricValues.admitted[index], metricValues.admitted)} title={comparisonLabel(metricValues.admitted[index], metricValues.admitted)}>{formatNumber(overview.admitted_count)}</dd></div>

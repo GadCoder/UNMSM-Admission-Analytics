@@ -128,7 +128,6 @@ tbody tr:hover { background:#fdfafa; }
 .processComparisonCard { display:grid; gap:var(--space-3); min-width:0; padding:var(--space-4); border:1px solid var(--color-border); border-radius:var(--radius-md); background:#fff; }
 .processComparisonCard > header { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-3); }
 .processComparisonCard h3 { margin:.2rem 0 0; color:var(--color-text); font-size:1rem; }
-.processComparisonRole { color:var(--color-muted); font-size:.6rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
 .processTotalMetric { display:flex; align-items:baseline; gap:.45rem; padding-bottom:var(--space-3); border-bottom:1px solid var(--color-border); }
 .processTotalMetric strong { color:var(--color-text); font-size:1.55rem; font-variant-numeric:tabular-nums; }
 .processTotalMetric span { color:var(--color-muted); font-size:.7rem; }
