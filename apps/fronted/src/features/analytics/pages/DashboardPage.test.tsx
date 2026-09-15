@@ -136,6 +136,8 @@ describe("DashboardPage", () => {
     const comparisonTable = screen.getByRole("table", { name: /comparación de postulantes/i });
     expect(comparisonTable).toBeInTheDocument();
     expect(screen.getByText("La columna destacada corresponde al proceso seleccionado.")).toBeInTheDocument();
+    expect(within(comparisonTable).getByRole("columnheader", { name: "Métrica" })).toBeInTheDocument();
+    expect(within(comparisonTable).queryByText("Métrica")).not.toBeInTheDocument();
     const baseHeader = within(comparisonTable).getByRole("columnheader", { name: /Base.*proceso seleccionado.*2025-2/i });
     expect(baseHeader).toBeInTheDocument();
     expect(baseHeader.className).toContain("comparisonBaseColumn");

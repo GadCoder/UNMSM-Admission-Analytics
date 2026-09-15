@@ -31,7 +31,7 @@ export function ProcessComparisonTable({ overviews, metricValues }: ProcessCompa
         <caption className={styles.visuallyHidden}>Comparación de postulantes, admitidos y ausentes entre procesos</caption>
         <thead>
           <tr>
-            <th scope="col">Métrica</th>
+            <th scope="col" aria-label="Métrica"></th>
             {overviews.map((overview, index) => (
               <th
                 scope="col"
