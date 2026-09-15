@@ -126,7 +126,7 @@ tbody tr:hover { background:#fdfafa; }
 .processComparisonTable thead th:not(:first-child) { border-left:1px solid var(--color-border); }
 .processComparisonTable thead th strong { display:block; }
 .processComparisonTable thead th strong { margin-top:.25rem; color:var(--color-text); font-size:.82rem; white-space:nowrap; }
-.comparisonBaseColumn { background:#f7eeee !important; box-shadow:inset 2px 0 0 var(--color-primary), inset -1px 0 0 #ead5d5; }
+.comparisonBaseColumn { background:#f7eeee !important; box-shadow:inset -1px 0 0 #ead5d5; }
 .processComparisonTable tbody th { color:var(--color-muted); font-size:.72rem; font-weight:600; text-align:left; }
 .processComparisonTable tbody td { color:var(--color-text); font-size:.84rem; font-variant-numeric:tabular-nums; font-weight:800; text-align:right; }
 .processComparisonTable tbody td:not(:first-child) { border-left:1px solid var(--color-border); }
