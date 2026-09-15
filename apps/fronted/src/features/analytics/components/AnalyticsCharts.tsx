@@ -20,6 +20,10 @@ function scoreValue(value: string | null) {
   return value === null ? null : Number(value);
 }
 
+function comparisonClass(value: number | null, values: Array<number | null>) {
+  return comparisonLabel(value, values) === "Mayor" ? styles.metricWinner : "";
+}
+
 export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
   if (overviews.length < 2) return null;
 
@@ -52,6 +56,7 @@ export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
         </aside>
       </header>
 
+      <p className={styles.comparisonLegend}><span className={styles.metricWinnerSwatch} aria-hidden="true" /> Mayor valor en cada métrica</p>
       <div className={styles.processComparisonGrid} role="img" aria-label="Comparación de postulantes, admitidos y ausentes entre procesos">
         {overviews.map((overview, index) => {
           const admissionRate = percentage(overview.admitted_count, overview.total_results);
@@ -70,12 +75,12 @@ export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
                 <span>postulantes</span>
               </div>
               <dl className={styles.processMetricList}>
-                <div><dt>Postulantes</dt><dd>{formatNumber(overview.total_results)} <small className={styles.metricComparisonBadge}>{comparisonLabel(metricValues.applicants[index], metricValues.applicants)}</small></dd></div>
-                <div><dt>Admitidos</dt><dd className={styles.metricPositive}>{formatNumber(overview.admitted_count)} <small className={styles.metricComparisonBadge}>{comparisonLabel(metricValues.admitted[index], metricValues.admitted)}</small></dd></div>
-                <div><dt>Tasa de admisión</dt><dd className={styles.metricPositive}>{formatNumber(admissionRate, 1)}% <small className={styles.metricComparisonBadge}>{comparisonLabel(metricValues.admissionRate[index], metricValues.admissionRate)}</small></dd></div>
-                <div><dt>Ausentes</dt><dd>{formatNumber(overview.absent_count)} <small>{formatNumber(absenceRate, 1)}%</small> <small className={styles.metricComparisonBadge}>{comparisonLabel(metricValues.absent[index], metricValues.absent)}</small></dd></div>
-                <div><dt>Promedio</dt><dd>{overview.average_score === null ? "—" : formatNumber(Number(overview.average_score), 2)} <small className={styles.metricComparisonBadge}>{comparisonLabel(metricValues.average[index], metricValues.average)}</small></dd></div>
-                <div><dt>Máximo</dt><dd>{overview.highest_score === null ? "—" : formatNumber(Number(overview.highest_score), 2)} <small className={styles.metricComparisonBadge}>{comparisonLabel(metricValues.highest[index], metricValues.highest)}</small></dd></div>
+                <div><dt>Postulantes</dt><dd className={comparisonClass(metricValues.applicants[index], metricValues.applicants)} title={comparisonLabel(metricValues.applicants[index], metricValues.applicants)}>{formatNumber(overview.total_results)}</dd></div>
+                <div><dt>Admitidos</dt><dd className={comparisonClass(metricValues.admitted[index], metricValues.admitted)} title={comparisonLabel(metricValues.admitted[index], metricValues.admitted)}>{formatNumber(overview.admitted_count)}</dd></div>
+                <div><dt>Tasa de admisión</dt><dd className={comparisonClass(metricValues.admissionRate[index], metricValues.admissionRate)} title={comparisonLabel(metricValues.admissionRate[index], metricValues.admissionRate)}>{formatNumber(admissionRate, 1)}%</dd></div>
+                <div><dt>Ausentes</dt><dd className={comparisonClass(metricValues.absent[index], metricValues.absent)} title={comparisonLabel(metricValues.absent[index], metricValues.absent)}>{formatNumber(overview.absent_count)} <small>{formatNumber(absenceRate, 1)}%</small></dd></div>
+                <div><dt>Promedio</dt><dd className={comparisonClass(metricValues.average[index], metricValues.average)} title={comparisonLabel(metricValues.average[index], metricValues.average)}>{overview.average_score === null ? "—" : formatNumber(Number(overview.average_score), 2)}</dd></div>
+                <div><dt>Máximo</dt><dd className={comparisonClass(metricValues.highest[index], metricValues.highest)} title={comparisonLabel(metricValues.highest[index], metricValues.highest)}>{overview.highest_score === null ? "—" : formatNumber(Number(overview.highest_score), 2)}</dd></div>
               </dl>
             </article>
           );
