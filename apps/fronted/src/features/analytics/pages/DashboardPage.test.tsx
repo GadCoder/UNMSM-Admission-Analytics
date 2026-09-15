@@ -76,6 +76,8 @@ describe("DashboardPage", () => {
       "Puntaje promedio",
     ]);
     expect(screen.getByRole("table")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Vista comparativa" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Comparación por procesos" })).not.toBeInTheDocument();
     expect(screen.getByText("50 postulantes · 12 admitidos")).toBeInTheDocument();
     const firstPerformanceCard = screen.getByText("Ver más").closest("details");
     expect(firstPerformanceCard).not.toBeNull();
