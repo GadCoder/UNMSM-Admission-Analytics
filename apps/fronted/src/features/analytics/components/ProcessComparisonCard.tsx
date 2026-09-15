@@ -3,7 +3,7 @@ import { formatNumber } from "../utils/formatters";
 import { formatProcessLabel } from "../utils/processLabels";
 import styles from "../pages/DashboardPage.module.css";
 import {
-  comparisonLabel,
+  comparisonState,
   type ComparisonMetricValues,
   percentage,
 } from "./comparisonMetrics";
@@ -14,25 +14,18 @@ type ProcessComparisonCardProps = {
   metricValues: ComparisonMetricValues;
 };
 
-function metricClass(value: number | null, values: Array<number | null>) {
-  return comparisonLabel(value, values) === "Mayor" ? styles.metricWinner : "";
-}
-
-function metricTitle(value: number | null, values: Array<number | null>) {
-  return comparisonLabel(value, values);
-}
-
 export function ProcessComparisonCard({ overview, index, metricValues }: ProcessComparisonCardProps) {
   const admissionRate = percentage(overview.admitted_count, overview.total_results);
   const absenceRate = percentage(overview.absent_count, overview.total_results);
+  const applicantsComparison = comparisonState(metricValues.applicants[index], metricValues.applicants);
 
   return (
     <article className={styles.processComparisonCard}>
       <header className={styles.processComparisonHeader}>
         <div className={styles.processTotalMetric}>
           <strong
-            className={metricClass(metricValues.applicants[index], metricValues.applicants)}
-            title={metricTitle(metricValues.applicants[index], metricValues.applicants)}
+            className={applicantsComparison.isWinner ? styles.metricWinner : ""}
+            title={applicantsComparison.label}
           >
             {formatNumber(overview.total_results)}
           </strong>
@@ -61,12 +54,13 @@ type MetricProps = {
 
 function Metric({ label, value, comparison, index }: MetricProps) {
   const currentValue = comparison[index];
+  const comparisonResult = comparisonState(currentValue, comparison);
   return (
     <div>
       <dt>{label}</dt>
       <dd
-        className={metricClass(currentValue, comparison)}
-        title={metricTitle(currentValue, comparison)}
+        className={comparisonResult.isWinner ? styles.metricWinner : ""}
+        title={comparisonResult.label}
       >
         {value}
       </dd>
