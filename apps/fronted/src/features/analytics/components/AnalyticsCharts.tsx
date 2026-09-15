@@ -63,15 +63,13 @@ export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
           const absenceRate = percentage(overview.absent_count, overview.total_results);
           return (
             <article className={styles.processComparisonCard} key={overview.process.id}>
-              <header>
-                <div>
-                  <h3>{formatProcessLabel(overview.process)}</h3>
+              <header className={styles.processComparisonHeader}>
+                <div className={styles.processTotalMetric}>
+                  <strong className={comparisonClass(metricValues.applicants[index], metricValues.applicants)} title={comparisonLabel(metricValues.applicants[index], metricValues.applicants)}>{formatNumber(overview.total_results)}</strong>
+                  <span>postulantes</span>
                 </div>
+                <h3>{formatProcessLabel(overview.process)}</h3>
               </header>
-              <div className={styles.processTotalMetric}>
-                <strong className={comparisonClass(metricValues.applicants[index], metricValues.applicants)} title={comparisonLabel(metricValues.applicants[index], metricValues.applicants)}>{formatNumber(overview.total_results)}</strong>
-                <span>postulantes</span>
-              </div>
               <dl className={styles.processMetricList}>
                 <div><dt>Admitidos</dt><dd className={comparisonClass(metricValues.admitted[index], metricValues.admitted)} title={comparisonLabel(metricValues.admitted[index], metricValues.admitted)}>{formatNumber(overview.admitted_count)}</dd></div>
                 <div><dt>Tasa de admisión</dt><dd className={comparisonClass(metricValues.admissionRate[index], metricValues.admissionRate)} title={comparisonLabel(metricValues.admissionRate[index], metricValues.admissionRate)}>{formatNumber(admissionRate, 1)}%</dd></div>

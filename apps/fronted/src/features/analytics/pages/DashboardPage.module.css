@@ -126,9 +126,9 @@ tbody tr:hover { background:#fdfafa; }
 .comparisonInsight small { color:var(--color-muted); font-size:.66rem; }
 .processComparisonGrid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:var(--space-4); }
 .processComparisonCard { display:grid; gap:var(--space-3); min-width:0; padding:var(--space-4); border:1px solid var(--color-border); border-radius:var(--radius-md); background:#fff; }
-.processComparisonCard > header { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-3); }
-.processComparisonCard h3 { margin:.2rem 0 0; color:var(--color-text); font-size:1rem; }
-.processTotalMetric { display:flex; align-items:baseline; gap:.45rem; padding-bottom:var(--space-3); border-bottom:1px solid var(--color-border); }
+.processComparisonHeader { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:start; gap:var(--space-3); padding-bottom:var(--space-3); border-bottom:1px solid var(--color-border); }
+.processComparisonHeader h3 { align-self:start; margin:.2rem 0 0; color:var(--color-text); font-size:1rem; text-align:right; }
+.processTotalMetric { display:grid; gap:.1rem; }
 .processTotalMetric strong { color:var(--color-text); font-size:1.55rem; font-variant-numeric:tabular-nums; }
 .processTotalMetric span { color:var(--color-muted); font-size:.7rem; }
 .processMetricList { display:grid; gap:.55rem; margin:0; }
