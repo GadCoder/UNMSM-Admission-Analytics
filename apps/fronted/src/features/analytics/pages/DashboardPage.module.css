@@ -258,14 +258,14 @@ tbody tr:hover { background:#fdfafa; }
 @media (max-width:600px) {
   .processComparisonTableWrap { overflow:visible; }
   .processComparisonTable { display:none; }
-  .comparisonMobile { display:grid; gap:.7rem; padding:.75rem; }
-  .comparisonMobileMetric { margin:0; border:1px solid var(--color-border); border-radius:var(--radius-sm); overflow:hidden; }
-  .comparisonMobileMetric h3 { margin:0; padding:.65rem .75rem; background:#fbf5f5; color:var(--color-muted); font-size:.72rem; font-weight:700; }
+  .comparisonMobile { display:grid; gap:.45rem; padding:.65rem; }
+  .comparisonMobileMetric { display:grid; grid-template-columns:minmax(7.4rem, .85fr) minmax(0, 1.15fr); margin:0; border:1px solid var(--color-border); border-radius:var(--radius-sm); overflow:hidden; }
+  .comparisonMobileMetric h3 { display:flex; align-items:center; margin:0; padding:.55rem .65rem; background:#fbf5f5; color:var(--color-muted); font-size:.68rem; font-weight:700; line-height:1.2; }
   .comparisonMobileValues { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .comparisonMobileValue { display:grid; gap:.2rem; min-width:0; padding:.6rem .7rem; border-top:1px solid var(--color-border); }
+  .comparisonMobileValue { display:grid; gap:.15rem; min-width:0; padding:.45rem .5rem; border-top:1px solid var(--color-border); }
   .comparisonMobileValue:nth-child(odd) { border-right:1px solid var(--color-border); }
-  .comparisonMobileValue span { color:var(--color-muted); font-size:.68rem; font-weight:700; white-space:nowrap; }
-  .comparisonMobileValue strong { color:var(--color-text); font-size:.92rem; font-variant-numeric:tabular-nums; }
+  .comparisonMobileValue span { color:var(--color-muted); font-size:.62rem; font-weight:700; white-space:nowrap; }
+  .comparisonMobileValue strong { color:var(--color-text); font-size:.85rem; font-variant-numeric:tabular-nums; }
   .comparisonMobileValue.comparisonBaseColumn { background:#fff7f7; }
   .evolutionHeader { align-items:stretch; flex-direction:column; gap:var(--space-3); }
   .evolutionSelect { flex-basis:auto; width:100%; }
