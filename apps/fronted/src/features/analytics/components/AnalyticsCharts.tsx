@@ -9,8 +9,15 @@ function percentage(value: number, total: number) {
   return total > 0 ? (value / total) * 100 : 0;
 }
 
-function formatScore(value: string | null) {
-  return value === null ? "—" : formatNumber(Number(value), 2);
+function comparisonLabel(value: number | null, values: Array<number | null>) {
+  if (value === null) return "—";
+  const comparable = values.filter((item): item is number => item !== null);
+  if (comparable.length < 2 || comparable.every((item) => item === comparable[0])) return "Igual";
+  return value === Math.max(...comparable) ? "Mayor" : "Menor";
+}
+
+function scoreValue(value: string | null) {
+  return value === null ? null : Number(value);
 }
 
 export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
@@ -21,6 +28,14 @@ export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
   );
   const bestAdmissionRate = rankedByAdmissionRate[0];
   const bestRate = percentage(bestAdmissionRate.admitted_count, bestAdmissionRate.total_results);
+  const metricValues = {
+    applicants: overviews.map((item) => item.total_results),
+    admitted: overviews.map((item) => item.admitted_count),
+    admissionRate: overviews.map((item) => percentage(item.admitted_count, item.total_results)),
+    absent: overviews.map((item) => item.absent_count),
+    average: overviews.map((item) => scoreValue(item.average_score)),
+    highest: overviews.map((item) => scoreValue(item.highest_score)),
+  };
 
   return (
     <section className={`${styles.card} ${styles.comparisonCard}`} aria-labelledby="comparison-chart-heading">
@@ -55,13 +70,13 @@ export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
                 <span>postulantes</span>
               </div>
               <dl className={styles.processMetricList}>
-                <div><dt>Admitidos</dt><dd>{formatNumber(overview.admitted_count)}</dd></div>
-                <div><dt>Tasa de admisión</dt><dd className={styles.metricPositive}>{formatNumber(admissionRate, 1)}%</dd></div>
-                <div><dt>Ausentes</dt><dd>{formatNumber(overview.absent_count)} <small>{formatNumber(absenceRate, 1)}%</small></dd></div>
-                <div><dt>Promedio</dt><dd>{formatScore(overview.average_score)}</dd></div>
-                <div><dt>Máximo</dt><dd>{formatScore(overview.highest_score)}</dd></div>
+                <div><dt>Postulantes</dt><dd>{formatNumber(overview.total_results)} <small className={styles.metricComparisonBadge}>{comparisonLabel(metricValues.applicants[index], metricValues.applicants)}</small></dd></div>
+                <div><dt>Admitidos</dt><dd className={styles.metricPositive}>{formatNumber(overview.admitted_count)} <small className={styles.metricComparisonBadge}>{comparisonLabel(metricValues.admitted[index], metricValues.admitted)}</small></dd></div>
+                <div><dt>Tasa de admisión</dt><dd className={styles.metricPositive}>{formatNumber(admissionRate, 1)}% <small className={styles.metricComparisonBadge}>{comparisonLabel(metricValues.admissionRate[index], metricValues.admissionRate)}</small></dd></div>
+                <div><dt>Ausentes</dt><dd>{formatNumber(overview.absent_count)} <small>{formatNumber(absenceRate, 1)}%</small> <small className={styles.metricComparisonBadge}>{comparisonLabel(metricValues.absent[index], metricValues.absent)}</small></dd></div>
+                <div><dt>Promedio</dt><dd>{overview.average_score === null ? "—" : formatNumber(Number(overview.average_score), 2)} <small className={styles.metricComparisonBadge}>{comparisonLabel(metricValues.average[index], metricValues.average)}</small></dd></div>
+                <div><dt>Máximo</dt><dd>{overview.highest_score === null ? "—" : formatNumber(Number(overview.highest_score), 2)} <small className={styles.metricComparisonBadge}>{comparisonLabel(metricValues.highest[index], metricValues.highest)}</small></dd></div>
               </dl>
-              <div className={styles.rateBar} aria-hidden="true"><span style={{ width: `${Math.min(admissionRate, 100)}%` }} /></div>
             </article>
           );
         })}
