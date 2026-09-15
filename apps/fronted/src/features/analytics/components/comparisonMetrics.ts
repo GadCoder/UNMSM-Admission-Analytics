@@ -4,10 +4,9 @@ type ComparableValue = number | null;
 
 export type ComparisonMetricValues = {
   applicants: number[];
-  admitted: number[];
+  entrants: number[];
   admissionRate: number[];
   absent: number[];
-  absenceRate: number[];
   average: ComparableValue[];
   highest: ComparableValue[];
 };
@@ -29,10 +28,9 @@ export function scoreValue(value: string | null) {
 export function buildComparisonMetricValues(overviews: ProcessOverview[]): ComparisonMetricValues {
   return {
     applicants: overviews.map((item) => item.total_results),
-    admitted: overviews.map((item) => item.admitted_count),
+    entrants: overviews.map((item) => item.admitted_count),
     admissionRate: overviews.map((item) => percentage(item.admitted_count, item.total_results)),
     absent: overviews.map((item) => item.absent_count),
-    absenceRate: overviews.map((item) => percentage(item.absent_count, item.total_results)),
     average: overviews.map((item) => scoreValue(item.average_score)),
     highest: overviews.map((item) => scoreValue(item.highest_score)),
   };
