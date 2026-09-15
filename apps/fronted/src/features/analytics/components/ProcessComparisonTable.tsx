@@ -27,7 +27,6 @@ export function ProcessComparisonTable({ overviews, metricValues }: ProcessCompa
       <p className={styles.comparisonTableContext}>
         La columna destacada corresponde al proceso seleccionado.
       </p>
-      {overviews.length > 3 && <p className={styles.comparisonTableScrollHint}>Desliza horizontalmente para ver todos los procesos.</p>}
       <table className={styles.processComparisonTable}>
         <caption className={styles.visuallyHidden}>Comparación de postulantes, admitidos y ausentes entre procesos</caption>
         <thead>
@@ -61,6 +60,21 @@ export function ProcessComparisonTable({ overviews, metricValues }: ProcessCompa
           ))}
         </tbody>
       </table>
+      <div className={styles.comparisonMobile} aria-label="Comparación móvil por métrica">
+        {rows.map((row) => (
+          <section className={styles.comparisonMobileMetric} key={`mobile-${row.label}`}>
+            <h3>{row.label}</h3>
+            <div className={styles.comparisonMobileValues}>
+              {row.values.map((value, index) => (
+                <div className={`${styles.comparisonMobileValue} ${index === 0 ? styles.comparisonBaseColumn : ""}`} key={`${row.label}-mobile-${overviews[index].process.id}`}>
+                  <span>{formatProcessLabel(overviews[index].process)}</span>
+                  <strong className={isHighestValue(row.comparison[index], row.comparison) ? styles.metricWinner : undefined}>{value}</strong>
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
     </div>
   );
 }
