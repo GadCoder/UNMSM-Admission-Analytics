@@ -22,7 +22,7 @@ export function DashboardContent({
     <>
       <KpiGrid overview={primary} previous={previous} />
       <ProcessComparisonChart overviews={[primary, ...comparisons]} />
-      <KpiEvolution overviews={[primary, ...comparisons]} />
+      {comparisons.length > 0 && <KpiEvolution overviews={[primary, ...comparisons]} />}
       <MajorBreakdown overview={primary} filterControls={filterControls} />
     </>
   );
