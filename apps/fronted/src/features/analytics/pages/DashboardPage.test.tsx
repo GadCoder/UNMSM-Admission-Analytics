@@ -133,8 +133,14 @@ describe("DashboardPage", () => {
     expect(await screen.findByRole("heading", { name: "Vista comparativa" })).toBeInTheDocument();
     expect(screen.queryByText("Comparación de procesos")).not.toBeInTheDocument();
     expect(screen.queryByText("Compara volumen, resultados y rendimiento entre procesos sin perder el contexto.")).not.toBeInTheDocument();
-    expect(screen.getByRole("img", { name: /comparación de postulantes/i })).toBeInTheDocument();
-    expect(screen.getAllByRole("listitem")[1]).toHaveTextContent("2025-1: 80 postulantes, 16 admitidos, 8 ausentes");
+    const comparisonTable = screen.getByRole("table", { name: /comparación de postulantes/i });
+    expect(comparisonTable).toBeInTheDocument();
+    expect(within(comparisonTable).getByRole("columnheader", { name: /Analizado.*2025-2/i })).toBeInTheDocument();
+    expect(within(comparisonTable).getByRole("columnheader", { name: /Comparado.*2025-1/i })).toBeInTheDocument();
+    expect(within(comparisonTable).getByRole("row", { name: /Postulantes ausentes/ })).toHaveTextContent("10");
+    expect(within(comparisonTable).getByRole("row", { name: /Ingresantes/ })).toHaveTextContent("16");
+    expect(screen.queryByRole("img", { name: /comparación de postulantes/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: "Datos de comparación" })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Carreras con mayor demanda" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Ranking de postulantes" })).not.toBeInTheDocument();
   });
