@@ -32,6 +32,7 @@ export function ProcessComparisonCard({ overview, index, metricValues }: Process
       </header>
       <dl className={styles.processMetricList}>
         <Metric label="Postulantes ausentes" value={formatNumber(overview.absent_count)} comparison={metricValues.absent} index={index} />
+        <Metric label="Porcentaje de ausentes" value={`${formatNumber(percentage(overview.absent_count, overview.total_results), 1)}%`} comparison={metricValues.absentRate} index={index} />
         <Metric label="Ingresantes" value={formatNumber(overview.admitted_count)} comparison={metricValues.entrants} index={index} />
         <Metric label="Porcentaje de ingresantes" value={`${formatNumber(admissionRate, 1)}%`} comparison={metricValues.admissionRate} index={index} />
         <Metric label="Puntaje máximo" value={overview.highest_score === null ? "—" : formatNumber(Number(overview.highest_score), 2)} comparison={metricValues.highest} index={index} />

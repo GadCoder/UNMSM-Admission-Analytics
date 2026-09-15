@@ -6,6 +6,7 @@ export type ComparisonMetricValues = {
   applicants: number[];
   entrants: number[];
   admissionRate: number[];
+  absentRate: number[];
   absent: number[];
   average: ComparableValue[];
   highest: ComparableValue[];
@@ -30,6 +31,7 @@ export function buildComparisonMetricValues(overviews: ProcessOverview[]): Compa
     applicants: overviews.map((item) => item.total_results),
     entrants: overviews.map((item) => item.admitted_count),
     admissionRate: overviews.map((item) => percentage(item.admitted_count, item.total_results)),
+    absentRate: overviews.map((item) => percentage(item.absent_count, item.total_results)),
     absent: overviews.map((item) => item.absent_count),
     average: overviews.map((item) => scoreValue(item.average_score)),
     highest: overviews.map((item) => scoreValue(item.highest_score)),
