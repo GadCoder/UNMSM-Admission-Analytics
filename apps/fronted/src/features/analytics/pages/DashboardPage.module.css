@@ -133,6 +133,20 @@ tbody tr:hover { background:#fdfafa; }
 .processComparisonTable tbody tr:last-child th, .processComparisonTable tbody tr:last-child td { border-bottom:0; }
 .processComparisonTable tbody tr:nth-child(even) { background:#fdfafa; }
 
+.evolutionCard { overflow:hidden; }
+.evolutionHeader { display:flex; align-items:end; justify-content:space-between; gap:var(--space-5); margin-bottom:var(--space-4); }
+.evolutionHeader h2 { margin:0 0 .3rem; font-size:1.05rem; letter-spacing:-.025em; }
+.evolutionHeader p { margin:0; color:var(--color-muted); font-size:.72rem; line-height:1.45; }
+.evolutionSelect { display:grid; flex:0 0 12rem; gap:.35rem; color:#8f7e7f; font-size:.62rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
+.evolutionSelect select { width:100%; min-height:2.35rem; padding:.55rem 2.15rem .55rem .75rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-background,#fff); color:var(--color-text); font-size:.76rem; font-weight:600; }
+.evolutionChartWrap { width:100%; overflow:hidden; border-top:1px solid var(--color-border); border-bottom:1px solid var(--color-border); }
+.evolutionChart { display:block; width:100%; min-width:34rem; height:auto; overflow:visible; padding:.8rem 0 0; }
+.evolutionGridLine { stroke:#eadfe0; stroke-dasharray:3 4; stroke-width:1; }
+.evolutionAxisLabel, .evolutionProcessLabel { fill:var(--color-muted); font-size:11px; font-weight:600; }
+.evolutionProcessLabel { font-size:12px; font-weight:800; }
+.evolutionValueLabel { fill:var(--color-primary); font-size:11px; font-weight:800; }
+.evolutionBar { fill:var(--color-primary); }
+
 .metricSecondary { display:block; margin-top:.15rem; }
 .comparisonLegend { display:flex; align-items:center; gap:.4rem; margin:calc(var(--space-2) * -1) 0 0; color:var(--color-muted); font-size:.66rem; }
 .metricWinnerSwatch { width:.45rem; height:.45rem; border-radius:50%; background:var(--color-primary); box-shadow:0 0 0 3px #f3e8e8; }
@@ -240,6 +254,14 @@ tbody tr:hover { background:#fdfafa; }
 .comparisonMetric { display:grid; gap:.2rem; }
 .comparisonMetric strong { color:var(--color-text); font-size:.95rem; }
 .comparisonMetric small { color:var(--color-primary); font-size:.65rem; font-weight:700; }
+@media (max-width:600px) {
+  .evolutionHeader { align-items:stretch; flex-direction:column; gap:var(--space-3); }
+  .evolutionSelect { flex-basis:auto; width:100%; }
+  .evolutionChart { min-width:0; }
+  .evolutionChart .evolutionAxisLabel { display:none; }
+  .evolutionChart .evolutionProcessLabel { font-size:26px; }
+  .evolutionChart .evolutionValueLabel { font-size:24px; }
+}
 @media (max-width:600px) {
   .performanceTableDesktop { display:none; }
   .performanceCards { display:grid; gap:.6rem; }
