@@ -58,13 +58,13 @@ describe("DashboardPage", () => {
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("1");
     expect(screen.queryByRole("heading", { name: "Resumen de 2025-2" })).not.toBeInTheDocument();
     expect(screen.queryByText("Proceso principal")).not.toBeInTheDocument();
-    expect(await screen.findByText("100")).toBeInTheDocument();
-    expect(screen.getByText("65.5")).toBeInTheDocument();
+    expect((await screen.findAllByText("100", { selector: "strong" })).length).toBeGreaterThan(0);
+    expect(screen.getAllByText("65.5", { selector: "strong" }).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Postulantes").some((element) => element.closest("article") !== null)).toBe(true);
-    expect(screen.getByText("Ingresantes")).toBeInTheDocument();
+    expect(screen.getAllByText("Ingresantes").length).toBeGreaterThan(0);
     expect(screen.getByText("Porcentaje de ingresantes")).toBeInTheDocument();
-    expect(screen.getByText("Puntaje máximo")).toBeInTheDocument();
-    expect(screen.getByText("Puntaje promedio")).toBeInTheDocument();
+    expect(screen.getAllByText("Puntaje máximo").length).toBeGreaterThan(0);
+    expect(screen.getAllByText("Puntaje promedio").length).toBeGreaterThan(0);
     expect(screen.getByText("Postulantes ausentes")).toBeInTheDocument();
     expect(screen.queryByText(/Variaciones respecto a/)).not.toBeInTheDocument();
     expect(screen.getAllByRole("article").map((article) => article.querySelector("span")?.textContent)).toEqual([
@@ -102,7 +102,7 @@ describe("DashboardPage", () => {
     expect(screen.getAllByText("Postulantes").find((element) => element.className.includes("kpiLabel"))).toBeInTheDocument();
     expect(screen.queryByText("+20 · vs 80 en 2025-1")).not.toBeInTheDocument();
     expect(screen.queryByText("vs 80 en 2025-1")).not.toBeInTheDocument();
-    const currentValue = screen.getByText("100");
+    const currentValue = screen.getAllByText("100", { selector: "strong" })[0];
     const trendIndicator = screen.getByLabelText("Subió: +20");
     const trendContext = screen.getByText("+20", { selector: "small" });
     expect(trendIndicator.className).toContain("kpiTrendArrow");
@@ -131,6 +131,8 @@ describe("DashboardPage", () => {
     } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
     renderPage("/?process=1&compare=2");
     expect(await screen.findByRole("heading", { name: "Vista comparativa" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Comparación por procesos" })).toBeInTheDocument();
+    expect(screen.getByRole("combobox", { name: "Métrica" })).toHaveValue("applicants");
     expect(screen.queryByText("Comparación de procesos")).not.toBeInTheDocument();
     expect(screen.queryByText("Compara volumen, resultados y rendimiento entre procesos sin perder el contexto.")).not.toBeInTheDocument();
     const comparisonTable = screen.getByRole("table", { name: /comparación de postulantes/i });
