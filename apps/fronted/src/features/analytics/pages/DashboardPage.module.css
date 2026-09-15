@@ -129,7 +129,6 @@ tbody tr:hover { background:#fdfafa; }
 .processComparisonCard > header { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-3); }
 .processComparisonCard h3 { margin:.2rem 0 0; color:var(--color-text); font-size:1rem; }
 .processComparisonRole { color:var(--color-muted); font-size:.6rem; font-weight:800; letter-spacing:.06em; text-transform:uppercase; }
-.processComparisonIndex { display:grid; width:1.8rem; height:1.8rem; place-items:center; border-radius:50%; background:var(--color-primary-soft); color:var(--color-primary); font-size:.62rem; font-weight:800; }
 .processTotalMetric { display:flex; align-items:baseline; gap:.45rem; padding-bottom:var(--space-3); border-bottom:1px solid var(--color-border); }
 .processTotalMetric strong { color:var(--color-text); font-size:1.55rem; font-variant-numeric:tabular-nums; }
 .processTotalMetric span { color:var(--color-muted); font-size:.7rem; }

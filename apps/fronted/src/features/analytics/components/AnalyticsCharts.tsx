@@ -68,14 +68,12 @@ export function ProcessComparisonChart({ overviews }: ComparisonChartProps) {
                   <span className={styles.processComparisonRole}>{index === 0 ? "Proceso analizado" : "Proceso comparado"}</span>
                   <h3>{formatProcessLabel(overview.process)}</h3>
                 </div>
-                <span className={styles.processComparisonIndex}>{String(index + 1).padStart(2, "0")}</span>
               </header>
               <div className={styles.processTotalMetric}>
-                <strong>{formatNumber(overview.total_results)}</strong>
-                <span>postulantes</span>
+                <span>Postulantes</span>
+                <strong className={comparisonClass(metricValues.applicants[index], metricValues.applicants)} title={comparisonLabel(metricValues.applicants[index], metricValues.applicants)}>{formatNumber(overview.total_results)}</strong>
               </div>
               <dl className={styles.processMetricList}>
-                <div><dt>Postulantes</dt><dd className={comparisonClass(metricValues.applicants[index], metricValues.applicants)} title={comparisonLabel(metricValues.applicants[index], metricValues.applicants)}>{formatNumber(overview.total_results)}</dd></div>
                 <div><dt>Admitidos</dt><dd className={comparisonClass(metricValues.admitted[index], metricValues.admitted)} title={comparisonLabel(metricValues.admitted[index], metricValues.admitted)}>{formatNumber(overview.admitted_count)}</dd></div>
                 <div><dt>Tasa de admisión</dt><dd className={comparisonClass(metricValues.admissionRate[index], metricValues.admissionRate)} title={comparisonLabel(metricValues.admissionRate[index], metricValues.admissionRate)}>{formatNumber(admissionRate, 1)}%</dd></div>
                 <div><dt>Ausentes</dt><dd className={comparisonClass(metricValues.absent[index], metricValues.absent)} title={comparisonLabel(metricValues.absent[index], metricValues.absent)}><span>{formatNumber(overview.absent_count)}</span><small className={styles.metricSecondary}>{formatNumber(absenceRate, 1)}% del total</small></dd></div>
