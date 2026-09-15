@@ -113,7 +113,7 @@ describe("DashboardPage", () => {
     expect(screen.getByLabelText("Subió: +2.5 pp")).toBeInTheDocument();
     expect(screen.getByLabelText("Bajó: -2 ausentes")).toBeInTheDocument();
     expect(screen.getByText("-2 ausentes", { selector: "small" })).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Comparación de procesos" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Vista comparativa" })).not.toBeInTheDocument();
   });
 
   it("updates URL when a comparison is selected", async () => {
@@ -130,7 +130,9 @@ describe("DashboardPage", () => {
       isSuccess: true,
     } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
     renderPage("/?process=1&compare=2");
-    expect(await screen.findByRole("heading", { name: "Comparación de procesos" })).toBeInTheDocument();
+    expect(await screen.findByRole("heading", { name: "Vista comparativa" })).toBeInTheDocument();
+    expect(screen.queryByText("Comparación de procesos")).not.toBeInTheDocument();
+    expect(screen.queryByText("Compara volumen, resultados y rendimiento entre procesos sin perder el contexto.")).not.toBeInTheDocument();
     expect(screen.getByRole("img", { name: /comparación de postulantes/i })).toBeInTheDocument();
     expect(screen.getAllByRole("listitem")[1]).toHaveTextContent("2025-1: 80 postulantes, 16 admitidos, 8 ausentes");
     expect(screen.queryByRole("region", { name: "Carreras con mayor demanda" })).not.toBeInTheDocument();

@@ -43,7 +43,7 @@ export function DashboardPage() {
   const primary = selected[0];
   const previous = selected.find((item) => String(item.process.id) === previousId);
   const selectedComparisons = selected.slice(1).filter((item) => requestedComparisons.includes(String(item.process.id)));
-  const processById = new Map(processes.map((process) => [String(process.id), process]));
+
 
   const updateSelection = (process: string, compare: string[]) => {
     const next = new URLSearchParams(params);
@@ -110,7 +110,7 @@ export function DashboardPage() {
                 primary={primary}
                 comparisons={selectedComparisons}
                 previous={previous}
-                processById={processById}
+
                 filterControls={<DashboardFilterControls
                   areas={areasQuery.data ?? []}
                   faculties={facultiesQuery.data ?? []}
