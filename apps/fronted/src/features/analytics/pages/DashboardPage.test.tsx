@@ -138,8 +138,8 @@ describe("DashboardPage", () => {
     expect(screen.getByText("La columna destacada corresponde al proceso seleccionado. Las diferencias bajo cada comparación son frente a 2025-2.")).toBeInTheDocument();
     expect(within(comparisonTable).getByRole("columnheader", { name: "Métrica" })).toBeInTheDocument();
     expect(within(comparisonTable).queryByText("Métrica")).not.toBeInTheDocument();
-    expect(within(comparisonTable).getByText("-20 frente a 2025-2")).toBeInTheDocument();
-    expect(within(comparisonTable).getAllByText("-3 pts frente a 2025-2")).toHaveLength(2);
+    expect(within(comparisonTable).getByText("-20", { exact: true })).toBeInTheDocument();
+    expect(within(comparisonTable).getAllByText("-3 pts", { exact: true })).toHaveLength(2);
     const baseHeader = within(comparisonTable).getByRole("columnheader", { name: /Base.*proceso seleccionado.*2025-2/i });
     expect(baseHeader).toBeInTheDocument();
     expect(baseHeader.className).toContain("comparisonBaseColumn");

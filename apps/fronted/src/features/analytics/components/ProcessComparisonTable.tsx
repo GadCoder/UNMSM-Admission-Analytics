@@ -56,7 +56,7 @@ export function ProcessComparisonTable({ overviews, metricValues }: ProcessCompa
                   className={index === 0 ? styles.comparisonBaseColumn : undefined}
                 >
                   <span className={isHighestValue(row.comparison[index], row.comparison) ? styles.metricWinner : undefined}>{value}</span>
-                  {index > 0 && <span className={styles.comparisonDelta}>{formatDelta(row.comparison[index], row.comparison[0], row.deltaDigits, row.deltaSuffix)} frente a {formatProcessLabel(overviews[0].process)}</span>}
+                  {index > 0 && <span className={styles.comparisonDelta}><span>{formatDelta(row.comparison[index], row.comparison[0], row.deltaDigits, row.deltaSuffix)}</span><span className={styles.comparisonDeltaReference}> frente a {formatProcessLabel(overviews[0].process)}</span></span>}
                 </td>
               ))}
             </tr>
