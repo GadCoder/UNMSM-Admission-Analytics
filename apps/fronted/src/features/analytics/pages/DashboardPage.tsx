@@ -4,6 +4,7 @@ import { useSearchParams } from "react-router-dom";
 import * as api from "../api/analytics";
 import { DashboardContent } from "../components/DashboardContent";
 import { DashboardControls, DashboardFilterControls } from "../components/DashboardControls";
+import { DashboardLoadingSkeleton, DashboardOverviewLoadingSkeleton } from "../components/LoadingSkeletons";
 import styles from "./DashboardPage.module.css";
 
 export function DashboardPage() {
@@ -82,9 +83,7 @@ export function DashboardPage() {
         )}
       </div>
 
-      {processesQuery.isPending && (
-        <p role="status" className={styles.state}>Cargando procesos…</p>
-      )}
+      {processesQuery.isPending && <DashboardLoadingSkeleton />}
       {processesQuery.isError && (
         <p role="alert" className={styles.state}>No pudimos cargar los procesos. Intenta nuevamente.</p>
       )}
@@ -94,9 +93,7 @@ export function DashboardPage() {
 
       {processes.length > 0 && (
         <>
-          {overviewQuery.isPending && !overviewQuery.data && (
-            <p role="status" className={styles.loadingState}><span className={styles.spinner} aria-hidden="true" />Cargando indicadores…</p>
-          )}
+          {overviewQuery.isPending && !overviewQuery.data && <DashboardOverviewLoadingSkeleton />}
           {overviewQuery.isFetching && overviewQuery.data && (
             <div role="status" className={styles.refreshingState} data-testid="overview-refreshing">
               <span className={styles.spinner} aria-hidden="true" />
