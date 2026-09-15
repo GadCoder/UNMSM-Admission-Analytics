@@ -119,6 +119,7 @@ tbody tr:hover { background:#fdfafa; }
 .comparisonSectionTitle { margin:0; color:var(--color-primary); font-size:1.35rem; letter-spacing:-.035em; text-transform:uppercase; }
 .processComparisonTableWrap { min-width:0; overflow-x:auto; border:1px solid var(--color-border); border-radius:var(--radius-md); }
 .comparisonTableContext { margin:0; padding:.7rem .9rem; border-bottom:1px solid var(--color-border); color:var(--color-muted); font-size:.72rem; line-height:1.45; }
+.comparisonTableScrollHint { display:none; }
 .processComparisonTable { width:100%; min-width:34rem; border-collapse:collapse; table-layout:fixed; }
 .processComparisonTable th, .processComparisonTable td { padding:.8rem .9rem; border-bottom:1px solid var(--color-border); }
 .processComparisonTable thead th { background:#fbf5f5; color:var(--color-muted); font-size:.66rem; text-align:right; vertical-align:bottom; }
@@ -255,6 +256,14 @@ tbody tr:hover { background:#fdfafa; }
 .comparisonMetric strong { color:var(--color-text); font-size:.95rem; }
 .comparisonMetric small { color:var(--color-primary); font-size:.65rem; font-weight:700; }
 @media (max-width:600px) {
+  .comparisonTableScrollHint { display:block; margin:0; padding:.55rem .9rem; border-bottom:1px solid var(--color-border); color:var(--color-muted); font-size:.68rem; line-height:1.35; }
+  .processComparisonTableWrap { overflow-x:scroll; scrollbar-color:var(--color-primary) var(--color-border); scrollbar-width:thin; }
+  .processComparisonTable { width:max-content; min-width:100%; table-layout:auto; }
+  .processComparisonTable th:first-child, .processComparisonTable td:first-child { position:sticky; left:0; z-index:1; width:11rem; min-width:11rem; background:var(--color-surface); box-shadow:3px 0 6px -5px rgba(54,35,35,.5); }
+  .processComparisonTable thead th:first-child { background:#fbf5f5; z-index:2; }
+  .processComparisonTable th:not(:first-child), .processComparisonTable td:not(:first-child) { width:6.5rem; min-width:6.5rem; }
+  .processComparisonTable thead th strong { white-space:nowrap; }
+  .processComparisonTable th, .processComparisonTable td { padding:.72rem .65rem; }
   .evolutionHeader { align-items:stretch; flex-direction:column; gap:var(--space-3); }
   .evolutionSelect { flex-basis:auto; width:100%; }
   .evolutionChart { min-width:0; }
