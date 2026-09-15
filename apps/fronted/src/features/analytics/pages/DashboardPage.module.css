@@ -139,7 +139,7 @@ tbody tr:hover { background:#fdfafa; }
 .metricSecondary { display:block; margin-top:.15rem; }
 .comparisonLegend { display:flex; align-items:center; gap:.4rem; margin:calc(var(--space-2) * -1) 0 0; color:var(--color-muted); font-size:.66rem; }
 .metricWinnerSwatch { width:.45rem; height:.45rem; border-radius:50%; background:var(--color-primary); box-shadow:0 0 0 3px #f3e8e8; }
-.metricWinner { padding:.12rem .3rem; border-radius:.3rem; background:#f6eeee; color:var(--color-primary) !important; }
+.metricWinner { padding:0; color:var(--color-primary) !important; text-decoration:underline; text-decoration-color:#d9b3b5; text-decoration-thickness:2px; text-underline-offset:.18rem; }
 .comparisonFootnote { margin:0; padding-top:var(--space-4); border-top:1px solid var(--color-border); color:var(--color-muted); font-size:.68rem; line-height:1.5; }
 
 .majorDemandLayout { display:grid; grid-template-columns:minmax(0,1fr) minmax(18rem,.9fr); gap:var(--space-6); align-items:start; }
