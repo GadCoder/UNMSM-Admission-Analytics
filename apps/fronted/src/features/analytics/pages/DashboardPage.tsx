@@ -1,4 +1,4 @@
-import { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import * as api from "../api/analytics";
@@ -7,21 +7,53 @@ import { DashboardControls, DashboardFilterControls } from "../components/Dashbo
 import { DashboardLoadingSkeleton, DashboardOverviewLoadingSkeleton } from "../components/LoadingSkeletons";
 import styles from "./DashboardPage.module.css";
 
+const DASHBOARD_VIEW_STORAGE_KEY = "unmsm-dashboard-view";
+const FILTER_PARAM_NAMES = ["academic_area", "faculty", "modality"] as const;
+type DashboardFilters = { academicArea: string; faculty: string; modality: string };
+type DashboardView = { comparisons: string[]; filters: DashboardFilters };
+const emptyDashboardView: DashboardView = { comparisons: [], filters: { academicArea: "", faculty: "", modality: "" } };
+
+function readDashboardView(): DashboardView {
+  try {
+    const saved = window.sessionStorage.getItem(DASHBOARD_VIEW_STORAGE_KEY);
+    if (!saved) return emptyDashboardView;
+    const parsed = JSON.parse(saved) as Partial<DashboardView>;
+    return {
+      comparisons: Array.isArray(parsed.comparisons) ? parsed.comparisons.filter((id): id is string => typeof id === "string") : [],
+      filters: { ...emptyDashboardView.filters, ...(parsed.filters ?? {}) },
+    };
+  } catch {
+    return emptyDashboardView;
+  }
+}
+
+function saveDashboardView(view: DashboardView) {
+  try {
+    window.sessionStorage.setItem(DASHBOARD_VIEW_STORAGE_KEY, JSON.stringify(view));
+  } catch {
+    // Storage may be unavailable in private browsing or restricted contexts.
+  }
+}
+
 export function DashboardPage() {
   const [params, setParams] = useSearchParams();
+  const [savedView, setSavedView] = useState<DashboardView>(readDashboardView);
+  const migratedParamsRef = useRef<string | null>(null);
+  const initializedProcessRef = useRef(false);
   const processesQuery = api.usePublishedProcesses();
   const processes = processesQuery.data ?? [];
   const areasQuery = api.useAcademicAreas();
   const facultiesQuery = api.useFaculties();
   const modalitiesQuery = api.useModalities();
   const filters = {
-    academicArea: params.get("academic_area") ?? "",
-    faculty: params.get("faculty") ?? "",
-    modality: params.get("modality") ?? "",
+    academicArea: params.get("academic_area") ?? savedView.filters.academicArea,
+    faculty: params.get("faculty") ?? savedView.filters.faculty,
+    modality: params.get("modality") ?? savedView.filters.modality,
   };
   const latest = processes[0];
   const primaryId = params.get("process") ?? (latest ? String(latest.id) : "");
-  const requestedComparisons = (params.get("compare")?.split(",").filter(Boolean) ?? [])
+  const comparisonParam = params.get("compare");
+  const requestedComparisons = (comparisonParam !== null ? comparisonParam.split(",").filter(Boolean) : savedView.comparisons)
     .filter((id) => id !== primaryId)
     .slice(0, 3);
   const primaryIndex = processes.findIndex((process) => String(process.id) === primaryId);
@@ -31,12 +63,36 @@ export function DashboardPage() {
   const overviewComparisons = [...requestedComparisons, ...automaticComparison].slice(0, 3);
 
   useEffect(() => {
-    if (latest && !params.get("process")) {
+    if (latest && !params.get("process") && !initializedProcessRef.current) {
+      initializedProcessRef.current = true;
       const next = new URLSearchParams(params);
       next.set("process", String(latest.id));
       setParams(next, { replace: true });
     }
   }, [latest, params, setParams]);
+
+  useEffect(() => {
+    const hasLegacyViewParams = comparisonParam !== null || FILTER_PARAM_NAMES.some((name) => params.has(name));
+    if (!hasLegacyViewParams) return;
+    const paramsKey = params.toString();
+    if (migratedParamsRef.current === paramsKey) return;
+    migratedParamsRef.current = paramsKey;
+
+    const migratedView = {
+      comparisons: requestedComparisons,
+      filters: {
+        academicArea: params.get("academic_area") ?? savedView.filters.academicArea,
+        faculty: params.get("faculty") ?? savedView.filters.faculty,
+        modality: params.get("modality") ?? savedView.filters.modality,
+      },
+    };
+    setSavedView(migratedView);
+    saveDashboardView(migratedView);
+    const next = new URLSearchParams(params);
+    next.delete("compare");
+    FILTER_PARAM_NAMES.forEach((name) => next.delete(name));
+    setParams(next, { replace: true });
+  }, [comparisonParam, params, requestedComparisons, savedView, setParams]);
 
   const overviewQuery = api.useAnalyticsOverview(primaryId, overviewComparisons, filters);
   const selected = overviewQuery.data?.processes ?? [];
@@ -51,8 +107,11 @@ export function DashboardPage() {
     else next.delete("process");
 
     const safeCompare = compare.filter((id) => id !== process).slice(0, 3);
-    if (safeCompare.length) next.set("compare", safeCompare.join(","));
-    else next.delete("compare");
+    const nextView = { ...savedView, comparisons: safeCompare };
+    setSavedView(nextView);
+    saveDashboardView(nextView);
+    next.delete("compare");
+    FILTER_PARAM_NAMES.forEach((name) => next.delete(name));
     setParams(next);
   };
 
@@ -63,8 +122,13 @@ export function DashboardPage() {
       const value = nextFilters[key];
       if (value) next.set(filterParams[key], value); else next.delete(filterParams[key]);
     });
+    const nextView = { comparisons: savedView.comparisons, filters: nextFilters };
+    setSavedView(nextView);
+    saveDashboardView(nextView);
+    FILTER_PARAM_NAMES.forEach((name) => next.delete(name));
+    next.delete("compare");
     setParams(next);
-  }, [params, setParams]);
+  }, [params, savedView.comparisons, setParams]);
 
   return (
     <section className={styles.page}>
@@ -118,6 +182,9 @@ export function DashboardPage() {
                   filters={filters}
                   onChange={updateFilters}
                   onReset={() => {
+                    const nextView = emptyDashboardView;
+                    setSavedView(nextView);
+                    saveDashboardView(nextView);
                     const next = new URLSearchParams(params);
                     next.delete("compare");
                     next.delete("academic_area");
