@@ -39,6 +39,7 @@ function renderPage(entry = "/") {
 describe("DashboardPage", () => {
   beforeEach(() => {
     cleanup();
+    sessionStorage.clear();
     vi.mocked(api.usePublishedProcesses).mockReturnValue({ data: processes, isPending: false, isError: false } as unknown as ReturnType<typeof api.usePublishedProcesses>);
     vi.mocked(api.useAcademicAreas).mockReturnValue({ data: academicAreas, isPending: false, isError: false } as unknown as ReturnType<typeof api.useAcademicAreas>);
     vi.mocked(api.useFaculties).mockReturnValue({ data: faculties, isPending: false, isError: false } as unknown as ReturnType<typeof api.useFaculties>);
@@ -118,11 +119,12 @@ describe("DashboardPage", () => {
     expect(screen.queryByRole("heading", { name: "Vista comparativa" })).not.toBeInTheDocument();
   });
 
-  it("updates URL when a comparison is selected", async () => {
+  it("keeps the initial URL limited to the primary process", async () => {
     renderPage();
     await screen.findByRole("table");
-    await userEvent.selectOptions(screen.getByDisplayValue("2025-2"), "2");
-    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=2"));
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=1"));
+    expect(screen.getByTestId("location")).not.toHaveTextContent("compare=");
+    expect(sessionStorage.getItem("unmsm-dashboard-view")).not.toContain('"comparisons":["');
   });
   it("renders the comparison table for selected processes without a redundant chart", async () => {
     vi.mocked(api.useAnalyticsOverview).mockReturnValue({
@@ -151,6 +153,8 @@ describe("DashboardPage", () => {
     expect(within(comparisonTable).queryByText("Comparado")).not.toBeInTheDocument();
     expect(within(comparisonTable).getByRole("row", { name: /Postulantes ausentes/ })).toHaveTextContent("10");
     expect(within(comparisonTable).getByRole("row", { name: /Ingresantes/ })).toHaveTextContent("16");
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("?process=1"));
+    expect(sessionStorage.getItem("unmsm-dashboard-view")).toContain('"comparisons":["2"]');
     expect(screen.queryByRole("img", { name: /comparación de postulantes/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("list", { name: "Datos de comparación" })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Carreras con mayor demanda" })).not.toBeInTheDocument();
@@ -166,7 +170,8 @@ describe("DashboardPage", () => {
     await user.click(screen.getByRole("checkbox", { name: "2025-1" }));
     expect(screen.getByTestId("location")).not.toHaveTextContent("compare=2");
     await user.click(screen.getByRole("button", { name: "Aplicar comparación" }));
-    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=1&compare=2"));
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=1"));
+    expect(sessionStorage.getItem("unmsm-dashboard-view")).toContain('"comparisons":["2"]');
     expect(screen.getByRole("button", { name: "Quitar comparación 2025-1" })).toBeInTheDocument();
   });
 
@@ -207,7 +212,8 @@ describe("DashboardPage", () => {
     expect(screen.queryByRole("heading", { name: "Resumen de 2025-2" })).not.toBeInTheDocument();
     expect(screen.getByTestId("location")).not.toHaveTextContent("academic_area=ING");
 
-    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("academic_area=ING"), { timeout: 1000 });
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=1"), { timeout: 1000 });
+    await waitFor(() => expect(sessionStorage.getItem("unmsm-dashboard-view")).toContain('"academicArea":"ING"'));
   });
 
   it("filters and sorts the major breakdown", async () => {
