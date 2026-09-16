@@ -124,7 +124,7 @@ describe("DashboardPage", () => {
     await userEvent.selectOptions(screen.getByDisplayValue("2025-2"), "2");
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=2"));
   });
-  it("renders accessible comparison and top-majors charts for selected processes", async () => {
+  it("renders the comparison table for selected processes without a redundant chart", async () => {
     vi.mocked(api.useAnalyticsOverview).mockReturnValue({
       data: comparisonOverview,
       isPending: false,
@@ -133,8 +133,8 @@ describe("DashboardPage", () => {
     } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
     renderPage("/?process=1&compare=2");
     expect(await screen.findByRole("heading", { name: "Vista comparativa" })).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Comparación por procesos" })).toBeInTheDocument();
-    expect(screen.getByRole("combobox", { name: "Métrica" })).toHaveValue("applicants");
+    expect(screen.queryByRole("heading", { name: "Comparación por procesos" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("combobox", { name: "Métrica" })).not.toBeInTheDocument();
     expect(screen.queryByText("Comparación de procesos")).not.toBeInTheDocument();
     expect(screen.queryByText("Compara volumen, resultados y rendimiento entre procesos sin perder el contexto.")).not.toBeInTheDocument();
     const comparisonTable = screen.getByRole("table", { name: /comparación de postulantes/i });
