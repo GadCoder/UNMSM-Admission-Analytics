@@ -15,7 +15,7 @@ export function ProcessComparisonTable({ overviews, metricValues }: ProcessCompa
 
   return (
     <div className={styles.processComparisonTableWrap}>
-      <p className={styles.comparisonTableContext}>La columna destacada corresponde al proceso seleccionado.</p>
+      <p className={styles.comparisonTableContext}>La primera columna corresponde al proceso seleccionado.</p>
       <table className={styles.processComparisonTable}>
         <caption className={styles.visuallyHidden}>Comparación de postulantes, admitidos y ausentes entre procesos</caption>
         <thead>
