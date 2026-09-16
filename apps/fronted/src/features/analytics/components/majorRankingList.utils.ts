@@ -11,7 +11,3 @@ export function getComparisonGridStyle(processCount: number): ComparisonGridStyl
     "--comparison-count": String(processCount),
   };
 }
-
-export function getComparisonQuery(processIds: Array<string | number>): string {
-  return processIds.length ? `&compare=${processIds.join(",")}` : "";
-}

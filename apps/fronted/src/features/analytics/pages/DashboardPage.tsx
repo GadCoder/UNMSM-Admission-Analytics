@@ -5,35 +5,10 @@ import * as api from "../api/analytics";
 import { DashboardContent } from "../components/DashboardContent";
 import { DashboardControls, DashboardFilterControls } from "../components/DashboardControls";
 import { DashboardLoadingSkeleton, DashboardOverviewLoadingSkeleton } from "../components/LoadingSkeletons";
+import { emptyDashboardView, readDashboardView, saveDashboardView, type DashboardView } from "../utils/dashboardSessionState";
 import styles from "./DashboardPage.module.css";
 
-const DASHBOARD_VIEW_STORAGE_KEY = "unmsm-dashboard-view";
 const FILTER_PARAM_NAMES = ["academic_area", "faculty", "modality"] as const;
-type DashboardFilters = { academicArea: string; faculty: string; modality: string };
-type DashboardView = { comparisons: string[]; filters: DashboardFilters };
-const emptyDashboardView: DashboardView = { comparisons: [], filters: { academicArea: "", faculty: "", modality: "" } };
-
-function readDashboardView(): DashboardView {
-  try {
-    const saved = window.sessionStorage.getItem(DASHBOARD_VIEW_STORAGE_KEY);
-    if (!saved) return emptyDashboardView;
-    const parsed = JSON.parse(saved) as Partial<DashboardView>;
-    return {
-      comparisons: Array.isArray(parsed.comparisons) ? parsed.comparisons.filter((id): id is string => typeof id === "string") : [],
-      filters: { ...emptyDashboardView.filters, ...(parsed.filters ?? {}) },
-    };
-  } catch {
-    return emptyDashboardView;
-  }
-}
-
-function saveDashboardView(view: DashboardView) {
-  try {
-    window.sessionStorage.setItem(DASHBOARD_VIEW_STORAGE_KEY, JSON.stringify(view));
-  } catch {
-    // Storage may be unavailable in private browsing or restricted contexts.
-  }
-}
 
 export function DashboardPage() {
   const [params, setParams] = useSearchParams();

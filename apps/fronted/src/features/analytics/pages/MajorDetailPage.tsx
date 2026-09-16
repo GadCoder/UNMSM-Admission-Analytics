@@ -8,6 +8,7 @@ import { MajorDetailLoadingSkeleton } from "../components/LoadingSkeletons";
 import { Metric, ProcessMetrics } from "../components/MajorDetailMetrics";
 import { formatNumber } from "../utils/formatters";
 import { formatProcessLabel } from "../utils/processLabels";
+import { readDashboardView, saveDashboardView } from "../utils/dashboardSessionState";
 import styles from "./DashboardPage.module.css";
 
 export function MajorDetailPage() {
@@ -17,7 +18,9 @@ export function MajorDetailPage() {
   const processes = processesQuery.data ?? [];
   const latest = processes[0];
   const primary = params.get("process") ?? (latest ? String(latest.id) : "");
-  const comparisons = (params.get("compare")?.split(",").filter((id) => id && id !== primary) ?? []).slice(0, 3);
+  const comparisonParam = params.get("compare");
+  const comparisons = (comparisonParam !== null ? comparisonParam.split(",").filter((id) => id && id !== primary) : readDashboardView().comparisons)
+    .slice(0, 3);
   const query = api.useMajorDetail(majorId, primary, comparisons);
   const detail = query.data;
   const selected = detail?.selected_processes ?? [];
@@ -27,8 +30,9 @@ export function MajorDetailPage() {
     const next = new URLSearchParams(params);
     next.set("process", nextPrimary);
     const safeComparisons = nextComparisons.filter((id) => id !== nextPrimary).slice(0, 3);
-    if (safeComparisons.length) next.set("compare", safeComparisons.join(","));
-    else next.delete("compare");
+    const view = readDashboardView();
+    saveDashboardView({ ...view, comparisons: safeComparisons });
+    next.delete("compare");
     setParams(next);
   };
 

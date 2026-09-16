@@ -4,10 +4,7 @@ import type { MajorOverview, ProcessOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
 import styles from "../pages/DashboardPage.module.css";
 import { ComparisonMetrics, SingleProcessMetrics } from "./MajorRankingComparison";
-import {
-  getComparisonGridStyle,
-  getComparisonQuery,
-} from "./majorRankingList.utils";
+import { getComparisonGridStyle } from "./majorRankingList.utils";
 
 type MajorRankingItemProps = {
   major: MajorOverview;
@@ -21,11 +18,9 @@ export function MajorRankingItem({
   overviews,
 }: MajorRankingItemProps) {
   const comparisonMode = overviews.length > 1;
-  const [primary, ...comparisons] = overviews;
+  const [primary] = overviews;
   const comparisonGridStyle = getComparisonGridStyle(overviews.length);
-  const comparisonQuery = getComparisonQuery(
-    comparisons.map((item) => item.process.id),
-  );
+
 
   return (
     <li
@@ -36,7 +31,7 @@ export function MajorRankingItem({
         <span className={styles.majorRank}>{String(rank).padStart(2, "0")}</span>
         <Link
           className={styles.majorDetailLink}
-          to={`/analytics/careers/${major.major_id}?process=${primary.process.id}${comparisonQuery}`}
+          to={`/analytics/careers/${major.major_id}?process=${primary.process.id}`}
         >
           <strong>{major.major_name}</strong>
         </Link>
