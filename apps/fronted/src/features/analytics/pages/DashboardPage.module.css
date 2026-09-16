@@ -127,7 +127,7 @@ tbody tr:hover { background:#fdfafa; }
 .processComparisonTable thead th:not(:first-child) { border-left:1px solid var(--color-border); }
 .processComparisonTable thead th strong { display:block; }
 .processComparisonTable thead th strong { margin-top:.25rem; color:var(--color-text); font-size:.82rem; white-space:nowrap; }
-.comparisonBaseColumn { background:#f7eeee !important; box-shadow:inset -1px 0 0 #ead5d5; }
+
 .processComparisonTable tbody th { color:var(--color-muted); font-size:.72rem; font-weight:600; text-align:left; }
 .processComparisonTable tbody td { color:var(--color-text); font-size:.84rem; font-variant-numeric:tabular-nums; font-weight:800; text-align:right; }
 .processComparisonTable tbody td:not(:first-child) { border-left:1px solid var(--color-border); }
@@ -266,7 +266,7 @@ tbody tr:hover { background:#fdfafa; }
   .comparisonMobileValue:nth-child(odd) { border-right:1px solid var(--color-border); }
   .comparisonMobileValue span { color:var(--color-muted); font-size:.62rem; font-weight:700; white-space:nowrap; }
   .comparisonMobileValue strong { color:var(--color-text); font-size:.85rem; font-variant-numeric:tabular-nums; }
-  .comparisonMobileValue.comparisonBaseColumn { background:#fff7f7; }
+
   .evolutionHeader { align-items:stretch; flex-direction:column; gap:var(--space-3); }
   .evolutionSelect { flex-basis:auto; width:100%; }
   .evolutionChart { min-width:0; }

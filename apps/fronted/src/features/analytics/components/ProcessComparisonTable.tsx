@@ -15,18 +15,15 @@ export function ProcessComparisonTable({ overviews, metricValues }: ProcessCompa
 
   return (
     <div className={styles.processComparisonTableWrap}>
-      <p className={styles.comparisonTableContext}>La columna destacada corresponde al proceso seleccionado.</p>
       <table className={styles.processComparisonTable}>
         <caption className={styles.visuallyHidden}>Comparación de postulantes, admitidos y ausentes entre procesos</caption>
         <thead>
           <tr>
             <th scope="col" aria-label="Métrica"></th>
-            {overviews.map((overview, index) => (
+            {overviews.map((overview) => (
               <th
                 scope="col"
                 key={overview.process.id}
-                className={index === 0 ? styles.comparisonBaseColumn : undefined}
-                aria-label={index === 0 ? `Base, proceso seleccionado, ${formatProcessLabel(overview.process)}` : undefined}
               >
                 <strong>{formatProcessLabel(overview.process)}</strong>
               </th>
@@ -40,7 +37,6 @@ export function ProcessComparisonTable({ overviews, metricValues }: ProcessCompa
               {row.values.map((value, index) => (
                 <td
                   key={`${row.label}-${overviews[index].process.id}`}
-                  className={index === 0 ? styles.comparisonBaseColumn : undefined}
                 >
                   <span className={isComparisonWinner(row, index) ? styles.metricWinner : undefined}>{value}</span>
                 </td>

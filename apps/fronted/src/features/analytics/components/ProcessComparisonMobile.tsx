@@ -17,7 +17,7 @@ export function ProcessComparisonMobile({ overviews, rows }: ProcessComparisonMo
           <div className={styles.comparisonMobileValues}>
             {row.values.map((value, index) => (
               <div
-                className={`${styles.comparisonMobileValue} ${index === 0 ? styles.comparisonBaseColumn : ""}`}
+                className={styles.comparisonMobileValue}
                 key={`${row.label}-${overviews[index].process.id}`}
               >
                 <span>{formatProcessLabel(overviews[index].process)}</span>
