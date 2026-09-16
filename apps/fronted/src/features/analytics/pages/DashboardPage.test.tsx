@@ -139,13 +139,12 @@ describe("DashboardPage", () => {
     expect(screen.queryByText("Compara volumen, resultados y rendimiento entre procesos sin perder el contexto.")).not.toBeInTheDocument();
     const comparisonTable = screen.getByRole("table", { name: /comparación de postulantes/i });
     expect(comparisonTable).toBeInTheDocument();
-    expect(screen.getByText("La primera columna corresponde al proceso seleccionado.")).toBeInTheDocument();
+    expect(screen.queryByText("La primera columna corresponde al proceso seleccionado.")).not.toBeInTheDocument();
     expect(within(comparisonTable).getByRole("columnheader", { name: "Métrica" })).toBeInTheDocument();
     expect(within(comparisonTable).queryByText("Métrica")).not.toBeInTheDocument();
-    const baseHeader = within(comparisonTable).getByRole("columnheader", { name: /Base.*proceso seleccionado.*2025-2/i });
+    const baseHeader = within(comparisonTable).getByRole("columnheader", { name: "2025-2" });
     expect(baseHeader).toBeInTheDocument();
-    expect(baseHeader.className).toContain("comparisonBaseColumn");
-    expect(within(comparisonTable).getByRole("columnheader", { name: /2025-1/i })).toBeInTheDocument();
+    expect(within(comparisonTable).getByRole("columnheader", { name: "2025-1" })).toBeInTheDocument();
     expect(within(comparisonTable).queryByText("Comparación 1")).not.toBeInTheDocument();
     expect(within(comparisonTable).queryByText("Comp. 1")).not.toBeInTheDocument();
     expect(within(comparisonTable).queryByText("Analizado")).not.toBeInTheDocument();
