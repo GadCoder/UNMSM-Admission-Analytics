@@ -21,6 +21,15 @@ export function MajorDetailPage() {
   const comparisonParam = params.get("compare");
   const comparisons = (comparisonParam !== null ? comparisonParam.split(",").filter((id) => id && id !== primary) : readDashboardView().comparisons)
     .slice(0, 3);
+
+  useEffect(() => {
+    if (comparisonParam === null) return;
+    saveDashboardView({ ...readDashboardView(), comparisons });
+    const next = new URLSearchParams(params);
+    next.delete("compare");
+    setParams(next, { replace: true });
+  }, [comparisonParam, comparisons, params, setParams]);
+
   const query = api.useMajorDetail(majorId, primary, comparisons);
   const detail = query.data;
   const selected = detail?.selected_processes ?? [];
