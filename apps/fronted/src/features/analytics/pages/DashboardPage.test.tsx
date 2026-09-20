@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen, waitFor, within } from "@testing-library/react";
+import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -125,6 +125,13 @@ describe("DashboardPage", () => {
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=1"));
     expect(screen.getByTestId("location")).not.toHaveTextContent("compare=");
     expect(sessionStorage.getItem("unmsm-dashboard-view")).not.toContain('"comparisons":["');
+  });
+  it("updates the analyzed process when its select changes", async () => {
+    renderPage();
+    await screen.findByRole("table");
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=1"));
+    fireEvent.change(screen.getByLabelText("Proceso analizado"), { target: { value: "2" } });
+    expect(screen.getByLabelText("Proceso analizado")).toHaveValue("2");
   });
   it("renders the comparison table for selected processes without a redundant chart", async () => {
     vi.mocked(api.useAnalyticsOverview).mockReturnValue({

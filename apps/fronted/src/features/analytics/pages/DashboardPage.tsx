@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import * as api from "../api/analytics";
 import { DashboardContent } from "../components/DashboardContent";
@@ -12,7 +12,10 @@ const FILTER_PARAM_NAMES = ["academic_area", "faculty", "modality"] as const;
 
 export function DashboardPage() {
   const [params, setParams] = useSearchParams();
+  const navigate = useNavigate();
+  const location = useLocation();
   const [savedView, setSavedView] = useState<DashboardView>(readDashboardView);
+  const [primaryOverride, setPrimaryOverride] = useState<string | null>(null);
   const migratedParamsRef = useRef<string | null>(null);
   const initializedProcessRef = useRef(false);
   const processesQuery = api.usePublishedProcesses();
@@ -26,7 +29,7 @@ export function DashboardPage() {
     modality: params.get("modality") ?? savedView.filters.modality,
   };
   const latest = processes[0];
-  const primaryId = params.get("process") ?? (latest ? String(latest.id) : "");
+  const primaryId = primaryOverride ?? params.get("process") ?? (latest ? String(latest.id) : "");
   const comparisonParam = params.get("compare");
   const requestedComparisons = (comparisonParam !== null ? comparisonParam.split(",").filter(Boolean) : savedView.comparisons)
     .filter((id) => id !== primaryId)
@@ -77,9 +80,8 @@ export function DashboardPage() {
 
 
   const updateSelection = (process: string, compare: string[]) => {
-    const next = new URLSearchParams(params);
-    if (process) next.set("process", process);
-    else next.delete("process");
+    setPrimaryOverride(process || null);
+    const next = new URLSearchParams(process ? { process } : {});
 
     const safeCompare = compare.filter((id) => id !== process).slice(0, 3);
     const nextView = { ...savedView, comparisons: safeCompare };
@@ -87,11 +89,11 @@ export function DashboardPage() {
     saveDashboardView(nextView);
     next.delete("compare");
     FILTER_PARAM_NAMES.forEach((name) => next.delete(name));
-    setParams(next);
+    navigate(`${location.pathname}?${next.toString()}`);
   };
 
   const updateFilters = useCallback((nextFilters: { academicArea: string; faculty: string; modality: string }) => {
-    const next = new URLSearchParams(params);
+    const next = new URLSearchParams(primaryId ? { process: primaryId } : {});
     const filterParams = { academicArea: "academic_area", faculty: "faculty", modality: "modality" } as const;
     (Object.keys(filterParams) as Array<keyof typeof filterParams>).forEach((key) => {
       const value = nextFilters[key];
@@ -103,7 +105,7 @@ export function DashboardPage() {
     FILTER_PARAM_NAMES.forEach((name) => next.delete(name));
     next.delete("compare");
     setParams(next);
-  }, [params, savedView.comparisons, setParams]);
+  }, [primaryId, savedView.comparisons, setParams]);
 
   return (
     <section className={styles.page}>
@@ -160,7 +162,7 @@ export function DashboardPage() {
                     const nextView = emptyDashboardView;
                     setSavedView(nextView);
                     saveDashboardView(nextView);
-                    const next = new URLSearchParams(params);
+                    const next = new URLSearchParams(primaryId ? { process: primaryId } : {});
                     next.delete("compare");
                     next.delete("academic_area");
                     next.delete("faculty");
