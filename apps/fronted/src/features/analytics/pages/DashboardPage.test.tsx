@@ -261,6 +261,7 @@ describe("DashboardPage", () => {
     await waitFor(() => expect(screen.queryByRole("status", { name: "Ordenando carreras" })).not.toBeInTheDocument(), { timeout: 1000 });
     const rows = screen.getAllByRole("row");
     expect(rows[1]).toHaveTextContent("Derecho");
+    expect(within(table).getByRole("link", { name: "Derecho" })).toHaveAttribute("href", "/analytics/careers/2?process=1");
   });
   it("shows visible feedback while refreshing existing analytics", async () => {
     vi.mocked(api.useAnalyticsOverview).mockReturnValue({
