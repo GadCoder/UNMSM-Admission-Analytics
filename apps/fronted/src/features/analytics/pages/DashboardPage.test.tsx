@@ -257,6 +257,8 @@ describe("DashboardPage", () => {
 
     await user.clear(filter);
     await user.selectOptions(screen.getByRole("combobox", { name: "Ordenar carreras" }), "average_score-desc");
+    expect(screen.getByRole("status", { name: "Ordenando carreras" })).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByRole("status", { name: "Ordenando carreras" })).not.toBeInTheDocument(), { timeout: 1000 });
     const rows = screen.getAllByRole("row");
     expect(rows[1]).toHaveTextContent("Derecho");
   });

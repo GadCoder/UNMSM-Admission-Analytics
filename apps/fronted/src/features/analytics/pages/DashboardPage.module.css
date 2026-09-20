@@ -207,6 +207,7 @@ tbody tr:hover { background:#fdfafa; }
 .skeletonSectionTitle { width:12rem; min-height:1rem; }
 .skeletonSectionDescription { width:min(25rem,75%); min-height:.7rem; }
 .skeletonRows { display:grid; gap:.7rem; margin-top:.7rem; }
+.sortingSkeleton { display:grid; gap:.7rem; min-height:12rem; padding-top:var(--space-4); }
 .skeletonRow { width:100%; min-height:2rem; }
 .skeletonBackLine { width:13rem; min-height:.7rem; }
 .skeletonDetailHero { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-5); }

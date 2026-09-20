@@ -45,3 +45,12 @@ export function MajorDetailLoadingSkeleton() {
     </div>
   );
 }
+
+export function MajorBreakdownSortingSkeleton() {
+  return <div className={styles.sortingSkeleton} role="status" aria-label="Ordenando carreras">
+    <span className={styles.visuallyHidden}>Ordenando carreras…</span>
+    <div className={styles.skeletonRows} aria-hidden="true">
+      {Array.from({ length: 5 }, (_, index) => <SkeletonLine className={styles.skeletonRow} key={index} />)}
+    </div>
+  </div>;
+}
