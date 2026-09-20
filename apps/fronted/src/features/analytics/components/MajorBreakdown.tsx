@@ -20,6 +20,8 @@ export function MajorBreakdown({ overview, filterControls }: MajorBreakdownProps
   const [sortKey, setSortKey] = useState<SortKey>("total_results");
   const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
   const [isSorting, setIsSorting] = useState(false);
+  const [contentHeight, setContentHeight] = useState(0);
+  const contentRef = useRef<HTMLDivElement>(null);
   const sortTimer = useRef<number | null>(null);
   const normalizedQuery = debouncedQuery.trim().toLocaleLowerCase();
 
@@ -30,6 +32,7 @@ export function MajorBreakdown({ overview, filterControls }: MajorBreakdownProps
   const updateSort = (value: string) => {
     const [nextKey, nextDirection] = value.split("-") as [SortKey, SortDirection];
     if (sortTimer.current !== null) window.clearTimeout(sortTimer.current);
+    setContentHeight(contentRef.current?.offsetHeight ?? 0);
     setIsSorting(true);
     sortTimer.current = window.setTimeout(() => {
       setSortKey(nextKey);
@@ -58,6 +61,8 @@ export function MajorBreakdown({ overview, filterControls }: MajorBreakdownProps
       onSuggestionsOpenChange={setSuggestionsOpen}
       onSortChange={updateSort}
     />
-    {isSorting ? <MajorBreakdownSortingSkeleton /> : <><MajorPerformanceCards majors={majors} /><MajorPerformanceTable majors={majors} process={overview.process} /></>}
+    <div ref={contentRef} style={isSorting && contentHeight ? { minHeight: `${contentHeight}px` } : undefined}>
+      {isSorting ? <MajorBreakdownSortingSkeleton /> : <><MajorPerformanceCards majors={majors} /><MajorPerformanceTable majors={majors} process={overview.process} /></>}
+    </div>
   </section>;
 }
