@@ -1,3 +1,5 @@
+import { Link } from "react-router-dom";
+
 import type { MajorOverview, ProcessOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
 import { formatProcessLabel } from "../utils/processLabels";
@@ -14,7 +16,7 @@ export function MajorPerformanceTable({ majors, process }: MajorPerformanceTable
       <tbody>
         {majors.map((major, index) => <tr key={major.major_id}>
           <td className={styles.performanceRank}>{String(index + 1).padStart(2, "0")}</td>
-          <th scope="row">{major.major_name}</th>
+          <th scope="row"><Link className={styles.majorDetailLink} to={`/analytics/careers/${major.major_id}?process=${process.id}`}>{major.major_name}</Link></th>
           <td>{formatNumber(major.total_results)}</td>
           <td>{formatNumber(major.admitted_count)}</td>
           <td>{formatNumber(admissionRate(major), 1)}%</td>
