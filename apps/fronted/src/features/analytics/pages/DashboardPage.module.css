@@ -264,13 +264,18 @@ tbody tr:hover { background:#fdfafa; }
   .processComparisonTableWrap { overflow:visible; }
   .processComparisonTable { display:none; }
   .comparisonMobile { display:grid; gap:.45rem; padding:.65rem; }
-  .comparisonMobileMetric { display:grid; grid-template-columns:minmax(7.4rem, .85fr) minmax(0, 1.15fr); margin:0; border:1px solid var(--color-border); border-radius:var(--radius-sm); overflow:hidden; }
-  .comparisonMobileMetric h3 { display:flex; align-items:center; margin:0; padding:.55rem .65rem; background:#fbf5f5; color:var(--color-muted); font-size:.68rem; font-weight:700; line-height:1.2; }
+  .comparisonMobileMetric { display:grid; grid-template-columns:minmax(0,1fr); margin:0; border:1px solid var(--color-border); border-radius:var(--radius-sm); overflow:hidden; }
+  .comparisonMobileMetric h3 { display:flex; align-items:center; margin:0; padding:.5rem .65rem .35rem; background:#fbf5f5; color:var(--color-muted); font-size:.68rem; font-weight:700; line-height:1.2; }
   .comparisonMobileValues { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); }
   .comparisonMobileValue { display:grid; gap:.15rem; min-width:0; padding:.45rem .5rem; border-top:1px solid var(--color-border); }
   .comparisonMobileValue:nth-child(odd) { border-right:1px solid var(--color-border); }
   .comparisonMobileValue span { color:var(--color-muted); font-size:.62rem; font-weight:700; white-space:nowrap; }
   .comparisonMobileValue strong { color:var(--color-text); font-size:.85rem; font-variant-numeric:tabular-nums; }
+  .comparisonMobile[data-process-count="3"] .comparisonMobileValues { grid-template-columns:repeat(3,minmax(0,1fr)); }
+  .comparisonMobile[data-process-count="3"] .comparisonMobileValue { align-content:start; justify-items:center; padding:.4rem .2rem; border-right:1px solid var(--color-border); text-align:center; }
+  .comparisonMobile[data-process-count="3"] .comparisonMobileValue:last-child { border-right:0; }
+  .comparisonMobile[data-process-count="3"] .comparisonMobileValue span { font-size:.62rem; }
+  .comparisonMobile[data-process-count="3"] .comparisonMobileValue strong { font-size:.82rem; white-space:nowrap; }
 
 }
 @media (max-width:600px) {

@@ -153,6 +153,13 @@ describe("DashboardPage", () => {
     expect(screen.queryByText("Comparación de procesos")).not.toBeInTheDocument();
     expect(screen.queryByText("Compara volumen, resultados y rendimiento entre procesos sin perder el contexto.")).not.toBeInTheDocument();
     const comparisonTable = screen.getByRole("table", { name: /comparación de postulantes/i });
+    const mobileComparison = screen.getByTestId("comparison-mobile");
+    expect(mobileComparison).toHaveAttribute("data-process-count", "2");
+    expect(mobileComparison).toHaveAttribute("data-mobile-layout", "heading-above-values");
+    const mobileMetric = mobileComparison.querySelector("section");
+    expect(mobileMetric?.firstElementChild?.tagName).toBe("H3");
+    expect(mobileMetric?.firstElementChild?.nextElementSibling).toHaveAttribute("data-process-values");
+    expect(mobileMetric?.querySelectorAll("[data-process-value]")).toHaveLength(2);
     const insights = screen.getByRole("region", { name: "Cambios destacados" });
     expect(comparisonTable).toBeInTheDocument();
     expect(comparisonTable.compareDocumentPosition(insights) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
@@ -174,6 +181,64 @@ describe("DashboardPage", () => {
     expect(screen.queryByRole("list", { name: "Datos de comparación" })).not.toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Carreras con mayor demanda" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Ranking de postulantes" })).not.toBeInTheDocument();
+  });
+
+  it("uses a dedicated three-process layout for mobile comparison values", async () => {
+    const thirdProcess = { id: 3, year: 2024, sequence: "2", name: "Proceso 2024-II" };
+    const threeProcesses = [...processes, thirdProcess];
+    vi.mocked(api.usePublishedProcesses).mockReturnValue({ data: threeProcesses, isPending: false, isError: false } as unknown as ReturnType<typeof api.usePublishedProcesses>);
+    vi.mocked(api.useAnalyticsOverview).mockReturnValue({
+      data: {
+        processes: [
+          ...comparisonOverview.processes,
+          { ...overview.processes[0], process: thirdProcess, total_results: 60, admitted_count: 12, absent_count: 6, average_score: "60.5", highest_score: "90.0" },
+        ],
+      },
+      isPending: false,
+      isError: false,
+      isSuccess: true,
+    } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
+
+    renderPage("/?process=1&compare=2,3");
+    const mobileComparison = await screen.findByTestId("comparison-mobile");
+    expect(mobileComparison).toHaveAttribute("data-process-count", "3");
+    expect(mobileComparison).toHaveAttribute("data-mobile-layout", "heading-above-values");
+    const metricRows = mobileComparison.querySelectorAll("section");
+    expect(metricRows.length).toBeGreaterThan(0);
+    for (const row of metricRows) {
+      expect(row.firstElementChild?.tagName).toBe("H3");
+      expect(row.firstElementChild?.nextElementSibling).toHaveAttribute("data-process-values");
+      expect(row.querySelectorAll("[data-process-value]")).toHaveLength(3);
+    }
+  });
+
+  it("keeps the metric heading above a balanced two-column grid with four processes", async () => {
+    const thirdProcess = { id: 3, year: 2024, sequence: "2", name: "Proceso 2024-II" };
+    const fourthProcess = { id: 4, year: 2024, sequence: "1", name: "Proceso 2024-I" };
+    const fourProcesses = [...processes, thirdProcess, fourthProcess];
+    vi.mocked(api.usePublishedProcesses).mockReturnValue({ data: fourProcesses, isPending: false, isError: false } as unknown as ReturnType<typeof api.usePublishedProcesses>);
+    vi.mocked(api.useAnalyticsOverview).mockReturnValue({
+      data: {
+        processes: [
+          ...comparisonOverview.processes,
+          { ...overview.processes[0], process: thirdProcess, total_results: 60, admitted_count: 12, absent_count: 6, average_score: "60.5", highest_score: "90.0" },
+          { ...overview.processes[0], process: fourthProcess, total_results: 55, admitted_count: 10, absent_count: 5, average_score: "58.5", highest_score: "88.0" },
+        ],
+      },
+      isPending: false,
+      isError: false,
+      isSuccess: true,
+    } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
+
+    renderPage("/?process=1&compare=2,3,4");
+    const mobileComparison = await screen.findByTestId("comparison-mobile");
+    expect(mobileComparison).toHaveAttribute("data-process-count", "4");
+    expect(mobileComparison).toHaveAttribute("data-mobile-layout", "heading-above-values");
+    for (const row of mobileComparison.querySelectorAll("section")) {
+      expect(row.firstElementChild?.tagName).toBe("H3");
+      expect(row.firstElementChild?.nextElementSibling).toHaveAttribute("data-process-values");
+      expect(row.querySelectorAll("[data-process-value]")).toHaveLength(4);
+    }
   });
 
   it("opens comparison independently and applies selected processes", async () => {
