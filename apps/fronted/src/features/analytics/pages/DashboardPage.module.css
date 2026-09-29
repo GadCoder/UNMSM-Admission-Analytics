@@ -114,6 +114,15 @@ tbody tr:hover { background:#fdfafa; }
 .chartBar { display:block; height:100%; min-width:2px; border-radius:inherit; }
 .chartRow strong { color:var(--color-text); font-size:.72rem; text-align:right; font-variant-numeric:tabular-nums; }
 .chartSummary { display:grid; gap:.4rem; margin:var(--space-5) 0 0; padding:var(--space-4) var(--space-4) 0 1.3rem; border-top:1px solid var(--color-border); color:var(--color-muted); font-size:.72rem; line-height:1.5; }
+.comparisonStack { display:grid; gap:var(--space-6); }
+.comparisonInsights { display:grid; gap:var(--space-5); }
+.comparisonInsights h2 { margin:0; color:var(--color-text); font-size:1.25rem; letter-spacing:-.025em; }
+.sectionEyebrow { margin:0 0 .25rem; color:var(--color-primary); font-size:.67rem; font-weight:800; letter-spacing:.08em; text-transform:uppercase; }
+.insightGrid { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:var(--space-4); }
+.insightItem { display:flex; gap:.55rem; min-width:0; }
+.insightItem > span { color:var(--color-primary); font-size:1.2rem; font-weight:800; line-height:1; }
+.insightItem h3 { margin:0 0 .2rem; color:var(--color-text); font-size:.78rem; }
+.insightItem p { margin:0; color:var(--color-muted); font-size:.72rem; line-height:1.45; }
 .comparisonCard { display:grid; gap:var(--space-5); }
 .comparisonCardHeader { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-6); }
 .comparisonSectionTitle { margin:0; color:var(--color-primary); font-size:1.35rem; letter-spacing:-.035em; text-transform:uppercase; }
@@ -138,6 +147,8 @@ tbody tr:hover { background:#fdfafa; }
 .comparisonLegend { display:flex; align-items:center; gap:.4rem; margin:calc(var(--space-2) * -1) 0 0; color:var(--color-muted); font-size:.66rem; }
 .metricWinnerSwatch { width:.45rem; height:.45rem; border-radius:50%; background:var(--color-primary); box-shadow:0 0 0 3px #f3e8e8; }
 .metricWinner { padding:0; color:var(--color-primary) !important; }
+.metricMaximum { color:var(--color-primary) !important; }
+.metricMinimum { color:var(--color-muted) !important; text-decoration:underline dotted; text-underline-offset:3px; }
 
 .majorDemandLayout { display:grid; grid-template-columns:minmax(0,1fr) minmax(18rem,.9fr); gap:var(--space-6); align-items:start; }
 .majorMetricsPanel { min-width:0; }
@@ -247,6 +258,9 @@ tbody tr:hover { background:#fdfafa; }
 .comparisonMetric strong { color:var(--color-text); font-size:.95rem; }
 .comparisonMetric small { color:var(--color-primary); font-size:.65rem; font-weight:700; }
 @media (max-width:600px) {
+  .insightGrid { grid-template-columns:1fr; gap:var(--space-3); }
+  .insightItem { align-items:flex-start; }
+  .insightItem > span { flex:0 0 1.25rem; text-align:center; }
   .processComparisonTableWrap { overflow:visible; }
   .processComparisonTable { display:none; }
   .comparisonMobile { display:grid; gap:.45rem; padding:.65rem; }

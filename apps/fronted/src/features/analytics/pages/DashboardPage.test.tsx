@@ -141,13 +141,21 @@ describe("DashboardPage", () => {
       isSuccess: true,
     } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
     renderPage("/?process=1&compare=2");
-    expect(await screen.findByRole("heading", { name: "Vista comparativa" })).toBeInTheDocument();
+    expect(await screen.findByRole("region", { name: "Comparación de procesos" })).toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Cambios destacados" })).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Qué deberías notar" })).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Valores por proceso" })).toBeInTheDocument();
+    expect(screen.getByText("Máximo y mínimo del período seleccionado")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Comparación por procesos" })).not.toBeInTheDocument();
     expect(screen.queryByRole("combobox", { name: "Métrica" })).not.toBeInTheDocument();
+    expect(screen.queryByTestId("process-evolution-chart")).not.toBeInTheDocument();
+    expect(screen.queryByText(/puntos porcentuales entre/)).not.toBeInTheDocument();
     expect(screen.queryByText("Comparación de procesos")).not.toBeInTheDocument();
     expect(screen.queryByText("Compara volumen, resultados y rendimiento entre procesos sin perder el contexto.")).not.toBeInTheDocument();
     const comparisonTable = screen.getByRole("table", { name: /comparación de postulantes/i });
+    const insights = screen.getByRole("region", { name: "Cambios destacados" });
     expect(comparisonTable).toBeInTheDocument();
+    expect(comparisonTable.compareDocumentPosition(insights) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(screen.queryByText("La primera columna corresponde al proceso seleccionado.")).not.toBeInTheDocument();
     expect(within(comparisonTable).getByRole("columnheader", { name: "Métrica" })).toBeInTheDocument();
     expect(within(comparisonTable).queryByText("Métrica")).not.toBeInTheDocument();

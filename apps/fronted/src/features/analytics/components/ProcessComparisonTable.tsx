@@ -1,7 +1,7 @@
 import type { ProcessOverview } from "../api/analytics.types";
 import { formatProcessLabel } from "../utils/processLabels";
 import styles from "../pages/DashboardPage.module.css";
-import { isComparisonWinner, buildComparisonMetricRows } from "./comparisonTableRows";
+import { comparisonExtremum, buildComparisonMetricRows } from "./comparisonTableRows";
 import { ProcessComparisonMobile } from "./ProcessComparisonMobile";
 import type { ComparisonMetricValues } from "./comparisonMetrics";
 
@@ -38,7 +38,7 @@ export function ProcessComparisonTable({ overviews, metricValues }: ProcessCompa
                 <td
                   key={`${row.label}-${overviews[index].process.id}`}
                 >
-                  <span className={isComparisonWinner(row, index) ? styles.metricWinner : undefined}>{value}</span>
+                  <span className={comparisonExtremum(row, index) === "maximum" ? styles.metricMaximum : comparisonExtremum(row, index) === "minimum" ? styles.metricMinimum : undefined}>{value}</span>
                 </td>
               ))}
             </tr>

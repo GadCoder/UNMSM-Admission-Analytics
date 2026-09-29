@@ -1,6 +1,6 @@
 import type { ProcessOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
-import { isHighestValue, percentage, type ComparisonMetricValues } from "./comparisonMetrics";
+import { percentage, type ComparisonMetricValues } from "./comparisonMetrics";
 
 export type ComparisonMetricRow = {
   label: string;
@@ -51,6 +51,15 @@ export function buildComparisonMetricRows(
   ];
 }
 
+export function comparisonExtremum(row: ComparisonMetricRow, index: number): "maximum" | "minimum" | undefined {
+  const value = row.comparison[index];
+  const values = row.comparison.filter((item): item is number => item !== null);
+  if (value === null || values.length < 2) return undefined;
+  if (value === Math.max(...values)) return "maximum";
+  if (value === Math.min(...values)) return "minimum";
+  return undefined;
+}
+
 export function isComparisonWinner(row: ComparisonMetricRow, index: number): boolean {
-  return isHighestValue(row.comparison[index], row.comparison);
+  return comparisonExtremum(row, index) === "maximum";
 }
