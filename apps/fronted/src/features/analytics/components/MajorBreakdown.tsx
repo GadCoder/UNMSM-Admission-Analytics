@@ -62,7 +62,7 @@ export function MajorBreakdown({ overview, filterControls }: MajorBreakdownProps
       onSortChange={updateSort}
     />
     <div ref={contentRef} style={isSorting && contentHeight ? { minHeight: `${contentHeight}px` } : undefined}>
-      {isSorting ? <MajorBreakdownSortingSkeleton /> : <><MajorPerformanceCards majors={majors} /><MajorPerformanceTable majors={majors} process={overview.process} /></>}
+      {isSorting ? <MajorBreakdownSortingSkeleton /> : <><MajorPerformanceCards majors={majors} processId={overview.process.id} /><MajorPerformanceTable majors={majors} process={overview.process} /></>}
     </div>
   </section>;
 }
