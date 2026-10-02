@@ -86,7 +86,7 @@ describe("MajorDetailPage", () => {
     expect(screen.queryByRole("region", { name: "Comparación de procesos" })).not.toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Resultados históricos" }).compareDocumentPosition(firstKpi!) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
     expect(screen.getByText("Variaciones respecto a 2025-2")).toBeInTheDocument();
-    expect(screen.getByLabelText("Subió: +20")).toBeInTheDocument();
+    expect(screen.getByLabelText("Subió: +20 postulantes")).toBeInTheDocument();
   });
 
   it("finds the immediately preceding cycle from API sequence suffixes such as 26-2 and 26-1", () => {
@@ -111,7 +111,7 @@ describe("MajorDetailPage", () => {
     renderPage("/analytics/careers/42?process=6&compare=2");
 
     expect(screen.getByText("Variaciones respecto a 2026-1")).toBeInTheDocument();
-    expect(screen.getByLabelText("Subió: +20")).toBeInTheDocument();
+    expect(screen.getByLabelText("Subió: +20 postulantes")).toBeInTheDocument();
   });
 
   it("keeps the detail visible and announces a refresh while fetching", () => {

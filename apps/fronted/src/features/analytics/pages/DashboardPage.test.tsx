@@ -108,14 +108,14 @@ describe("DashboardPage", () => {
       isSuccess: true,
     } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
     renderPage();
-    expect(await screen.findByText("+20", { selector: "small" })).toBeInTheDocument();
+    expect(await screen.findByText("+20 postulantes", { selector: "small" })).toBeInTheDocument();
     expect(screen.getByText("Variaciones respecto a 2025-1")).toBeInTheDocument();
     expect(screen.getAllByText("Postulantes").find((element) => element.className.includes("kpiLabel"))).toBeInTheDocument();
-    expect(screen.queryByText("+20 · vs 80 en 2025-1")).not.toBeInTheDocument();
-    expect(screen.queryByText("vs 80 en 2025-1")).not.toBeInTheDocument();
+    expect(screen.queryByText("+20 postulantes · vs 80 postulantes en 2025-1")).not.toBeInTheDocument();
+    expect(screen.queryByText("vs 80 postulantes en 2025-1")).not.toBeInTheDocument();
     const currentValue = screen.getAllByText("100", { selector: "strong" })[0];
-    const trendIndicator = screen.getByLabelText("Subió: +20");
-    const trendContext = screen.getByText("+20", { selector: "small" });
+    const trendIndicator = screen.getByLabelText("Subió: +20 postulantes");
+    const trendContext = screen.getByText("+20 postulantes", { selector: "small" });
     expect(trendIndicator.className).toContain("kpiTrendArrow");
     expect(currentValue.parentElement?.className).toContain("kpiValuePrimary");
     expect(trendIndicator.parentElement?.className).toContain("kpiTrendRail");
@@ -123,6 +123,8 @@ describe("DashboardPage", () => {
     expect(trendContext.parentElement).toBe(trendIndicator.parentElement);
     expect(screen.getByLabelText("Subió: +2.5 pp")).toBeInTheDocument();
     expect(screen.getByLabelText("Bajó: -2 ausentes")).toBeInTheDocument();
+    expect(screen.getByLabelText("Subió: +6 ingresantes")).toBeInTheDocument();
+    expect(screen.getAllByLabelText(/pts$/)).toHaveLength(2);
     expect(screen.getByText("-2 ausentes", { selector: "small" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Vista comparativa" })).not.toBeInTheDocument();
   });
