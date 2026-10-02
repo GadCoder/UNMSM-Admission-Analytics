@@ -132,7 +132,7 @@ describe("MajorDetailPage", () => {
   it("renders history in chronological order independent of selected process order", () => {
     renderPage("/analytics/careers/42?process=2");
 
-    const history = screen.getByRole("region", { name: "Resultados históricos" });
+    const history = screen.getByRole("table", { name: "Historial de resultados por proceso" });
     const text = history.textContent ?? "";
     expect(text.indexOf("2025-2")).toBeLessThan(text.indexOf("2026-1"));
   });
@@ -142,12 +142,27 @@ describe("MajorDetailPage", () => {
 
     const table = screen.getByRole("table", { name: "Historial de resultados por proceso" });
     expect(table).toHaveTextContent("Postulantes");
+    expect(screen.queryByRole("columnheader", { name: "Demanda" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "Ingreso" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("columnheader", { name: "Puntajes" })).not.toBeInTheDocument();
     expect(table).toHaveTextContent("Tasa de ingreso");
-    expect(table).toHaveTextContent("Postulantes ausentes");
-    expect(table).toHaveTextContent("Porcentaje de ausentes");
+    expect(table).toHaveTextContent("Ausentes");
+    expect(table).toHaveTextContent("% ausentes");
     expect(table).toHaveTextContent("Puntaje máximo");
     expect(table).toHaveTextContent("Puntaje promedio");
     expect(table).toHaveTextContent("2025-2");
+  });
+
+  it("surfaces concise historical highlights without making the mobile cards a comparison view", () => {
+    renderPage("/analytics/careers/42?process=2");
+
+    const highlights = screen.getByRole("list", { name: "Puntos clave del historial" });
+    expect(within(highlights).getAllByRole("listitem")).toHaveLength(3);
+    expect(within(highlights).getByText("Mayor demanda")).toBeInTheDocument();
+    expect(within(highlights).getByText("100 postulantes")).toBeInTheDocument();
+    expect(within(highlights).getByText("Mayor tasa de ingreso")).toBeInTheDocument();
+    expect(within(highlights).getByText("12.5%")).toBeInTheDocument();
+    expect(within(highlights).getByText("Mayor puntaje promedio")).toBeInTheDocument();
   });
 
   it("renders mobile history cards for every chronological process", () => {
@@ -155,6 +170,7 @@ describe("MajorDetailPage", () => {
 
     const history = screen.getByRole("list", { name: "Historial por proceso" });
     expect(within(history).getAllByRole("listitem")).toHaveLength(2);
+    expect(within(history).queryByRole("group", { name: "Postulantes en 2025-2" })).not.toBeInTheDocument();
     expect(within(history).getByRole("heading", { name: "2025-2" })).toBeInTheDocument();
     expect(within(history).getAllByText("Postulantes")).toHaveLength(2);
     expect(within(history).getAllByText("Postulantes ausentes")).toHaveLength(2);

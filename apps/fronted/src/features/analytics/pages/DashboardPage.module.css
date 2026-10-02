@@ -79,12 +79,27 @@
 .card h2 { margin:0 0 .3rem; font-size:1.05rem; letter-spacing:-.025em; }
 .tableWrap { overflow-x:auto; }
 .historyCards { display:none; }
-.historyCard { padding:.65rem .75rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); }
-.historyCard h3 { margin:0 0 .55rem; color:var(--color-primary); font-size:.75rem; font-weight:800; }
-.historyCardMetrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.5rem .75rem; margin:0; }
-.historyCardMetrics > div { display:grid; gap:.12rem; min-width:0; }
+.historyHighlights { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:0; margin:0 0 1rem; padding:.7rem 0; border-top:1px solid var(--color-border); border-bottom:1px solid var(--color-border); list-style:none; }
+.historyHighlights li { display:grid; gap:.08rem; min-width:0; padding:0 .9rem; }
+.historyHighlights li + li { border-left:1px solid var(--color-border); }
+.historyHighlights span, .historyHighlights small { color:var(--color-muted); font-size:.68rem; font-weight:700; }
+.historyHighlights strong { color:var(--color-text); font-size:.9rem; font-variant-numeric:tabular-nums; line-height:1.2; }
+.historyTable { min-width:62rem; overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-md); }
+.historyTable thead { background:#fbf5f5; }
+.historyTable th, .historyTable td { padding:.72rem .65rem; }
+.historyTable thead th { color:var(--color-muted); font-size:.68rem; font-weight:800; }
+.historyTable thead th:first-child, .historyTable tbody th { text-align:left; }
+.historyTable tbody td { color:var(--color-text); font-weight:700; text-align:right; font-variant-numeric:tabular-nums; }
+.historyTable tbody tr:nth-child(even) { background:#fdfafa; }
+.historyCard { overflow:hidden; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); }
+.historyCard h3 { margin:0; padding:.55rem .75rem; border-bottom:1px solid var(--color-border); background:#fbf5f5; color:var(--color-primary); font-size:.75rem; font-weight:800; }
+.historyCardMetrics { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:0; margin:0; }
+.historyCardMetrics > div { display:grid; gap:.14rem; min-width:0; padding:.55rem .75rem; border-top:1px solid var(--color-border); }
+.historyCardMetrics > div:nth-child(odd) { border-right:1px solid var(--color-border); }
+.historyCardMetrics > div:nth-child(-n + 2) { border-top:0; }
+.historyCardMetrics > div:last-child { grid-column:1 / -1; border-right:0; }
 .historyCardMetrics dt { color:var(--color-muted); font-size:.58rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
-.historyCardMetrics dd { margin:0; color:var(--color-text); font-size:.78rem; font-weight:700; font-variant-numeric:tabular-nums; }
+.historyCardMetrics dd { margin:0; color:var(--color-text); font-size:.82rem; font-weight:800; font-variant-numeric:tabular-nums; }
 .tableControls { display:grid; grid-template-columns:minmax(0,1fr) minmax(14rem,18rem); align-items:end; gap:var(--space-3); margin:0 0 var(--space-4); }
 .tableFilter, .tableSort { display:grid; min-width:0; gap:.35rem; color:#8f7e7f; font-size:.62rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
 .tableFilter, .tableSort select { min-width:0; }
@@ -270,6 +285,12 @@ tbody tr:hover { background:#fdfafa; }
 }
 @media (max-width:600px) {
   .performanceTableDesktop, .historyTableDesktop { display:none; }
+  .historyHighlights { grid-template-columns:1fr; gap:0; margin-bottom:.75rem; padding:.15rem 0; }
+  .historyHighlights li { grid-template-columns:minmax(0,1fr) auto; grid-template-rows:auto auto; align-items:center; gap:.1rem .65rem; padding:.6rem .1rem; }
+  .historyHighlights li + li { border-top:1px solid var(--color-border); border-left:0; }
+  .historyHighlights span { grid-column:1; grid-row:1; }
+  .historyHighlights strong { grid-column:2; grid-row:1 / span 2; align-self:center; text-align:right; white-space:nowrap; }
+  .historyHighlights small { grid-column:1; grid-row:2; }
   .historyCards { display:grid; gap:.55rem; }
   .performanceCards { display:grid; gap:.6rem; }
   .performanceCardsEmpty { display:block; margin:0; padding:1rem; border:1px solid var(--color-border); border-radius:var(--radius-md); color:var(--color-muted); font-size:.78rem; }
