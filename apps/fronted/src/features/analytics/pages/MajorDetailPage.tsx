@@ -71,6 +71,7 @@ export function MajorDetailPage() {
   const byProcessId = new Map<number, MajorDetailProcess>();
   for (const item of [...(detail.history ?? []), ...selected]) byProcessId.set(item.process.id, item);
   const timeline = [...byProcessId.values()].sort(compareProcessPeriod);
+  const historyTimeline = [...timeline].reverse();
   const previous = timeline.filter((item) => compareProcessPeriod(item, current) < 0).at(-1);
   const currentOverview = asProcessOverview(current);
 
@@ -99,7 +100,7 @@ export function MajorDetailPage() {
       <header className={styles.comparisonCardHeader}>
         <h2 id="history-heading" className={styles.comparisonSectionTitle}>Resultados históricos</h2>
       </header>
-      <HistoryTable items={timeline} />
+      <HistoryTable items={historyTimeline} />
     </section>
   </section>;
 }

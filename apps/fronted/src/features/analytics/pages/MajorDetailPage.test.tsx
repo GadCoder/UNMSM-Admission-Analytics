@@ -129,12 +129,12 @@ describe("MajorDetailPage", () => {
     expect(screen.getByRole("region", { name: "Detalle de la carrera" })).toHaveAttribute("aria-busy", "true");
   });
 
-  it("renders history in chronological order independent of selected process order", () => {
+  it("renders the newest historical process first while keeping calculations chronological", () => {
     renderPage("/analytics/careers/42?process=2");
 
     const history = screen.getByRole("table", { name: "Historial de resultados por proceso" });
     const text = history.textContent ?? "";
-    expect(text.indexOf("2025-2")).toBeLessThan(text.indexOf("2026-1"));
+    expect(text.indexOf("2026-1")).toBeLessThan(text.indexOf("2025-2"));
   });
 
   it("renders history as a labeled data table", () => {
