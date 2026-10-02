@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, screen } from "@testing-library/react";
+import { cleanup, render, screen, within } from "@testing-library/react";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -50,6 +50,7 @@ function renderPage(entry = "/analytics/careers/42") {
 describe("MajorDetailPage", () => {
   beforeEach(() => {
     cleanup();
+    sessionStorage.clear();
     vi.mocked(api.usePublishedProcesses).mockReturnValue({
       data: processes,
       isPending: false,
@@ -71,6 +72,48 @@ describe("MajorDetailPage", () => {
     expect(screen.getByRole("heading", { name: "Ingeniería de Sistemas" })).toBeInTheDocument();
   });
 
+  it("keeps a single process selector while showing the full career history immediately", () => {
+    renderPage("/analytics/careers/42?process=2");
+
+    const firstKpi = screen.getByText("100", { selector: "strong" }).closest("article");
+    expect(screen.getByLabelText("Proceso analizado")).toHaveValue("2");
+    expect(screen.getByRole("link", { name: "← Volver a la vista de proceso" })).toHaveAttribute("href", "/?process=2");
+    expect(screen.queryByText("Detalle de carrera")).not.toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Resultados históricos" })).toBeInTheDocument();
+    expect(screen.queryByText("Historial completo")).not.toBeInTheDocument();
+    expect(screen.queryByText("Resultados por proceso")).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Añadir proceso para comparar" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Comparación de procesos" })).not.toBeInTheDocument();
+    expect(screen.getByRole("region", { name: "Resultados históricos" }).compareDocumentPosition(firstKpi!) & Node.DOCUMENT_POSITION_PRECEDING).toBeTruthy();
+    expect(screen.getByText("Variaciones respecto a 2025-2")).toBeInTheDocument();
+    expect(screen.getByLabelText("Subió: +20")).toBeInTheDocument();
+  });
+
+  it("finds the immediately preceding cycle from API sequence suffixes such as 26-2 and 26-1", () => {
+    const nextCycle = { id: 6, year: 2026, sequence: "26-2", name: "" };
+    vi.mocked(api.usePublishedProcesses).mockReturnValue({
+      data: [nextCycle, ...processes],
+      isPending: false,
+      isError: false,
+    } as unknown as ReturnType<typeof api.usePublishedProcesses>);
+    vi.mocked(api.useMajorDetail).mockReturnValue({
+      data: {
+        ...detail,
+        selected_processes: [detailProcess(nextCycle, 120), detailProcess(processes[0], 100)],
+        history: [detailProcess(processes[1], 80)],
+      },
+      isPending: false,
+      isFetching: false,
+      isError: false,
+      isSuccess: true,
+    } as unknown as ReturnType<typeof api.useMajorDetail>);
+
+    renderPage("/analytics/careers/42?process=6&compare=2");
+
+    expect(screen.getByText("Variaciones respecto a 2026-1")).toBeInTheDocument();
+    expect(screen.getByLabelText("Subió: +20")).toBeInTheDocument();
+  });
+
   it("keeps the detail visible and announces a refresh while fetching", () => {
     vi.mocked(api.useMajorDetail).mockReturnValue({
       data: detail,
@@ -89,7 +132,7 @@ describe("MajorDetailPage", () => {
   it("renders history in chronological order independent of selected process order", () => {
     renderPage("/analytics/careers/42?process=2");
 
-    const history = screen.getByRole("region", { name: "Evolución de la carrera" });
+    const history = screen.getByRole("region", { name: "Resultados históricos" });
     const text = history.textContent ?? "";
     expect(text.indexOf("2025-2")).toBeLessThan(text.indexOf("2026-1"));
   });
@@ -100,32 +143,30 @@ describe("MajorDetailPage", () => {
     const table = screen.getByRole("table", { name: "Historial de resultados por proceso" });
     expect(table).toHaveTextContent("Postulantes");
     expect(table).toHaveTextContent("Tasa de ingreso");
+    expect(table).toHaveTextContent("Postulantes ausentes");
+    expect(table).toHaveTextContent("Porcentaje de ausentes");
+    expect(table).toHaveTextContent("Puntaje máximo");
     expect(table).toHaveTextContent("Puntaje promedio");
     expect(table).toHaveTextContent("2025-2");
   });
 
-  it("compares each selected process against the primary process", () => {
-    vi.mocked(api.useMajorDetail).mockReturnValue({
-      data: { ...detail, selected_processes: [detailProcess(processes[0], 100), detailProcess(processes[1], 80)], history: [] },
-      isPending: false,
-      isFetching: false,
-      isError: false,
-      isSuccess: true,
-    } as unknown as ReturnType<typeof api.useMajorDetail>);
+  it("renders mobile history cards for every chronological process", () => {
+    renderPage("/analytics/careers/42?process=2");
 
-    renderPage("/analytics/careers/42?process=2&compare=1");
-
-    expect(screen.getByText("Comparado con 2026-1")).toBeInTheDocument();
-    expect(screen.getByText("-20 vs principal")).toBeInTheDocument();
-    expect(screen.getByText("+2.5 pp vs principal")).toBeInTheDocument();
+    const history = screen.getByRole("list", { name: "Historial por proceso" });
+    expect(within(history).getAllByRole("listitem")).toHaveLength(2);
+    expect(within(history).getByRole("heading", { name: "2025-2" })).toBeInTheDocument();
+    expect(within(history).getAllByText("Postulantes")).toHaveLength(2);
+    expect(within(history).getAllByText("Postulantes ausentes")).toHaveLength(2);
+    expect(within(history).getAllByText("Puntaje máximo")).toHaveLength(2);
+    expect(within(history).getAllByText("Puntaje promedio")).toHaveLength(2);
   });
 
-  it("exposes the primary process and comparison controls", () => {
+  it("ignores legacy comparison query state and fetches only the analyzed process", () => {
     renderPage("/analytics/careers/42?process=2&compare=1,3,4");
 
-    expect(screen.getByLabelText("Proceso principal")).toHaveValue("2");
-    expect(screen.getByRole("checkbox", { name: "2025-2" })).toBeChecked();
-    expect(screen.getByRole("checkbox", { name: "2026-1" })).toBeDisabled();
-    expect(screen.getByRole("checkbox", { name: "2024-1" })).toBeDisabled();
+    expect(screen.getByLabelText("Proceso analizado")).toHaveValue("2");
+    expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "2", []);
+    expect(screen.queryByRole("region", { name: "Comparación de procesos" })).not.toBeInTheDocument();
   });
 });

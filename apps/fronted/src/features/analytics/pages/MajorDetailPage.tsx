@@ -1,15 +1,33 @@
 import { useEffect } from "react";
 import { Link, useParams, useSearchParams } from "react-router-dom";
 
+import type { MajorDetailProcess, ProcessOverview } from "../api/analytics.types";
 import * as api from "../api/analytics";
 import { HistoryTable } from "../components/MajorDetailHistory";
-import { MajorDetailControls } from "../components/MajorDetailControls";
 import { MajorDetailLoadingSkeleton } from "../components/LoadingSkeletons";
-import { Metric, ProcessMetrics } from "../components/MajorDetailMetrics";
-import { formatNumber } from "../utils/formatters";
+import { KpiGrid } from "../components/KpiGrid";
 import { formatProcessLabel } from "../utils/processLabels";
-import { readDashboardView, saveDashboardView } from "../utils/dashboardSessionState";
 import styles from "./DashboardPage.module.css";
+
+const ROMAN_SEQUENCE_ORDER: Record<string, number> = { I: 1, II: 2, III: 3, IV: 4 };
+
+function sequenceOrder(sequence: string) {
+  const normalized = sequence.trim().toUpperCase();
+  const separator = normalized.lastIndexOf("-");
+  const value = separator >= 0 ? normalized.slice(separator + 1) : normalized;
+  const numeric = Number(value);
+  return ROMAN_SEQUENCE_ORDER[value] ?? (Number.isFinite(numeric) ? numeric : 0);
+}
+
+function compareProcessPeriod(left: MajorDetailProcess, right: MajorDetailProcess) {
+  return left.process.year - right.process.year
+    || sequenceOrder(left.process.sequence) - sequenceOrder(right.process.sequence)
+    || left.process.id - right.process.id;
+}
+
+function asProcessOverview(item: MajorDetailProcess): ProcessOverview {
+  return { ...item, majors: [] };
+}
 
 export function MajorDetailPage() {
   const { majorId = "" } = useParams();
@@ -19,28 +37,22 @@ export function MajorDetailPage() {
   const latest = processes[0];
   const primary = params.get("process") ?? (latest ? String(latest.id) : "");
   const comparisonParam = params.get("compare");
-  const comparisons = (comparisonParam !== null ? comparisonParam.split(",").filter((id) => id && id !== primary) : readDashboardView().comparisons)
-    .slice(0, 3);
 
   useEffect(() => {
     if (comparisonParam === null) return;
-    saveDashboardView({ ...readDashboardView(), comparisons });
     const next = new URLSearchParams(params);
     next.delete("compare");
     setParams(next, { replace: true });
-  }, [comparisonParam, comparisons, params, setParams]);
+  }, [comparisonParam, params, setParams]);
 
-  const query = api.useMajorDetail(majorId, primary, comparisons);
+  const query = api.useMajorDetail(majorId, primary, []);
   const detail = query.data;
   const selected = detail?.selected_processes ?? [];
   const current = selected[0];
 
-  const updateSelection = (nextPrimary: string, nextComparisons: string[]) => {
+  const updateSelection = (nextPrimary: string) => {
     const next = new URLSearchParams(params);
     next.set("process", nextPrimary);
-    const safeComparisons = nextComparisons.filter((id) => id !== nextPrimary).slice(0, 3);
-    const view = readDashboardView();
-    saveDashboardView({ ...view, comparisons: safeComparisons });
     next.delete("compare");
     setParams(next);
   };
@@ -54,42 +66,40 @@ export function MajorDetailPage() {
   }, [latest, params, setParams]);
 
   if (query.isPending) return <section className={styles.page}><MajorDetailLoadingSkeleton /></section>;
-  if (query.isError || !detail || !current) return <section className={styles.page}><p role="alert" className={styles.state}>No pudimos cargar el detalle de esta carrera.</p><Link className={styles.detailBack} to="/">Volver al dashboard</Link></section>;
+  if (query.isError || !detail || !current) return <section className={styles.page}><p role="alert" className={styles.state}>No pudimos cargar el detalle de esta carrera.</p><Link className={styles.detailBack} to="/">Volver a la vista de proceso</Link></section>;
 
-  const rate = current.total_results ? (current.admitted_count / current.total_results) * 100 : 0;
-  const timeline = [...selected, ...(detail.history ?? [])].sort((left, right) => {
-    if (left.process.year !== right.process.year) return left.process.year - right.process.year;
-    return left.process.sequence.localeCompare(right.process.sequence);
-  });
+  const byProcessId = new Map<number, MajorDetailProcess>();
+  for (const item of [...(detail.history ?? []), ...selected]) byProcessId.set(item.process.id, item);
+  const timeline = [...byProcessId.values()].sort(compareProcessPeriod);
+  const previous = timeline.filter((item) => compareProcessPeriod(item, current) < 0).at(-1);
+  const currentOverview = asProcessOverview(current);
+
+
   return <section className={styles.page} aria-label="Detalle de la carrera" aria-busy={query.isFetching}>
     {query.isFetching && <div role="status" className={styles.refreshingState}><span className={styles.spinner} aria-hidden="true" />Actualizando detalle…</div>}
-    <Link className={styles.detailBack} to={`/?process=${current.process.id}`}>← Volver al desempeño por carrera</Link>
-    <header className={styles.detailHero}>
+    <Link className={styles.detailBack} to={`/?process=${current.process.id}`}>← Volver a la vista de proceso</Link>
+    <header className={styles.hero}>
       <div>
-        <p className={styles.eyebrow}>Detalle de carrera</p>
         <h1>{detail.major.name}</h1>
         <p className={styles.intro}>{detail.major.faculty} · {detail.major.academic_area}</p>
       </div>
-      <span className={styles.detailProcessBadge}>{formatProcessLabel(current.process)}</span>
+      <section className={`${styles.processContext} ${styles.detailProcessContext}`} aria-label="Contexto del análisis">
+        <div className={styles.primaryProcessControl}>
+          <label htmlFor="primary-process">Proceso analizado</label>
+          <select id="primary-process" value={primary} onChange={(event) => updateSelection(event.target.value)}>
+            {processes.map((process) => <option key={process.id} value={process.id}>{formatProcessLabel(process)}</option>)}
+          </select>
+        </div>
+      </section>
     </header>
 
-    <div className={styles.kpis}>
-      <Metric label="Postulantes" value={formatNumber(current.total_results)} />
-      <Metric label="Postulantes ausentes" value={formatNumber(current.absent_count)} />
-      <Metric label="Ingresantes" value={formatNumber(current.admitted_count)} />
-      <Metric label="Porcentaje de ingresantes" value={`${formatNumber(rate, 1)}%`} />
-      <Metric label="Puntaje máximo" value={formatNumber(current.highest_score, 2)} />
-      <Metric label="Puntaje promedio" value={formatNumber(current.average_score, 2)} />
-    </div>
-    <MajorDetailControls
-      processes={processes}
-      primary={primary}
-      comparisons={comparisons}
-      onPrimaryChange={(nextPrimary) => updateSelection(nextPrimary, comparisons)}
-      onComparisonChange={(processId, checked) => updateSelection(primary, checked ? [...comparisons, processId] : comparisons.filter((id) => id !== processId))}
-    />
+    <KpiGrid overview={currentOverview} previous={previous ? asProcessOverview(previous) : undefined} />
 
-    {selected.length > 1 && <section className={styles.card} aria-labelledby="comparison-heading"><h2 id="comparison-heading">Comparación de procesos</h2><p className={styles.chartDescription}>Diferencias respecto al proceso principal: {formatProcessLabel(current.process)}.</p><div className={styles.detailProcessList}>{selected.slice(1).map((item) => <ProcessMetrics key={item.process.id} item={item} baseline={current} />)}</div></section>}
-    <section className={styles.card} aria-labelledby="history-heading"><h2 id="history-heading">Evolución de la carrera</h2><p className={styles.chartDescription}>Indicadores de la carrera en los procesos de admisión publicados.</p><HistoryTable items={timeline} /></section>
+    <section className={`${styles.card} ${styles.comparisonCard}`} aria-labelledby="history-heading">
+      <header className={styles.comparisonCardHeader}>
+        <h2 id="history-heading" className={styles.comparisonSectionTitle}>Resultados históricos</h2>
+      </header>
+      <HistoryTable items={timeline} />
+    </section>
   </section>;
 }
