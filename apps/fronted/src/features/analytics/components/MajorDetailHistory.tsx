@@ -89,16 +89,14 @@ export function HistoryTable({ items }: { items: MajorDetailProcess[] }) {
     <div className={styles.historyCards} role="list" aria-label="Historial por proceso">
       {items.map((item) => {
         const rate = admissionRate(item);
-        const absenceRate = item.total_results ? (item.absent_count / item.total_results) * 100 : 0;
         const processLabel = formatProcessLabel(item.process);
         return <article className={styles.historyCard} role="listitem" key={item.process.id}>
           <h3>{processLabel}</h3>
           <dl className={styles.historyCardMetrics}>
             <div><dt>Postulantes</dt><dd>{formatNumber(item.total_results)}</dd></div>
             <div><dt>Postulantes ausentes</dt><dd>{formatNumber(item.absent_count)}</dd></div>
-            <div><dt>Porcentaje de ausentes</dt><dd>{formatNumber(absenceRate, 1)}%</dd></div>
             <div><dt>Ingresantes</dt><dd>{formatNumber(item.admitted_count)}</dd></div>
-            <div><dt>Tasa de ingreso</dt><dd>{formatNumber(rate, 1)}%</dd></div>
+            <div><dt>Porcentaje de ingresantes</dt><dd>{formatNumber(rate, 1)}%</dd></div>
             <div><dt>Puntaje máximo</dt><dd>{formatNumber(item.highest_score, 2)}</dd></div>
             <div><dt>Puntaje promedio</dt><dd>{formatNumber(item.average_score, 2)}</dd></div>
           </dl>

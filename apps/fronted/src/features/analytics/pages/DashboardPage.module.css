@@ -97,7 +97,6 @@
 .historyCardMetrics > div { display:grid; gap:.14rem; min-width:0; padding:.55rem .75rem; border-top:1px solid var(--color-border); }
 .historyCardMetrics > div:nth-child(odd) { border-right:1px solid var(--color-border); }
 .historyCardMetrics > div:nth-child(-n + 2) { border-top:0; }
-.historyCardMetrics > div:last-child { grid-column:1 / -1; border-right:0; }
 .historyCardMetrics dt { color:var(--color-muted); font-size:.58rem; font-weight:700; letter-spacing:.05em; text-transform:uppercase; }
 .historyCardMetrics dd { margin:0; color:var(--color-text); font-size:.82rem; font-weight:800; font-variant-numeric:tabular-nums; }
 .tableControls { display:grid; grid-template-columns:minmax(0,1fr) minmax(14rem,18rem); align-items:end; gap:var(--space-3); margin:0 0 var(--space-4); }
