@@ -174,6 +174,7 @@ describe("MajorDetailPage", () => {
     expect(within(history).getByRole("heading", { name: "2025-2" })).toBeInTheDocument();
     expect(within(history).getAllByText("Postulantes")).toHaveLength(2);
     expect(within(history).getAllByText("Postulantes ausentes")).toHaveLength(2);
+    expect(within(history).getAllByText("Porcentaje de ingresantes")).toHaveLength(2);
     expect(within(history).getAllByText("Puntaje máximo")).toHaveLength(2);
     expect(within(history).getAllByText("Puntaje promedio")).toHaveLength(2);
   });
