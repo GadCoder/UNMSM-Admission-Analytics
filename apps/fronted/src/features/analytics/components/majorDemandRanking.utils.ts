@@ -21,7 +21,6 @@ export function calculateMetrics(
 export type DemandChartPoint = {
   major: MajorOverview;
   rank: number;
-  share: number;
   admissionRate: number;
   left: number;
   bottom: number;
@@ -29,8 +28,8 @@ export type DemandChartPoint = {
 
 export type DemandChartModel = {
   points: DemandChartPoint[];
-  mostDemanded?: MajorOverview;
-  highestAdmission?: MajorOverview;
+  applicantRange: { min: number; max: number };
+  admissionRateRange: { min: number; max: number };
 };
 
 export function getTopMajors(majors: MajorOverview[]): MajorOverview[] {
@@ -39,40 +38,37 @@ export function getTopMajors(majors: MajorOverview[]): MajorOverview[] {
     .slice(0, 6);
 }
 
-export function createDemandChartModel(
-  majors: MajorOverview[],
-  totalApplicants: number,
-): DemandChartModel {
-  const metrics = majors.map((major) => calculateMetrics(major, totalApplicants));
-  const maxShare = Math.max(...metrics.map(({ share }) => share), 1);
-  const maxAdmissionRate = Math.max(
-    ...metrics.map(({ admissionRate }) => admissionRate),
-    1,
-  );
-  const points = majors.map((major, index) => {
-    const { share, admissionRate } = calculateMetrics(major, totalApplicants);
-    return {
-      major,
-      rank: index + 1,
-      share,
-      admissionRate,
-      left: Math.min(96, Math.max(4, (share / maxShare) * 100)),
-      bottom: Math.min(96, Math.max(4, (admissionRate / maxAdmissionRate) * 100)),
-    };
-  });
-  const highestAdmission = majors.reduce<MajorOverview | undefined>(
-    (current, major) => {
-      if (!current) return major;
-      const currentRate = calculateMetrics(current, totalApplicants).admissionRate;
-      const majorRate = calculateMetrics(major, totalApplicants).admissionRate;
-      return majorRate > currentRate ? major : current;
-    },
-    undefined,
-  );
+function plotPosition(value: number, min: number, max: number) {
+  if (min === max) return 50;
+  return 8 + ((value - min) / (max - min)) * 84;
+}
+
+export function createDemandChartModel(majors: MajorOverview[]): DemandChartModel {
+  const applicantValues = majors.map((major) => major.total_results);
+  const admissionRates = majors.map((major) => major.total_results > 0
+    ? (major.admitted_count / major.total_results) * 100
+    : 0);
+  const applicantRange = {
+    min: Math.min(...applicantValues, 0),
+    max: Math.max(...applicantValues, 1),
+  };
+  const admissionRateRange = {
+    min: Math.min(...admissionRates, 0),
+    max: Math.max(...admissionRates, 1),
+  };
 
   return {
-    points,
-    mostDemanded: majors[0],
-    highestAdmission,
+    applicantRange,
+    admissionRateRange,
+    points: majors.map((major, index) => {
+      const admissionRate = admissionRates[index];
+      return {
+        major,
+        rank: index + 1,
+        admissionRate,
+        left: plotPosition(major.total_results, applicantRange.min, applicantRange.max),
+        bottom: plotPosition(admissionRate, admissionRateRange.min, admissionRateRange.max),
+      };
+    }),
   };
 }

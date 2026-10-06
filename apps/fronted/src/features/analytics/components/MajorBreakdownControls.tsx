@@ -15,11 +15,11 @@ type MajorBreakdownControlsProps = {
 };
 
 export function MajorBreakdownControls({ query, suggestionsOpen, suggestions, sortKey, sortDirection, onQueryChange, onSuggestionsOpenChange, onSortChange }: MajorBreakdownControlsProps) {
-  return <div className={styles.tableControls} aria-label="Filtros y orden de carreras">
-    <label className={styles.tableFilter}><span>Filtrar carreras</span><div className={styles.autocomplete}>
+  return <div className={styles.tableControls} aria-label="Búsqueda y orden de carreras">
+    <label className={styles.tableFilter}><span>Buscar carrera</span><div className={styles.autocomplete}>
       <input
         type="search"
-        aria-label="Filtrar carreras"
+        aria-label="Buscar carrera"
         aria-autocomplete="list"
         aria-controls="major-suggestions"
         aria-expanded={suggestionsOpen && suggestions.length > 0}

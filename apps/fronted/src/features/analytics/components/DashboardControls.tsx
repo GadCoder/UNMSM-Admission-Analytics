@@ -109,7 +109,7 @@ export function DashboardFilterControls({ areas, faculties, modalities, filters,
 
   return <details ref={filtersRef} className={styles.filtersDisclosure} open={filtersOpen} onToggle={(event) => setFiltersOpen(event.currentTarget.open)}>
     <summary
-      aria-label={activeFilters > 0 ? `Filtros, ${activeFilters} activos` : "Filtros"}
+      aria-label={activeFilters > 0 ? `Filtros de carreras, ${activeFilters} activos` : "Filtros de carreras"}
       title="Abrir filtros"
       onClick={(event) => {
         if (!filtersOpen) {
@@ -122,7 +122,7 @@ export function DashboardFilterControls({ areas, faculties, modalities, filters,
       <span className={styles.filterIcon} aria-hidden="true">
         <svg viewBox="0 0 24 24" focusable="false"><path d="M4 5h16M7 12h10m-7 7h4" /></svg>
       </span>
-      <span className={styles.visuallyHidden}>Filtros</span>
+      <span className={styles.filterButtonLabel}>Abrir filtros</span>
       {activeFilters > 0 && <span className={styles.filterBadge} aria-hidden="true">{activeFilters}</span>}
     </summary>
     <div className={styles.filtersPanel}>
