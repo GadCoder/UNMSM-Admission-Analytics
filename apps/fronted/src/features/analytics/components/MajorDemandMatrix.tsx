@@ -1,57 +1,38 @@
-import type { DemandChartPoint } from "./majorDemandRanking.utils";
-import { formatNumber } from "../utils/formatters";
+import type { DemandChartModel } from "./majorDemandRanking.utils";
+import { DemandMapLegend } from "./DemandMapLegend";
+import { DemandMapPlot } from "./DemandMapPlot";
 import styles from "../pages/DashboardPage.module.css";
+import { useDemandMapTooltip } from "./useDemandMapTooltip";
 
-type MajorDemandMatrixProps = {
-  points: DemandChartPoint[];
-  processLabel: string;
-};
+type MajorDemandMatrixProps = DemandChartModel;
 
 export function MajorDemandMatrix({
   points,
-  processLabel,
+  applicantRange,
+  admissionRateRange,
 }: MajorDemandMatrixProps) {
+  const tooltip = useDemandMapTooltip();
+
   return (
-    <>
-      <div
-        className={styles.demandMatrix}
-        role="img"
-        aria-label="Matriz de demanda y tasa de admisión por carrera"
-      >
-        <span className={styles.demandMatrixYAxis}>Tasa de admisión</span>
-        <div className={styles.demandMatrixPlot}>
-          <span className={styles.demandMatrixHorizontalLabel}>Alta admisión</span>
-          <span className={styles.demandMatrixVerticalLabel}>Baja admisión</span>
-          {points.map(({ major, rank, share, admissionRate, left, bottom }) => (
-            <span
-              key={major.major_id}
-              className={styles.demandMatrixPoint}
-              style={{ left: `${left}%`, bottom: `${bottom}%` }}
-              title={`${major.major_name}: ${formatNumber(share, 1)}% de postulantes, ${formatNumber(admissionRate, 1)}% de admisión`}
-            >
-              <span aria-hidden="true">{String(rank).padStart(2, "0")}</span>
-              <span className={styles.visuallyHidden}>
-                {major.major_name}: {formatNumber(share, 1)}% de postulantes, {formatNumber(admissionRate, 1)}% de admisión
-              </span>
-            </span>
-          ))}
-        </div>
-        <div className={styles.demandMatrixXAxis}>
-          <span>Menor demanda</span>
-          <span>Mayor demanda</span>
-        </div>
+    <div className={styles.demandMapBody}>
+      <DemandMapPlot
+        points={points}
+        applicantRange={applicantRange}
+        admissionRateRange={admissionRateRange}
+        plotRef={tooltip.plotRef}
+        selectedPoint={tooltip.selectedPoint}
+        onSelectPoint={tooltip.selectPoint}
+        tooltipPosition={tooltip.tooltipPosition}
+        tooltipRef={tooltip.tooltipRef}
+      />
+      <div className={styles.demandMapLegendDesktop}>
+        <h4>Carreras representadas</h4>
+        <DemandMapLegend points={points} />
       </div>
-      <ol
-        className={styles.visuallyHidden}
-        aria-label={`Datos de demanda y admisión de ${processLabel}`}
-      >
-        {points.map(({ major, rank, share, admissionRate }) => (
-          <li key={major.major_id}>
-            {String(rank).padStart(2, "0")}: {major.major_name},{" "}
-            {formatNumber(share, 1)}% de postulantes y {formatNumber(admissionRate, 1)}% de admisión.
-          </li>
-        ))}
-      </ol>
-    </>
+      <div className={styles.demandMapLegendMobile}>
+        <h4>Carreras representadas</h4>
+        <DemandMapLegend points={points} />
+      </div>
+    </div>
   );
 }

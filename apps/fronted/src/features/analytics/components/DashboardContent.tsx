@@ -2,6 +2,9 @@ import type { ProcessOverview } from "../api/analytics.types";
 import type { ReactNode } from "react";
 import { ProcessComparisonChart } from "./ProcessComparison";
 import { KpiGrid } from "./KpiGrid";
+import { MajorCareerFilters } from "./MajorCareerFilters";
+import { MajorDemandChart } from "./MajorDemandChart";
+import { getTopMajors } from "./majorDemandRanking.utils";
 import { MajorBreakdown } from "./MajorBreakdown";
 
 type DashboardContentProps = {
@@ -21,7 +24,9 @@ export function DashboardContent({
     <>
       <KpiGrid overview={primary} previous={previous} />
       <ProcessComparisonChart overviews={[primary, ...comparisons]} />
-      <MajorBreakdown overview={primary} filterControls={filterControls} />
+      <MajorCareerFilters controls={filterControls} />
+      <MajorDemandChart majors={getTopMajors(primary.majors)} process={primary.process} />
+      <MajorBreakdown overview={primary} />
     </>
   );
 }

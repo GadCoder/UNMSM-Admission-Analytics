@@ -1,5 +1,4 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { ReactNode } from "react";
 
 import type { ProcessOverview } from "../api/analytics.types";
 import { useDebouncedValue } from "../utils/useDebouncedValue";
@@ -11,9 +10,9 @@ import { sortMajors } from "./majorPerformance.utils";
 import type { SortDirection, SortKey } from "./majorPerformance.utils";
 import styles from "../pages/DashboardPage.module.css";
 
-type MajorBreakdownProps = { overview: ProcessOverview; filterControls?: ReactNode };
+type MajorBreakdownProps = { overview: ProcessOverview };
 
-export function MajorBreakdown({ overview, filterControls }: MajorBreakdownProps) {
+export function MajorBreakdown({ overview }: MajorBreakdownProps) {
   const [query, setQuery] = useState("");
   const debouncedQuery = useDebouncedValue(query);
   const [suggestionsOpen, setSuggestionsOpen] = useState(false);
@@ -49,7 +48,6 @@ export function MajorBreakdown({ overview, filterControls }: MajorBreakdownProps
   return <section className={styles.card} aria-labelledby="major-breakdown-heading">
     <div className={styles.sectionHeading}>
       <h2 id="major-breakdown-heading">Desempeño por carrera</h2>
-      {filterControls}
     </div>
     <MajorBreakdownControls
       query={query}

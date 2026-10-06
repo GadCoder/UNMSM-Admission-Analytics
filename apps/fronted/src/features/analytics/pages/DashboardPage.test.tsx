@@ -63,7 +63,7 @@ describe("DashboardPage", () => {
     expect(screen.getAllByText("65.5", { selector: "strong" }).length).toBeGreaterThan(0);
     expect(screen.getAllByText("Postulantes").some((element) => element.closest("article") !== null)).toBe(true);
     expect(screen.getAllByText("Ingresantes").length).toBeGreaterThan(0);
-    expect(screen.getByText("Porcentaje de ingresantes")).toBeInTheDocument();
+    expect(screen.getAllByText("Porcentaje de ingresantes").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Puntaje máximo").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Puntaje promedio").length).toBeGreaterThan(0);
     expect(screen.getByText("Postulantes ausentes")).toBeInTheDocument();
@@ -91,9 +91,28 @@ describe("DashboardPage", () => {
     fireEvent.click(metricsToggle);
     expect(metricsToggle).toHaveAttribute("aria-expanded", "true");
     expect(within(firstPerformanceCard).getByText("Tasa de admisión")).toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: "Carreras con mayor demanda" })).not.toBeInTheDocument();
+    const careerFilters = screen.getByRole("region", { name: "Filtros de carreras" });
+    const demandMap = screen.getByRole("region", { name: "Mapa de demanda y admisión" });
+    const performance = screen.getByRole("region", { name: "Desempeño por carrera" });
+    expect(within(careerFilters).getByText("Filtros de carreras")).toBeInTheDocument();
+    expect(within(careerFilters).getByText("Filtrar por área, facultad o modalidad")).toBeInTheDocument();
+    expect(within(careerFilters).getByText("Abrir filtros")).toBeInTheDocument();
+    expect(careerFilters.compareDocumentPosition(demandMap) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(demandMap.compareDocumentPosition(performance) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(performance).not.toContainElement(careerFilters);
+    expect(screen.getByRole("group", { name: "Mapa de demanda y tasa de ingreso por carrera" })).toBeInTheDocument();
+    const demandPoint = screen.getByRole("button", { name: "Mostrar datos de Ingeniería" });
+    expect(screen.queryByText(/Carrera seleccionada:/)).not.toBeInTheDocument();
+    fireEvent.click(demandPoint);
+    expect(screen.getByRole("tooltip")).toHaveTextContent("Ingeniería");
+    expect(demandPoint).toHaveAttribute("aria-pressed", "true");
+    for (const legendHeading of screen.getAllByRole("heading", { name: "Carreras representadas" })) {
+      const legend = legendHeading.parentElement;
+      expect(within(legend!).getByText("50 postulantes")).toBeInTheDocument();
+      expect(within(legend!).getByText("24% de ingresantes")).toBeInTheDocument();
+    }
+    expect(screen.queryByRole("group", { name: /Ver carreras representadas/ })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Ranking de postulantes" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Demanda y admisión" })).not.toBeInTheDocument();
   });
   it("shows KPI trends against the previous process without rendering a comparison chart", async () => {
     vi.mocked(api.useAnalyticsOverview).mockReturnValue({
@@ -269,10 +288,10 @@ describe("DashboardPage", () => {
     const user = userEvent.setup();
     renderPage("/?academic_area=SALUD");
 
-    const performanceSection = screen.getByRole("region", { name: "Desempeño por carrera" });
-    expect(within(performanceSection).getByText("Filtros")).toBeInTheDocument();
+    const careerFilters = screen.getByRole("region", { name: "Filtros de carreras" });
+    expect(within(careerFilters).getByText("Filtrar por área, facultad o modalidad")).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Selección de procesos y filtros" })).not.toBeInTheDocument();
-    await user.click(within(performanceSection).getByText("Filtros"));
+    await user.click(within(careerFilters).getByText("Abrir filtros"));
     const faculty = await screen.findByLabelText("Facultad");
     expect(within(faculty).getByRole("option", { name: "Medicina" })).toBeInTheDocument();
     expect(within(faculty).queryByRole("option", { name: "Ingeniería de Sistemas" })).not.toBeInTheDocument();
@@ -282,8 +301,8 @@ describe("DashboardPage", () => {
     const user = userEvent.setup();
     renderPage();
 
-    const performanceSection = screen.getByRole("region", { name: "Desempeño por carrera" });
-    await user.click(within(performanceSection).getByText("Filtros"));
+    const careerFilters = screen.getByRole("region", { name: "Filtros de carreras" });
+    await user.click(within(careerFilters).getByText("Abrir filtros"));
     expect(screen.getByLabelText("Facultad")).toBeVisible();
 
     await user.click(document.body);
@@ -294,8 +313,8 @@ describe("DashboardPage", () => {
     const user = userEvent.setup();
     renderPage();
 
-    const performanceSection = screen.getByRole("region", { name: "Desempeño por carrera" });
-    await user.click(within(performanceSection).getByText("Filtros"));
+    const careerFilters = screen.getByRole("region", { name: "Filtros de carreras" });
+    await user.click(within(careerFilters).getByText("Abrir filtros"));
     await user.selectOptions(screen.getByLabelText("Área académica"), "ING");
 
     expect(screen.getByTestId("location")).toHaveTextContent("process=1");
@@ -325,7 +344,7 @@ describe("DashboardPage", () => {
     } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
     renderPage();
 
-    const filter = await screen.findByRole("searchbox", { name: "Filtrar carreras" });
+    const filter = await screen.findByRole("searchbox", { name: "Buscar carrera" });
     await user.type(filter, "dere");
     expect(screen.queryByRole("listbox", { name: "Carreras coincidentes" })).not.toBeInTheDocument();
     await waitFor(() => expect(screen.getByRole("listbox", { name: "Carreras coincidentes" })).toBeInTheDocument());
