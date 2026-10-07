@@ -7,6 +7,8 @@ import {
   type MetricKey,
 } from "./metricHistory";
 import { MetricHistoryPlot } from "./MetricHistoryPlot";
+import { AnalyticsSurface } from "./AnalyticsSurface";
+import { SelectField } from "./SelectField";
 import styles from "./MetricHistoryChart.module.css";
 
 type MetricHistoryChartProps = {
@@ -42,20 +44,18 @@ export function MetricHistoryChart({
   const statusMessage = getStatusMessage(status, hasMetricValues);
 
   return (
-    <section className={`${styles.card} ${styles.metricHistory}`} aria-label={title}>
+    <AnalyticsSurface className={styles.metricHistory} aria-label={title}>
       <header className={styles.metricHistoryHeader}>
         <h2>{title}</h2>
-        <label>
-          Métrica
-          <select
-            value={selectedMetric}
-            onChange={(event) => setSelectedMetric(event.target.value as MetricKey)}
-          >
-            {METRIC_OPTIONS.map((option) => (
-              <option key={option.key} value={option.key}>{option.label}</option>
-            ))}
-          </select>
-        </label>
+        <SelectField
+          label="Métrica"
+          value={selectedMetric}
+          onChange={(event) => setSelectedMetric(event.target.value as MetricKey)}
+        >
+          {METRIC_OPTIONS.map((option) => (
+            <option key={option.key} value={option.key}>{option.label}</option>
+          ))}
+        </SelectField>
       </header>
       {statusMessage ?? (
         <>
@@ -65,6 +65,6 @@ export function MetricHistoryChart({
           </p>
         </>
       )}
-    </section>
+    </AnalyticsSurface>
   );
 }

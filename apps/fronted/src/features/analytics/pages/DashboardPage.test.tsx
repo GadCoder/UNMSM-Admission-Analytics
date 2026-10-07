@@ -6,6 +6,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DashboardPage } from "./DashboardPage";
 import * as api from "../api/analytics";
+import surfaceStyles from "../components/AnalyticsSurface.module.css";
 
 vi.mock("../api/analytics", async (importOriginal) => ({
   ...await importOriginal<typeof import("../api/analytics")>(),
@@ -68,8 +69,18 @@ describe("DashboardPage", () => {
     expect(screen.getByText("Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.")).toBeInTheDocument();
     expect(screen.getByText("Proceso analizado")).toBeInTheDocument();
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("1");
-    expect(screen.getByRole("region", { name: "Evolución histórica" })).toBeInTheDocument();
-    expect(screen.getByLabelText("Métrica")).toHaveValue("total_results");
+    const history = screen.getByRole("region", { name: "Evolución histórica" });
+    expect(history).toBeInTheDocument();
+    expect(history).toHaveClass(surfaceStyles.surface);
+    const metricSelect = screen.getByLabelText("Métrica");
+    const sortSelect = screen.getByLabelText("Ordenar carreras");
+    expect(metricSelect).toHaveValue("total_results");
+    expect(metricSelect.className).not.toBe("");
+    expect(metricSelect.className).toBe(sortSelect.className);
+    const metricField = metricSelect.closest("label");
+    const sortField = sortSelect.closest("label");
+    expect(metricField?.className).not.toBe("");
+    expect(metricField?.className).toBe(sortField?.className);
     expect(screen.queryByRole("heading", { name: "Resumen de 2025-2" })).not.toBeInTheDocument();
     expect(screen.queryByText("Proceso principal")).not.toBeInTheDocument();
     expect((await screen.findAllByText("100", { selector: "strong" })).length).toBeGreaterThan(0);
@@ -105,8 +116,11 @@ describe("DashboardPage", () => {
     expect(metricsToggle).toHaveAttribute("aria-expanded", "true");
     expect(within(firstPerformanceCard).getByText("Tasa de admisión")).toBeInTheDocument();
     const careerFilters = screen.getByRole("region", { name: "Filtros de carreras" });
+    expect(careerFilters).toHaveClass(surfaceStyles.surface);
     const demandMap = screen.getByRole("region", { name: "Mapa de demanda y admisión" });
     const performance = screen.getByRole("region", { name: "Desempeño por carrera" });
+    expect(demandMap).toHaveClass(surfaceStyles.surface);
+    expect(performance).toHaveClass(surfaceStyles.surface);
     expect(within(careerFilters).getByText("Filtros de carreras")).toBeInTheDocument();
     expect(within(careerFilters).getByText("Filtrar por área, facultad o modalidad")).toBeInTheDocument();
     expect(within(careerFilters).getByText("Abrir filtros")).toBeInTheDocument();

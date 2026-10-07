@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import styles from "../pages/DashboardPage.module.css";
+import { AnalyticsSurface } from "./AnalyticsSurface";
 
 type MajorCareerFiltersProps = {
   controls: ReactNode;
@@ -8,7 +9,7 @@ type MajorCareerFiltersProps = {
 
 export function MajorCareerFilters({ controls }: MajorCareerFiltersProps) {
   return (
-    <section className={styles.majorFilters} aria-labelledby="career-filters-heading">
+    <AnalyticsSurface className={styles.majorFilters} aria-labelledby="career-filters-heading">
       <div className={styles.majorFiltersHeader}>
         <div className={styles.majorFiltersCopy}>
           <h2 id="career-filters-heading">Filtros de carreras</h2>
@@ -16,6 +17,6 @@ export function MajorCareerFilters({ controls }: MajorCareerFiltersProps) {
         </div>
         {controls}
       </div>
-    </section>
+    </AnalyticsSurface>
   );
 }

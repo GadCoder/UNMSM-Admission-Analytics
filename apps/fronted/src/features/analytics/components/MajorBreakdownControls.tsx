@@ -1,6 +1,7 @@
 import type { MajorOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
 import type { SortDirection, SortKey } from "./majorPerformance.utils";
+import { SelectField } from "./SelectField";
 import styles from "../pages/DashboardPage.module.css";
 
 type MajorBreakdownControlsProps = {
@@ -38,12 +39,12 @@ export function MajorBreakdownControls({ query, suggestionsOpen, suggestions, so
         </li>)}
       </ul>}
     </div></label>
-    <label className={styles.tableSort}><span>Ordenar carreras</span><select aria-label="Ordenar carreras" value={`${sortKey}-${sortDirection}`} onChange={(event) => onSortChange(event.target.value)}>
+    <SelectField label="Ordenar carreras" value={`${sortKey}-${sortDirection}`} onChange={(event) => onSortChange(event.target.value)}>
       <option value="total_results-desc">Más postulantes</option><option value="total_results-asc">Menos postulantes</option>
       <option value="admitted_count-desc">Más admitidos</option><option value="admitted_count-asc">Menos admitidos</option>
       <option value="admission_rate-desc">Mayor tasa de admisión</option><option value="admission_rate-asc">Menor tasa de admisión</option>
       <option value="average_score-desc">Mayor promedio</option><option value="average_score-asc">Menor promedio</option>
       <option value="major_name-asc">Nombre de carrera (A-Z)</option><option value="major_name-desc">Nombre de carrera (Z-A)</option>
-    </select></label>
+    </SelectField>
   </div>;
 }

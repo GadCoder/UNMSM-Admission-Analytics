@@ -1,8 +1,8 @@
-.metricHistory { margin-top:var(--space-5); }
+.metricHistory { margin-top:var(--space-5); padding:var(--space-5); }
 .metricHistoryHeader { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-4); margin-bottom:var(--space-3); }
 .metricHistoryHeader h2 { margin:0; font-size:1rem; }
-.metricHistoryHeader label { display:grid; min-width:min(13rem,45%); gap:.3rem; color:var(--color-muted); font-size:.68rem; font-weight:700; }
-.metricHistoryHeader select { width:100%; min-height:2.35rem; padding:.45rem 2rem .45rem .65rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); color:var(--color-text); font:inherit; font-size:.75rem; }
+.metricHistoryHeader label { min-width:min(13rem,45%); }
+
 .metricHistoryPlot { width:100%; min-width:0; }
 .metricHistorySvg { display:block; width:100%; height:auto; overflow:visible; }
 .metricHistoryLine { fill:none; stroke:var(--color-primary); stroke-width:3; stroke-linecap:round; stroke-linejoin:round; }
