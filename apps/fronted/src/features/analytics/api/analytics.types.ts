@@ -19,26 +19,23 @@ export type MajorOverview = {
   average_score: string | null;
 };
 
-export type ProcessOverview = {
+export type ProcessMetrics = {
   process: AdmissionProcess;
   total_results: number;
   admitted_count: number;
   absent_count: number;
   average_score: string | null;
   highest_score: string | null;
-  majors: MajorOverview[];
 };
+
+export type ProcessOverview = ProcessMetrics & { majors: MajorOverview[] };
 
 export type ComparativeOverview = { processes: ProcessOverview[] };
 
-export type MajorDetailProcess = {
-  process: AdmissionProcess;
-  total_results: number;
-  admitted_count: number;
-  absent_count: number;
-  average_score: string | null;
-  highest_score: string | null;
-};
+export type MajorDetailProcess = ProcessMetrics;
+
+export type ProcessHistoryItem = ProcessMetrics;
+export type ProcessHistory = { processes: ProcessHistoryItem[] };
 
 export type MajorDetail = {
   major: { id: number; code: string; name: string; faculty: string; academic_area: string };

@@ -9,9 +9,15 @@ from modules.admission_processes.models import AdmissionProcess
 from .serializers import (
     ComparativeOverviewSerializer,
     MajorDetailSerializer,
+    ProcessHistorySerializer,
     ProcessOverviewSerializer,
 )
-from .services import latest_process_overview, major_detail, process_overviews
+from .services import (
+    latest_process_overview,
+    major_detail,
+    process_history,
+    process_overviews,
+)
 
 
 class LatestProcessOverviewView(APIView):
@@ -117,6 +123,23 @@ class ComparativeOverviewView(APIView):
             return None, f"The {parameter} query parameter must contain positive integer IDs."
         return [int(item) for item in values], None
 
+
+class ProcessHistoryView(APIView):
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(name="academic_area", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False),
+            OpenApiParameter(name="faculty", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False),
+            OpenApiParameter(name="modality", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False),
+        ],
+        responses={200: ProcessHistorySerializer},
+    )
+    def get(self, request):
+        history = process_history(
+            academic_area=request.query_params.get("academic_area"),
+            faculty=request.query_params.get("faculty"),
+            modality=request.query_params.get("modality"),
+        )
+        return Response(ProcessHistorySerializer({"processes": history}).data)
 
 class MajorDetailView(APIView):
     @extend_schema(

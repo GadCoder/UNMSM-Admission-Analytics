@@ -80,6 +80,11 @@ describe("MajorDetailPage", () => {
     expect(screen.getByRole("link", { name: "← Volver a la vista de proceso" })).toHaveAttribute("href", "/?process=2");
     expect(screen.queryByText("Detalle de carrera")).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Resultados históricos" })).toBeInTheDocument();
+    const historyChart = screen.getByRole("region", { name: "Evolución histórica de la carrera" });
+    expect(within(historyChart).getByLabelText("Métrica")).toHaveValue("total_results");
+    expect(within(historyChart).getByRole("img", { name: "Postulantes por proceso" })).toBeInTheDocument();
+    expect(within(historyChart).getByText("80")).toBeInTheDocument();
+    expect(within(historyChart).getByText("100")).toBeInTheDocument();
     expect(screen.queryByText("Historial completo")).not.toBeInTheDocument();
     expect(screen.queryByText("Resultados por proceso")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Añadir proceso para comparar" })).not.toBeInTheDocument();

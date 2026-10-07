@@ -4,7 +4,7 @@ import pytest
 from rest_framework.test import APIClient
 
 from modules.academics.models import AcademicArea, Faculty, Major
-from modules.admission_processes.models import AdmissionProcess
+from modules.admission_processes.models import AdmissionModality, AdmissionProcess
 from modules.results.models import AdmissionResult
 
 
@@ -397,3 +397,55 @@ def test_comparative_overview_uses_bulk_aggregation_for_four_processes(
         )
 
     assert response.status_code == 200
+
+
+@pytest.mark.django_db
+def test_process_history_returns_all_published_process_metrics(client, majors):
+    nursing, _ = majors
+    old = AdmissionProcess.objects.create(year=2025, sequence="25-2")
+    newest = AdmissionProcess.objects.create(year=2026, sequence="26-1")
+    AdmissionProcess.objects.create(year=2027, sequence="27-1", is_published=False)
+    for process, score, status in (
+        (old, "700.0000", AdmissionResult.Status.ADMITTED),
+        (newest, "900.0000", AdmissionResult.Status.NOT_ADMITTED),
+    ):
+        AdmissionResult.objects.create(
+            process=process, major=nursing, candidate_code=f"candidate-{process.id}",
+            last_names="DOE", given_names="TEST", status=status, score=Decimal(score),
+        )
+
+    response = client.get("/api/v1/analytics/history/")
+
+    assert response.status_code == 200
+    assert [item["process"]["id"] for item in response.json()["processes"]] == [old.id, newest.id]
+    assert response.json()["processes"][1]["average_score"] == "900.0000"
+    assert "majors" not in response.json()["processes"][0]
+
+
+@pytest.mark.django_db
+def test_process_history_filters_aggregate_metrics(client, majors):
+    nursing, pharmacy = majors
+    other_area = AcademicArea.objects.create(code="B", name="Salud")
+    other_faculty = Faculty.objects.create(code="F02", name="Otra Facultad", academic_area=other_area)
+    other_major = Major.objects.create(code="015", name="Odontología", faculty=other_faculty)
+    process = AdmissionProcess.objects.create(year=2026, sequence="26-1")
+    ordinary = AdmissionModality.objects.create(name="Ordinario")
+    for index, major in enumerate((nursing, pharmacy, other_major)):
+        AdmissionResult.objects.create(
+            process=process, major=major, modality=ordinary, candidate_code=str(index), last_names="DOE",
+            given_names="TEST", status=AdmissionResult.Status.ADMITTED, score=Decimal("900.0000"),
+        )
+
+    response = client.get(
+        "/api/v1/analytics/history/?academic_area=A&faculty=F01&modality=Ordinario"
+    )
+
+    assert response.status_code == 200
+    assert response.json()["processes"][0]["total_results"] == 2
+
+    no_matches = client.get(
+        "/api/v1/analytics/history/?academic_area=A&faculty=F01&modality=Extraordinario"
+    )
+    assert no_matches.status_code == 200
+    assert no_matches.json()["processes"][0]["total_results"] == 0
+    assert no_matches.json()["processes"][0]["average_score"] is None

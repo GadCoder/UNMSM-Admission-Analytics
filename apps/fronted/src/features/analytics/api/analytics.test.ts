@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { getAnalyticsOverview, getPublishedProcesses } from "./analytics";
+import { getAnalyticsOverview, getProcessHistory, getPublishedProcesses } from "./analytics";
 
 describe("analytics API", () => {
   it("fetches published processes", async () => {
@@ -22,6 +22,13 @@ describe("analytics API", () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response('{"processes":[]}'));
     await getAnalyticsOverview("12", [], { academicArea: "A", faculty: "F01", modality: "Ordinario" });
     expect(fetchMock.mock.calls[0][0]).toBe("http://localhost:8000/api/v1/analytics/overview/?process=12&academic_area=A&faculty=F01&modality=Ordinario");
+    fetchMock.mockRestore();
+  });
+
+  it("encodes historical analytics dimension filters", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response('{"processes":[]}'));
+    await getProcessHistory({ academicArea: "A", faculty: "F01", modality: "Ordinario" });
+    expect(fetchMock.mock.calls[0][0]).toBe("http://localhost:8000/api/v1/analytics/history/?academic_area=A&faculty=F01&modality=Ordinario");
     fetchMock.mockRestore();
   });
 });

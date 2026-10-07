@@ -59,9 +59,7 @@ def _build_overviews(processes, totals_by_process, majors_by_process):
     ]
 
 
-def _aggregate_overviews(processes, *, academic_area=None, faculty=None, modality=None):
-    """Build process overviews from one totals query and one major query."""
-    process_ids = [process.id for process in processes]
+def _filtered_results(process_ids, *, academic_area=None, faculty=None, modality=None):
     results = AdmissionResult.objects.filter(process_id__in=process_ids)
     if academic_area:
         results = results.filter(major__faculty__academic_area__code=academic_area)
@@ -69,6 +67,18 @@ def _aggregate_overviews(processes, *, academic_area=None, faculty=None, modalit
         results = results.filter(major__faculty__code=faculty)
     if modality:
         results = results.filter(modality__name=modality)
+    return results
+
+
+def _aggregate_overviews(processes, *, academic_area=None, faculty=None, modality=None):
+    """Build process overviews from one totals query and one major query."""
+    process_ids = [process.id for process in processes]
+    results = _filtered_results(
+        process_ids,
+        academic_area=academic_area,
+        faculty=faculty,
+        modality=modality,
+    )
     return _build_overviews(
         processes,
         _aggregate_totals(results),
@@ -107,6 +117,26 @@ def process_overviews(process_ids, *, academic_area=None, faculty=None, modality
         faculty=faculty,
         modality=modality,
     )
+
+
+def process_history(*, academic_area=None, faculty=None, modality=None):
+    processes = list(
+        AdmissionProcess.objects.filter(is_published=True)
+        .only("id", "year", "sequence", "name")
+        .order_by("year", "sequence", "id")
+    )
+    process_ids = [process.id for process in processes]
+    results = _filtered_results(
+        process_ids,
+        academic_area=academic_area,
+        faculty=faculty,
+        modality=modality,
+    )
+    totals = _aggregate_totals(results)
+    return [
+        {"process": process, **_EMPTY_TOTALS, **totals.get(process.id, {})}
+        for process in processes
+    ]
 
 
 def major_detail(major_id, selected_process_ids):
