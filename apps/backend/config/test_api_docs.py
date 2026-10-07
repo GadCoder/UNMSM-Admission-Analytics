@@ -13,7 +13,11 @@ def test_openapi_schema_exposes_versioned_api_paths():
     assert "/api/v1/" in schema["paths"]
     assert "/api/v1/processes/" in schema["paths"]
     assert "/api/v1/analytics/latest/" in schema["paths"]
+    assert "/api/v1/analytics/history/" in schema["paths"]
     assert "get" in schema["paths"]["/api/v1/analytics/latest/"]
+    history = schema["paths"]["/api/v1/analytics/history/"]["get"]
+    history_parameters = {parameter["name"] for parameter in history["parameters"]}
+    assert history_parameters == {"academic_area", "faculty", "modality"}
     overview = schema["paths"]["/api/v1/analytics/overview/"]["get"]
     parameters = {parameter["name"]: parameter for parameter in overview["parameters"]}
     assert set(parameters) == {"process", "compare", "academic_area", "faculty", "modality"}

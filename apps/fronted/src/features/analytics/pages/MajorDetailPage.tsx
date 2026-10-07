@@ -4,6 +4,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 import type { MajorDetailProcess, ProcessOverview } from "../api/analytics.types";
 import * as api from "../api/analytics";
 import { HistoryTable } from "../components/MajorDetailHistory";
+import { MetricHistoryChart } from "../components/MetricHistoryChart";
 import { MajorDetailLoadingSkeleton } from "../components/LoadingSkeletons";
 import { KpiGrid } from "../components/KpiGrid";
 import { formatProcessLabel } from "../utils/processLabels";
@@ -95,6 +96,7 @@ export function MajorDetailPage() {
     </header>
 
     <KpiGrid overview={currentOverview} previous={previous ? asProcessOverview(previous) : undefined} />
+    <MetricHistoryChart items={timeline} title="Evolución histórica de la carrera" />
 
     <section className={`${styles.card} ${styles.comparisonCard}`} aria-labelledby="history-heading">
       <header className={styles.comparisonCardHeader}>

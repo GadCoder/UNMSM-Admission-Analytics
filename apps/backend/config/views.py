@@ -47,6 +47,7 @@ class ApiRootView(APIView):
                     "processes": "/api/v1/processes/",
                     "latest_overview": "/api/v1/analytics/latest/",
                     "comparative_overview": "/api/v1/analytics/overview/",
+                    "process_history": "/api/v1/analytics/history/",
                 },
             }
         )

@@ -11,6 +11,7 @@ vi.mock("../api/analytics", async (importOriginal) => ({
   ...await importOriginal<typeof import("../api/analytics")>(),
   usePublishedProcesses: vi.fn(),
   useAnalyticsOverview: vi.fn(),
+  useProcessHistory: vi.fn(),
   useAcademicAreas: vi.fn(),
   useFaculties: vi.fn(),
   useModalities: vi.fn(),
@@ -30,6 +31,10 @@ const faculties = [
 ];
 const overview = { processes: [{ process: processes[0], total_results: 100, admitted_count: 20, absent_count: 10, average_score: "65.5", highest_score: "98.0", majors: [{ major_id: 1, major_code: "ING", major_name: "Ingeniería", total_results: 50, admitted_count: 12, absent_count: 5, average_score: "70" }] }] };
 const comparisonOverview = { processes: [overview.processes[0], { process: processes[1], total_results: 80, admitted_count: 16, absent_count: 8, average_score: "62.5", highest_score: "95.0", majors: [{ major_id: 1, major_code: "ING", major_name: "Ingeniería", total_results: 40, admitted_count: 10, absent_count: 4, average_score: "68" }] }] };
+const processHistory = { processes: [
+  { process: processes[1], total_results: 80, admitted_count: 16, absent_count: 8, average_score: "62.5", highest_score: "95.0" },
+  { process: processes[0], total_results: 100, admitted_count: 20, absent_count: 10, average_score: "65.5", highest_score: "98.0" },
+] };
 function LocationProbe() { const location = useLocation(); return <output data-testid="location">{location.search}</output>; }
 function renderPage(entry = "/") {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
@@ -50,6 +55,12 @@ describe("DashboardPage", () => {
       isError: false,
       isSuccess: true,
     } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
+    vi.mocked(api.useProcessHistory).mockReturnValue({
+      data: processHistory,
+      isPending: false,
+      isFetching: false,
+      isError: false,
+    } as unknown as ReturnType<typeof api.useProcessHistory>);
   });
   it("defaults to latest process and renders KPIs", async () => {
     renderPage();
@@ -57,6 +68,8 @@ describe("DashboardPage", () => {
     expect(screen.getByText("Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.")).toBeInTheDocument();
     expect(screen.getByText("Proceso analizado")).toBeInTheDocument();
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("1");
+    expect(screen.getByRole("region", { name: "Evolución histórica" })).toBeInTheDocument();
+    expect(screen.getByLabelText("Métrica")).toHaveValue("total_results");
     expect(screen.queryByRole("heading", { name: "Resumen de 2025-2" })).not.toBeInTheDocument();
     expect(screen.queryByText("Proceso principal")).not.toBeInTheDocument();
     expect((await screen.findAllByText("100", { selector: "strong" })).length).toBeGreaterThan(0);
@@ -66,7 +79,7 @@ describe("DashboardPage", () => {
     expect(screen.getAllByText("Porcentaje de ingresantes").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Puntaje máximo").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Puntaje promedio").length).toBeGreaterThan(0);
-    expect(screen.getByText("Postulantes ausentes")).toBeInTheDocument();
+    expect(screen.getAllByText("Postulantes ausentes").length).toBeGreaterThan(0);
     expect(screen.queryByText(/Variaciones respecto a/)).not.toBeInTheDocument();
     expect(screen.getAllByRole("article").map((article) => article.querySelector("span")?.textContent)).toEqual([
       "Postulantes",
@@ -176,7 +189,6 @@ describe("DashboardPage", () => {
     expect(screen.getByRole("heading", { name: "Valores por proceso" })).toBeInTheDocument();
     expect(screen.getByText("Máximo y mínimo del período seleccionado")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Comparación por procesos" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("combobox", { name: "Métrica" })).not.toBeInTheDocument();
     expect(screen.queryByTestId("process-evolution-chart")).not.toBeInTheDocument();
     expect(screen.queryByText(/puntos porcentuales entre/)).not.toBeInTheDocument();
     expect(screen.queryByText("Comparación de procesos")).not.toBeInTheDocument();

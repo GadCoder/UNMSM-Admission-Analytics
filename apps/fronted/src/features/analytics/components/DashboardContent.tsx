@@ -1,5 +1,6 @@
-import type { ProcessOverview } from "../api/analytics.types";
+import type { ProcessHistoryItem, ProcessOverview } from "../api/analytics.types";
 import type { ReactNode } from "react";
+import { MetricHistoryChart } from "./MetricHistoryChart";
 import { ProcessComparisonChart } from "./ProcessComparison";
 import { KpiGrid } from "./KpiGrid";
 import { MajorCareerFilters } from "./MajorCareerFilters";
@@ -12,6 +13,8 @@ type DashboardContentProps = {
   comparisons: ProcessOverview[];
   previous?: ProcessOverview;
   filterControls: ReactNode;
+  historyItems: ProcessHistoryItem[];
+  historyStatus?: "ready" | "loading" | "error";
 };
 
 export function DashboardContent({
@@ -19,10 +22,13 @@ export function DashboardContent({
   comparisons,
   previous,
   filterControls,
+  historyItems,
+  historyStatus = "ready",
 }: DashboardContentProps) {
   return (
     <>
       <KpiGrid overview={primary} previous={previous} />
+      <MetricHistoryChart items={historyItems} title="Evolución histórica" status={historyStatus} />
       <ProcessComparisonChart overviews={[primary, ...comparisons]} />
       <MajorCareerFilters controls={filterControls} />
       <MajorDemandChart majors={getTopMajors(primary.majors)} process={primary.process} />

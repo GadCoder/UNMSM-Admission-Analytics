@@ -73,6 +73,7 @@ export function DashboardPage() {
   }, [comparisonParam, params, requestedComparisons, savedView, setParams]);
 
   const overviewQuery = api.useAnalyticsOverview(primaryId, overviewComparisons, filters);
+  const historyQuery = api.useProcessHistory(filters);
   const selected = overviewQuery.data?.processes ?? [];
   const primary = selected[0];
   const previous = selected.find((item) => String(item.process.id) === previousId);
@@ -151,6 +152,8 @@ export function DashboardPage() {
                 primary={primary}
                 comparisons={selectedComparisons}
                 previous={previous}
+                historyItems={historyQuery.data?.processes ?? []}
+                historyStatus={historyQuery.isFetching && !historyQuery.data ? "loading" : historyQuery.isError ? "error" : "ready"}
 
                 filterControls={<DashboardFilterControls
                   areas={areasQuery.data ?? []}

@@ -33,6 +33,19 @@ class ComparativeOverviewSerializer(serializers.Serializer):
     processes = ProcessOverviewSerializer(many=True)
 
 
+class ProcessHistoryItemSerializer(serializers.Serializer):
+    process = AdmissionProcessSerializer()
+    total_results = serializers.IntegerField()
+    admitted_count = serializers.IntegerField()
+    absent_count = serializers.IntegerField()
+    average_score = serializers.DecimalField(max_digits=8, decimal_places=4, allow_null=True)
+    highest_score = serializers.DecimalField(max_digits=8, decimal_places=4, allow_null=True)
+
+
+class ProcessHistorySerializer(serializers.Serializer):
+    processes = ProcessHistoryItemSerializer(many=True)
+
+
 class MajorProcessDetailSerializer(serializers.Serializer):
     process = AdmissionProcessSerializer()
     total_results = serializers.IntegerField()

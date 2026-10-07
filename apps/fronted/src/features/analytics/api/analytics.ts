@@ -1,7 +1,7 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 
 import { apiFetch } from "../../../shared/api/client";
-import type { AcademicArea, AdmissionProcess, ComparativeOverview, Faculty, MajorDetail, Modality } from "./analytics.types";
+import type { AcademicArea, AdmissionProcess, ComparativeOverview, Faculty, MajorDetail, Modality, ProcessHistory } from "./analytics.types";
 
 export type AnalyticsFilters = { academicArea?: string; faculty?: string; modality?: string };
 
@@ -17,6 +17,24 @@ export function getAnalyticsOverview(primary: string | number, comparisons: Arra
   if (filters.faculty) params.set("faculty", filters.faculty);
   if (filters.modality) params.set("modality", filters.modality);
   return apiFetch<ComparativeOverview>(`/api/v1/analytics/overview/?${params.toString()}`);
+}
+
+export function getProcessHistory(filters: AnalyticsFilters = {}): Promise<ProcessHistory> {
+  const params = new URLSearchParams();
+  if (filters.academicArea) params.set("academic_area", filters.academicArea);
+  if (filters.faculty) params.set("faculty", filters.faculty);
+  if (filters.modality) params.set("modality", filters.modality);
+  const query = params.toString();
+  return apiFetch<ProcessHistory>(`/api/v1/analytics/history/${query ? `?${query}` : ""}`);
+}
+
+export function useProcessHistory(filters: AnalyticsFilters = {}) {
+  return useQuery({
+    queryKey: ["analytics-history", filters],
+    queryFn: () => getProcessHistory(filters),
+    staleTime: 300000,
+    placeholderData: keepPreviousData,
+  });
 }
 
 export function usePublishedProcesses() { return useQuery({ queryKey: ["published-processes"], queryFn: getPublishedProcesses }); }
