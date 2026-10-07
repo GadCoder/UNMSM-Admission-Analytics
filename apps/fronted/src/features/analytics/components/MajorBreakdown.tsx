@@ -9,6 +9,7 @@ import { MajorPerformanceTable } from "./MajorPerformanceTable";
 import { sortMajors } from "./majorPerformance.utils";
 import type { SortDirection, SortKey } from "./majorPerformance.utils";
 import styles from "../pages/DashboardPage.module.css";
+import { AnalyticsSurface } from "./AnalyticsSurface";
 
 type MajorBreakdownProps = { overview: ProcessOverview };
 
@@ -45,7 +46,7 @@ export function MajorBreakdown({ overview }: MajorBreakdownProps) {
     if (sortTimer.current !== null) window.clearTimeout(sortTimer.current);
   }, []);
 
-  return <section className={styles.card} aria-labelledby="major-breakdown-heading">
+  return <AnalyticsSurface className={styles.majorBreakdownSurface} aria-labelledby="major-breakdown-heading">
     <div className={styles.sectionHeading}>
       <h2 id="major-breakdown-heading">Desempeño por carrera</h2>
     </div>
@@ -62,5 +63,5 @@ export function MajorBreakdown({ overview }: MajorBreakdownProps) {
     <div ref={contentRef} style={isSorting && contentHeight ? { minHeight: `${contentHeight}px` } : undefined}>
       {isSorting ? <MajorBreakdownSortingSkeleton /> : <><MajorPerformanceCards majors={majors} processId={overview.process.id} /><MajorPerformanceTable majors={majors} process={overview.process} /></>}
     </div>
-  </section>;
+  </AnalyticsSurface>;
 }

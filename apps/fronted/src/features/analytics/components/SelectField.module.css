@@ -1,0 +1,36 @@
+.field {
+  display:grid;
+  min-width:0;
+  gap:.35rem;
+}
+
+.label {
+  color:#8f7e7f;
+  font-size:.62rem;
+  font-weight:700;
+  letter-spacing:.08em;
+  line-height:1.2;
+  text-transform:uppercase;
+}
+
+.select {
+  width:100%;
+  min-width:0;
+  min-height:2.35rem;
+  padding:.55rem 2.15rem .55rem .75rem;
+  appearance:none;
+  -webkit-appearance:none;
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  background-color:var(--color-background, #fff);
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none' stroke='%23765a5c' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.8'%3E%3Cpath d='m3.5 6 4.5 4 4.5-4'/%3E%3C/svg%3E");
+  background-position:right .75rem center;
+  background-repeat:no-repeat;
+  background-size:.85rem;
+  color:var(--color-text);
+  font:inherit;
+  font-size:.74rem;
+  font-weight:700;
+  letter-spacing:normal;
+  text-transform:none;
+}
