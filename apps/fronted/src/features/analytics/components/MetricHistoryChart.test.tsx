@@ -29,6 +29,23 @@ describe("MetricHistoryChart", () => {
     expect(within(chart).getByRole("img", { name: "Porcentaje de ingresantes por proceso" })).toBeInTheDocument();
   });
 
+  it("uses the selected value and unit for every metric", () => {
+    render(<MetricHistoryChart items={rows} title="Evolución histórica" />);
+    const chart = screen.getByRole("region", { name: "Evolución histórica" });
+    const selector = within(chart).getByLabelText("Métrica");
+
+    for (const [key, name, values] of [
+      ["admitted_count", "Ingresantes por proceso", ["10", "21"]],
+      ["absent_count", "Postulantes ausentes por proceso", ["5", "7"]],
+      ["average_score", "Puntaje promedio por proceso", ["70", "75"]],
+      ["highest_score", "Puntaje máximo por proceso", ["90", "95"]],
+    ] as const) {
+      fireEvent.change(selector, { target: { value: key } });
+      expect(within(chart).getByRole("img", { name })).toBeInTheDocument();
+      for (const value of values) expect(within(chart).getByText(value)).toBeInTheDocument();
+    }
+  });
+
   it("announces an empty historical series without drawing a misleading line", () => {
     render(<MetricHistoryChart items={[]} title="Evolución histórica" />);
 
