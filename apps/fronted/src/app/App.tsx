@@ -7,7 +7,7 @@ export function App() {
     <div className={styles.app}>
       <header className={styles.header}>
         <Link className={styles.brand} to="/">
-          <img className={styles.brandLogo} src="/unmsm.png" alt="UNMSM" />
+          <img className={styles.brandLogo} src="https://assets.resultados-unmsm.com/brand/unmsm-2e787805.png" alt="UNMSM" />
           <span>
             <strong>Admisión UNMSM</strong>
             <small>Resultados oficiales</small>
