@@ -27,10 +27,10 @@ export function DashboardContent({
 }: DashboardContentProps) {
   return (
     <>
+      <MajorCareerFilters controls={filterControls} />
       <KpiGrid overview={primary} previous={previous} />
       <MetricHistoryChart items={historyItems} title="Evolución histórica" status={historyStatus} />
       <ProcessComparisonChart overviews={[primary, ...comparisons]} />
-      <MajorCareerFilters controls={filterControls} />
       <MajorDemandChart majors={getTopMajors(primary.majors)} process={primary.process} />
       <MajorBreakdown overview={primary} />
     </>

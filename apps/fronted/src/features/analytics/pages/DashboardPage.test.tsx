@@ -141,6 +141,12 @@ describe("DashboardPage", () => {
     expect(screen.queryByRole("group", { name: /Ver carreras representadas/ })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Ranking de postulantes" })).not.toBeInTheDocument();
   });
+  it("renders career filters before the KPI cards", async () => {
+    renderPage();
+    const careerFilters = await screen.findByRole("region", { name: "Filtros de carreras" });
+    const firstKpiCard = screen.getAllByRole("article")[0];
+    expect(careerFilters.compareDocumentPosition(firstKpiCard) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+  });
   it("shows KPI trends against the previous process without rendering a comparison chart", async () => {
     vi.mocked(api.useAnalyticsOverview).mockReturnValue({
       data: {
