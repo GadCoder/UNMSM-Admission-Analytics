@@ -1,4 +1,4 @@
-.metricHistory { margin-top:var(--space-5); padding:var(--space-5); }
+.metricHistory { margin-top:var(--space-5); }
 .metricHistoryHeader { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-4); margin-bottom:var(--space-3); }
 .metricHistoryHeader h2 { margin:0; font-size:1rem; }
 .metricHistoryHeader label { min-width:min(13rem,45%); }
