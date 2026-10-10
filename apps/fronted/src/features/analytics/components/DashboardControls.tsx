@@ -27,6 +27,13 @@ export function DashboardControls({ processes, primaryId, comparisons, onChange 
   const [comparisonDraft, setComparisonDraft] = useState(comparisons);
   const comparisonOptions = processes.filter((process) => String(process.id) !== primaryId);
   const selectedProcesses = comparisonOptions.filter((process) => comparisons.includes(String(process.id)));
+  const selectedComparisonLabels = selectedProcesses.map(formatProcessLabel);
+  const comparisonSummary = selectedComparisonLabels.length > 0
+    ? selectedComparisonLabels.join(", ")
+    : null;
+  const comparisonButtonLabel = selectedComparisonLabels.length > 0
+    ? `Editar comparaciones: ${selectedComparisonLabels.join(", ")}`
+    : "Añadir proceso para comparar";
 
 
   useEffect(() => {
@@ -43,7 +50,7 @@ export function DashboardControls({ processes, primaryId, comparisons, onChange 
   };
 
   return (
-    <section className={styles.processContext} aria-label="Contexto del análisis">
+    <div className={styles.processContext} role="group" aria-label="Proceso analizado y comparación">
       <div className={styles.primaryProcessControl}>
         <label htmlFor="primary-process">Proceso analizado</label>
         <select id="primary-process" value={primaryId} onChange={(event) => onChange(event.target.value, comparisons)}>
@@ -53,13 +60,10 @@ export function DashboardControls({ processes, primaryId, comparisons, onChange 
       <div ref={comparisonRef} className={styles.comparisonDisclosure}>
         <div className={styles.comparisonHeader}>
           <span>Comparar con</span>
-          <button className={styles.comparisonButton} type="button" aria-expanded={comparisonOpen} aria-label="Añadir proceso para comparar" onClick={() => { setComparisonDraft(comparisons); setComparisonOpen((open) => !open); }}>
-            <span>＋ Añadir proceso</span>
+          <button className={styles.comparisonButton} type="button" aria-expanded={comparisonOpen} aria-label={comparisonButtonLabel} onClick={() => { setComparisonDraft(comparisons); setComparisonOpen((open) => !open); }}>
+            <span>{comparisonSummary ?? "＋ Añadir"}</span>
           </button>
         </div>
-        {selectedProcesses.length > 0 && <div className={styles.activeComparisons} aria-label="Procesos comparados">
-          {selectedProcesses.map((process) => <span className={styles.comparisonChip} key={process.id}>{formatProcessLabel(process)}<button type="button" aria-label={`Quitar comparación ${formatProcessLabel(process)}`} onClick={() => onChange(primaryId, comparisons.filter((id) => id !== String(process.id)))}>×</button></span>)}
-        </div>}
         {comparisonOpen && <div className={styles.comparisonMenu} role="dialog" aria-label="Comparar procesos">
           <strong>Comparar con</strong>
           <small>Selecciona hasta 3 procesos adicionales.</small>
@@ -75,7 +79,7 @@ export function DashboardControls({ processes, primaryId, comparisons, onChange 
           </div>
         </div>}
       </div>
-    </section>
+    </div>
   );
 }
 
@@ -107,9 +111,11 @@ export function DashboardFilterControls({ areas, faculties, modalities, filters,
 
   const updateDraftFilter = (key: keyof DashboardFilters, value: string) => setDraftFilters((current) => ({ ...current, [key]: value, ...(key === "academicArea" ? { faculty: "" } : {}) }));
 
-  return <details ref={filtersRef} className={styles.filtersDisclosure} open={filtersOpen} onToggle={(event) => setFiltersOpen(event.currentTarget.open)}>
+  return <div className={styles.filterTriggerGroup}>
+    <span className={styles.filterControlLabel}>Filtros</span>
+    <details ref={filtersRef} className={styles.filtersDisclosure} open={filtersOpen} onToggle={(event) => setFiltersOpen(event.currentTarget.open)}>
     <summary
-      aria-label={activeFilters > 0 ? `Filtros de carreras, ${activeFilters} activos` : "Filtros de carreras"}
+      aria-label={activeFilters > 0 ? `Abrir filtros de carreras, ${activeFilters} ${activeFilters === 1 ? "filtro activo" : "filtros activos"}` : "Abrir filtros de carreras"}
       title="Abrir filtros"
       onClick={(event) => {
         if (!filtersOpen) {
@@ -122,7 +128,7 @@ export function DashboardFilterControls({ areas, faculties, modalities, filters,
       <span className={styles.filterIcon} aria-hidden="true">
         <svg viewBox="0 0 24 24" focusable="false"><path d="M4 5h16M7 12h10m-7 7h4" /></svg>
       </span>
-      <span className={styles.filterButtonLabel}>Abrir filtros</span>
+      <span className={styles.filterButtonLabel}>Filtrar</span>
       {activeFilters > 0 && <span className={styles.filterBadge} aria-hidden="true">{activeFilters}</span>}
     </summary>
     <div className={styles.filtersPanel}>
@@ -131,7 +137,8 @@ export function DashboardFilterControls({ areas, faculties, modalities, filters,
       <FilterSelect label="Modalidad" value={draftFilters.modality} options={modalities.map((item) => [item.name, item.name])} onChange={(value) => updateDraftFilter("modality", value)} />
       <button className={styles.resetButton} type="button" onClick={() => { onReset(); setDraftFilters({ academicArea: "", faculty: "", modality: "" }); setFiltersOpen(false); }}>↻ Restablecer filtros</button>
     </div>
-  </details>;
+    </details>
+  </div>;
 }
 
 function FilterSelect({ label, value, options, onChange }: { label: string; value: string; options: string[][]; onChange: (value: string) => void }) {

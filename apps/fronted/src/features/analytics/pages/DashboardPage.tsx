@@ -2,9 +2,11 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import * as api from "../api/analytics";
+import { AnalyticsSurface } from "../components/AnalyticsSurface";
 import { DashboardContent } from "../components/DashboardContent";
 import { DashboardControls, DashboardFilterControls } from "../components/DashboardControls";
 import { DashboardLoadingSkeleton, DashboardOverviewLoadingSkeleton } from "../components/LoadingSkeletons";
+import { MajorCareerFilters } from "../components/MajorCareerFilters";
 import { emptyDashboardView, readDashboardView, saveDashboardView, type DashboardView } from "../utils/dashboardSessionState";
 import styles from "./DashboardPage.module.css";
 
@@ -108,6 +110,18 @@ export function DashboardPage() {
     setParams(next);
   }, [primaryId, savedView.comparisons, setParams]);
 
+  const resetFilters = () => {
+    const nextView = emptyDashboardView;
+    setSavedView(nextView);
+    saveDashboardView(nextView);
+    const next = new URLSearchParams(primaryId ? { process: primaryId } : {});
+    next.delete("compare");
+    next.delete("academic_area");
+    next.delete("faculty");
+    next.delete("modality");
+    setParams(next);
+  };
+
   return (
     <section className={styles.page}>
       <div className={styles.hero}>
@@ -115,15 +129,28 @@ export function DashboardPage() {
           <h1>Resultados de admisión</h1>
           <p className={styles.intro}>Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.</p>
         </div>
-        {processes.length > 0 && (
-          <DashboardControls
-            processes={processes}
-            primaryId={primaryId}
-            comparisons={requestedComparisons}
-            onChange={updateSelection}
-          />
-        )}
       </div>
+
+      {processes.length > 0 && (
+        <AnalyticsSurface className={styles.analysisControls} aria-label="Controles del análisis">
+          <div className={styles.analysisProcessGroup}>
+            <DashboardControls
+              processes={processes}
+              primaryId={primaryId}
+              comparisons={requestedComparisons}
+              onChange={updateSelection}
+            />
+          </div>
+          <MajorCareerFilters controls={<DashboardFilterControls
+            areas={areasQuery.data ?? []}
+            faculties={facultiesQuery.data ?? []}
+            modalities={modalitiesQuery.data ?? []}
+            filters={filters}
+            onChange={updateFilters}
+            onReset={resetFilters}
+          />} />
+        </AnalyticsSurface>
+      )}
 
       {processesQuery.isPending && <DashboardLoadingSkeleton />}
       {processesQuery.isError && (
@@ -154,25 +181,6 @@ export function DashboardPage() {
                 previous={previous}
                 historyItems={historyQuery.data?.processes ?? []}
                 historyStatus={historyQuery.isFetching && !historyQuery.data ? "loading" : historyQuery.isError ? "error" : "ready"}
-
-                filterControls={<DashboardFilterControls
-                  areas={areasQuery.data ?? []}
-                  faculties={facultiesQuery.data ?? []}
-                  modalities={modalitiesQuery.data ?? []}
-                  filters={filters}
-                  onChange={updateFilters}
-                  onReset={() => {
-                    const nextView = emptyDashboardView;
-                    setSavedView(nextView);
-                    saveDashboardView(nextView);
-                    const next = new URLSearchParams(primaryId ? { process: primaryId } : {});
-                    next.delete("compare");
-                    next.delete("academic_area");
-                    next.delete("faculty");
-                    next.delete("modality");
-                    setParams(next);
-                  }}
-                />}
               />
             </div>
           )}
