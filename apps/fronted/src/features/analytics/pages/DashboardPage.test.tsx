@@ -21,6 +21,8 @@ vi.mock("../api/analytics", async (importOriginal) => ({
 const processes = [
   { id: 1, year: 2025, sequence: "2", name: "Proceso 2025-II" },
   { id: 2, year: 2025, sequence: "1", name: "Proceso 2025-I" },
+  { id: 3, year: 2024, sequence: "2", name: "Proceso 2024-II" },
+  { id: 4, year: 2024, sequence: "1", name: "Proceso 2024-I" },
 ];
 const academicAreas = [
   { id: 1, code: "SALUD", name: "Ciencias de la Salud" },
@@ -115,15 +117,17 @@ describe("DashboardPage", () => {
     fireEvent.click(metricsToggle);
     expect(metricsToggle).toHaveAttribute("aria-expanded", "true");
     expect(within(firstPerformanceCard).getByText("Tasa de admisión")).toBeInTheDocument();
-    const careerFilters = screen.getByRole("region", { name: "Filtros de carreras" });
-    expect(careerFilters).toHaveClass(surfaceStyles.surface);
+    const controlsSurface = screen.getByRole("region", { name: "Controles del análisis" });
+    expect(controlsSurface).toHaveClass(surfaceStyles.surface);
+    const careerFilters = within(controlsSurface).getByRole("group", { name: "Filtros de carreras" });
     const demandMap = screen.getByRole("region", { name: "Mapa de demanda y admisión" });
     const performance = screen.getByRole("region", { name: "Desempeño por carrera" });
     expect(demandMap).toHaveClass(surfaceStyles.surface);
     expect(performance).toHaveClass(surfaceStyles.surface);
-    expect(within(careerFilters).getByText("Filtros de carreras")).toBeInTheDocument();
-    expect(within(careerFilters).getByText("Filtrar por área, facultad o modalidad")).toBeInTheDocument();
-    expect(within(careerFilters).getByText("Abrir filtros")).toBeInTheDocument();
+    expect(within(careerFilters).queryByRole("heading", { name: "Filtros de carreras" })).not.toBeInTheDocument();
+    expect(within(careerFilters).queryByText("Filtrar por área, facultad o modalidad")).not.toBeInTheDocument();
+    expect(within(careerFilters).getByLabelText(/Abrir filtros de carreras/)).toBeInTheDocument();
+    expect(within(careerFilters).getByText("Filtros")).toBeInTheDocument();
     expect(careerFilters.compareDocumentPosition(demandMap) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(demandMap.compareDocumentPosition(performance) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(performance).not.toContainElement(careerFilters);
@@ -141,11 +145,28 @@ describe("DashboardPage", () => {
     expect(screen.queryByRole("group", { name: /Ver carreras representadas/ })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Ranking de postulantes" })).not.toBeInTheDocument();
   });
-  it("renders career filters before the KPI cards", async () => {
+  it("groups process and career controls in one surface before KPI cards", async () => {
     renderPage();
-    const careerFilters = await screen.findByRole("region", { name: "Filtros de carreras" });
+
+    const controlsSurface = await screen.findByRole("region", { name: "Controles del análisis" });
+    expect(controlsSurface).toHaveClass(surfaceStyles.surface);
+    expect(within(controlsSurface).queryByRole("heading", { name: "Proceso y comparación" })).not.toBeInTheDocument();
+    const processGroup = within(controlsSurface).getByRole("group", { name: "Proceso analizado y comparación" });
+    expect(within(processGroup).getByLabelText("Proceso analizado")).toHaveValue("1");
+    expect(within(processGroup).getByRole("button", { name: "Añadir proceso para comparar" })).toBeInTheDocument();
+    const careerFilters = within(controlsSurface).getByRole("group", { name: "Filtros de carreras" });
+    expect(within(careerFilters).queryByRole("heading", { name: "Filtros de carreras" })).not.toBeInTheDocument();
+    expect(within(careerFilters).queryByText("Filtrar por área, facultad o modalidad")).not.toBeInTheDocument();
+    expect(within(careerFilters).getByLabelText(/Abrir filtros de carreras/)).toBeInTheDocument();
+    const filterAction = within(careerFilters).getByLabelText(/Abrir filtros de carreras/);
+    const filterLabel = within(careerFilters).getByText("Filtros");
+    expect(filterAction).toHaveTextContent("Filtrar");
+    expect(filterAction).not.toContainElement(filterLabel);
+    expect(controlsSurface.querySelectorAll(`.${surfaceStyles.surface}`)).toHaveLength(0);
+    expect(screen.queryByRole("region", { name: "Filtros de carreras" })).not.toBeInTheDocument();
+
     const firstKpiCard = screen.getAllByRole("article")[0];
-    expect(careerFilters.compareDocumentPosition(firstKpiCard) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(controlsSurface.compareDocumentPosition(firstKpiCard) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
   it("shows KPI trends against the previous process without rendering a comparison chart", async () => {
     vi.mocked(api.useAnalyticsOverview).mockReturnValue({
@@ -309,21 +330,27 @@ describe("DashboardPage", () => {
     await user.click(screen.getByRole("button", { name: "Añadir proceso para comparar" }));
     expect(within(screen.getByRole("dialog")).getByText("Comparar con")).toBeInTheDocument();
     await user.click(screen.getByRole("checkbox", { name: "2025-1" }));
+    await user.click(screen.getByRole("checkbox", { name: "2024-2" }));
+    await user.click(screen.getByRole("checkbox", { name: "2024-1" }));
     expect(screen.getByTestId("location")).not.toHaveTextContent("compare=2");
     await user.click(screen.getByRole("button", { name: "Aplicar comparación" }));
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=1"));
-    expect(sessionStorage.getItem("unmsm-dashboard-view")).toContain('"comparisons":["2"]');
-    expect(screen.getByRole("button", { name: "Quitar comparación 2025-1" })).toBeInTheDocument();
+    expect(sessionStorage.getItem("unmsm-dashboard-view")).toContain('"comparisons":["2","3","4"]');
+    const processGroup = screen.getByRole("group", { name: "Proceso analizado y comparación" });
+    expect(within(processGroup).getByRole("button", { name: "Editar comparaciones: 2025-1, 2024-2, 2024-1" })).toHaveTextContent("2025-1, 2024-2, 2024-1");
+    expect(within(processGroup).queryByRole("group", { name: "Procesos comparados" })).not.toBeInTheDocument();
+    expect(within(processGroup).queryByRole("button", { name: "Quitar comparación 2025-1" })).not.toBeInTheDocument();
   });
 
   it("filters faculty options by the selected academic area", async () => {
     const user = userEvent.setup();
     renderPage("/?academic_area=SALUD");
 
-    const careerFilters = screen.getByRole("region", { name: "Filtros de carreras" });
-    expect(within(careerFilters).getByText("Filtrar por área, facultad o modalidad")).toBeInTheDocument();
+    const careerFilters = within(screen.getByRole("region", { name: "Controles del análisis" })).getByRole("group", { name: "Filtros de carreras" });
+    expect(within(careerFilters).getByText("Filtros")).toBeInTheDocument();
+    expect(within(careerFilters).getByLabelText("Abrir filtros de carreras, 1 filtro activo")).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Selección de procesos y filtros" })).not.toBeInTheDocument();
-    await user.click(within(careerFilters).getByText("Abrir filtros"));
+    await user.click(within(careerFilters).getByLabelText(/Abrir filtros de carreras/));
     const faculty = await screen.findByLabelText("Facultad");
     expect(within(faculty).getByRole("option", { name: "Medicina" })).toBeInTheDocument();
     expect(within(faculty).queryByRole("option", { name: "Ingeniería de Sistemas" })).not.toBeInTheDocument();
@@ -333,8 +360,8 @@ describe("DashboardPage", () => {
     const user = userEvent.setup();
     renderPage();
 
-    const careerFilters = screen.getByRole("region", { name: "Filtros de carreras" });
-    await user.click(within(careerFilters).getByText("Abrir filtros"));
+    const careerFilters = within(screen.getByRole("region", { name: "Controles del análisis" })).getByRole("group", { name: "Filtros de carreras" });
+    await user.click(within(careerFilters).getByLabelText(/Abrir filtros de carreras/));
     expect(screen.getByLabelText("Facultad")).toBeVisible();
 
     await user.click(document.body);
@@ -345,8 +372,8 @@ describe("DashboardPage", () => {
     const user = userEvent.setup();
     renderPage();
 
-    const careerFilters = screen.getByRole("region", { name: "Filtros de carreras" });
-    await user.click(within(careerFilters).getByText("Abrir filtros"));
+    const careerFilters = within(screen.getByRole("region", { name: "Controles del análisis" })).getByRole("group", { name: "Filtros de carreras" });
+    await user.click(within(careerFilters).getByLabelText(/Abrir filtros de carreras/));
     await user.selectOptions(screen.getByLabelText("Área académica"), "ING");
 
     expect(screen.getByTestId("location")).toHaveTextContent("process=1");
