@@ -3,7 +3,7 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 
 import type { MajorDetailProcess, ProcessOverview } from "../api/analytics.types";
 import * as api from "../api/analytics";
-import { HistoryTable } from "../components/MajorDetailHistory";
+import { MajorDetailHistory } from "../components/MajorDetailHistory";
 import { MetricHistoryChart } from "../components/MetricHistoryChart";
 import { MajorDetailLoadingSkeleton } from "../components/LoadingSkeletons";
 import { KpiGrid } from "../components/KpiGrid";
@@ -102,7 +102,11 @@ export function MajorDetailPage() {
       <header className={styles.comparisonCardHeader}>
         <h2 id="history-heading" className={styles.comparisonSectionTitle}>Resultados históricos</h2>
       </header>
-      <HistoryTable items={historyTimeline} />
+      <MajorDetailHistory
+        items={historyTimeline}
+        selectedProcessId={current.process.id}
+        onSelectProcess={(processId) => updateSelection(String(processId))}
+      />
     </section>
   </section>;
 }
