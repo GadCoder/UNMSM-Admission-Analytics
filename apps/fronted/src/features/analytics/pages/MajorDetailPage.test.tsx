@@ -1,5 +1,6 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { cleanup, render, screen, within } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { MemoryRouter, Route, Routes } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
@@ -75,7 +76,7 @@ describe("MajorDetailPage", () => {
   it("keeps a single process selector while showing the full career history immediately", () => {
     renderPage("/analytics/careers/42?process=2");
 
-    const firstKpi = screen.getByText("100", { selector: "strong" }).closest("article");
+    const firstKpi = screen.getAllByText("100", { selector: "strong" })[0].closest("article");
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("2");
     expect(screen.getByRole("link", { name: "← Volver a la vista de proceso" })).toHaveAttribute("href", "/?process=2");
     expect(screen.queryByText("Detalle de carrera")).not.toBeInTheDocument();
@@ -137,51 +138,47 @@ describe("MajorDetailPage", () => {
   it("renders the newest historical process first while keeping calculations chronological", () => {
     renderPage("/analytics/careers/42?process=2");
 
-    const history = screen.getByRole("table", { name: "Historial de resultados por proceso" });
+    const history = screen.getByRole("list", { name: "Historial por proceso" });
     const text = history.textContent ?? "";
     expect(text.indexOf("2026-1")).toBeLessThan(text.indexOf("2025-2"));
   });
 
-  it("renders history as a labeled data table", () => {
-    renderPage("/analytics/careers/42?process=2");
-
-    const table = screen.getByRole("table", { name: "Historial de resultados por proceso" });
-    expect(table).toHaveTextContent("Postulantes");
-    expect(screen.queryByRole("columnheader", { name: "Demanda" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("columnheader", { name: "Ingreso" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("columnheader", { name: "Puntajes" })).not.toBeInTheDocument();
-    expect(table).toHaveTextContent("Tasa de ingreso");
-    expect(table).toHaveTextContent("Ausentes");
-    expect(table).toHaveTextContent("% ausentes");
-    expect(table).toHaveTextContent("Puntaje máximo");
-    expect(table).toHaveTextContent("Puntaje promedio");
-    expect(table).toHaveTextContent("2025-2");
-  });
-
-  it("surfaces concise historical highlights without making the mobile cards a comparison view", () => {
-    renderPage("/analytics/careers/42?process=2");
-
-    const highlights = screen.getByRole("list", { name: "Puntos clave del historial" });
-    expect(within(highlights).getAllByRole("listitem")).toHaveLength(3);
-    expect(within(highlights).getByText("Mayor demanda")).toBeInTheDocument();
-    expect(within(highlights).getByText("100 postulantes")).toBeInTheDocument();
-    expect(within(highlights).getByText("Mayor tasa de ingreso")).toBeInTheDocument();
-    expect(within(highlights).getByText("12.5%")).toBeInTheDocument();
-    expect(within(highlights).getByText("Mayor puntaje promedio")).toBeInTheDocument();
-  });
-
-  it("renders mobile history cards for every chronological process", () => {
+  it("renders historical results as insight-led timeline entries", () => {
     renderPage("/analytics/careers/42?process=2");
 
     const history = screen.getByRole("list", { name: "Historial por proceso" });
-    expect(within(history).getAllByRole("listitem")).toHaveLength(2);
-    expect(within(history).queryByRole("group", { name: "Postulantes en 2025-2" })).not.toBeInTheDocument();
-    expect(within(history).getByRole("heading", { name: "2025-2" })).toBeInTheDocument();
-    expect(within(history).getAllByText("Postulantes")).toHaveLength(2);
-    expect(within(history).getAllByText("Postulantes ausentes")).toHaveLength(2);
-    expect(within(history).getAllByText("Porcentaje de ingresantes")).toHaveLength(2);
-    expect(within(history).getAllByText("Puntaje máximo")).toHaveLength(2);
+    expect(within(history).getByRole("heading", { name: "Hubo más postulantes que en 2025-2, con una cantidad similar de ingresantes." })).toBeInTheDocument();
+    expect(history).toHaveTextContent("Ingresó el 10% de los postulantes, frente al 12.5% en 2025-2.");
+    expect(screen.queryByRole("table")).not.toBeInTheDocument();
+  });
+
+  it("shows a reference summary for the oldest process", () => {
+    renderPage("/analytics/careers/42?process=2");
+
+    const oldest = screen.getByRole("article", { name: "Proceso 2025-2" });
+    expect(oldest).toHaveTextContent("Referencia de participación e ingreso");
+    expect(oldest).toHaveTextContent("80 postulantes · 10 ingresantes");
+    expect(oldest).not.toHaveTextContent("frente al");
+  });
+
+  it("keeps supplemental scores and absences visible in every timeline entry", () => {
+    renderPage("/analytics/careers/42?process=2");
+
+    const history = screen.getByLabelText("Historial por proceso");
+    expect(within(history).getByRole("button", { name: "2025-2" })).toBeInTheDocument();
     expect(within(history).getAllByText("Puntaje promedio")).toHaveLength(2);
+    expect(within(history).getAllByText("Puntaje máximo")).toHaveLength(2);
+    expect(within(history).getAllByText("Ausentes")).toHaveLength(2);
+  });
+
+  it("selects a process from history and updates the page URL-driven query", async () => {
+    const user = userEvent.setup();
+    renderPage("/analytics/careers/42?process=2");
+
+    await user.click(screen.getAllByRole("button", { name: "2025-2" })[0]);
+
+    expect(screen.getByLabelText("Proceso analizado")).toHaveValue("1");
+    expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "1", []);
   });
 
   it("ignores legacy comparison query state and fetches only the analyzed process", () => {
