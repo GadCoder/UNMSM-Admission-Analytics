@@ -17,7 +17,7 @@ Help readers understand how participation and admission changed without interpre
 
 ## Implementation and validation
 
-- Implemented in MajorDetailHistory.tsx and its dedicated CSS module, integrated into MajorDetailPage.
+- MajorDetailHistory.tsx owns timeline structure and selection; MajorHistoryEntry.tsx renders one process; majorDetailHistory.utils.ts builds formatted entry data and insight sentences. A shared CSS module supplies the presentation, and MajorDetailPage handles URL integration.
 - Tested opposing count changes, the 5% similarity boundary, newest-first ordering, year grouping, zero counts, missing scores, empty and single-process histories, visible details, and keyboard/URL selection.
 - All 50 frontend tests pass; production build and lint pass.
 - Reviewed Chrome previews at 1280px and 390px with sample API data. Both layouts fit without horizontal page overflow; process selection updates the URL and selector.
