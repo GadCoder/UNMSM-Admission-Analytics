@@ -61,7 +61,7 @@ export function MetricHistoryChart({
         <>
           <MetricHistoryPlot items={items} metric={metric} />
           <p className={styles.metricHistoryCurrent}>
-            Mostrando {metric.label.toLocaleLowerCase("es-PE")} a través de los procesos publicados.
+            Mostrando {metric.label.toLocaleLowerCase("es-PE")} a través de los procesos publicados. Pasa el cursor o enfoca un punto para ver su variación.
           </p>
         </>
       )}
