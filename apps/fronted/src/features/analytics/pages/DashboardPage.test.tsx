@@ -135,7 +135,7 @@ describe("DashboardPage", () => {
     expect(careerFilters.compareDocumentPosition(demandMap) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(demandMap.compareDocumentPosition(performance) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(performance).not.toContainElement(careerFilters);
-    expect(screen.getByRole("group", { name: "Mapa de demanda y tasa de ingreso por carrera" })).toBeInTheDocument();
+    expect(screen.getByRole("group", { name: "Mapa de postulantes y porcentaje de ingreso por carrera" })).toBeInTheDocument();
     const demandPoint = screen.getByRole("button", { name: "Mostrar datos de Ingeniería" });
     expect(screen.queryByText(/Carrera seleccionada:/)).not.toBeInTheDocument();
     fireEvent.click(demandPoint);
@@ -144,7 +144,7 @@ describe("DashboardPage", () => {
     for (const legendHeading of screen.getAllByRole("heading", { name: "Carreras representadas" })) {
       const legend = legendHeading.parentElement;
       expect(within(legend!).getByText("50 postulantes")).toBeInTheDocument();
-      expect(within(legend!).getByText("24% de ingresantes")).toBeInTheDocument();
+      expect(within(legend!).getByText("24% ingresó")).toBeInTheDocument();
     }
     expect(screen.queryByRole("group", { name: /Ver carreras representadas/ })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Ranking de postulantes" })).not.toBeInTheDocument();

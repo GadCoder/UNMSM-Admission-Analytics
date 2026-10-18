@@ -3,7 +3,7 @@ import { formatProcessLabel } from "../utils/processLabels";
 import styles from "../pages/DashboardPage.module.css";
 import { AnalyticsSurface } from "./AnalyticsSurface";
 import { MajorDemandMatrix } from "./MajorDemandMatrix";
-import { createDemandChartModel } from "./majorDemandRanking.utils";
+import { createDemandChartModel, describeDemandInsight } from "./majorDemandRanking.utils";
 
 type MajorDemandChartProps = {
   majors: MajorOverview[];
@@ -23,10 +23,15 @@ export function MajorDemandChart({ majors, process }: MajorDemandChartProps) {
         <h2 id="demand-map-heading">Mapa de demanda y admisión</h2>
         <p>
           {majors.length ? `${selectionLabel} en ${processLabel}, según los filtros aplicados.` : "No hay carreras disponibles con los filtros aplicados."}
-          {majors.length > 0 && " A la derecha hay más postulantes; arriba, un mayor porcentaje de ellos ingresó."}
         </p>
       </div>
-      {majors.length > 0 && <MajorDemandMatrix {...model} />}
+      {majors.length > 0 && <>
+        <div className={styles.demandMapInsight}>
+          <strong>Dato destacado</strong>
+          <p>{describeDemandInsight(model.points)}</p>
+        </div>
+        <MajorDemandMatrix {...model} />
+      </>}
     </AnalyticsSurface>
   );
 }

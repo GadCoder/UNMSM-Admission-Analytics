@@ -32,34 +32,52 @@ function findTooltipPosition(plot: DOMRect, tooltip: DOMRect, point: DOMRect): T
     .sort((left, right) => left.score - right.score)[0];
 
   return {
-    left: clamp(best.left, TOOLTIP_INSET, plot.width - tooltip.width - TOOLTIP_INSET),
-    top: clamp(best.top, TOOLTIP_INSET, plot.height - tooltip.height - TOOLTIP_INSET),
+    left: clamp(best.left, TOOLTIP_INSET, Math.max(TOOLTIP_INSET, plot.width - tooltip.width - TOOLTIP_INSET)),
+    top: clamp(best.top, TOOLTIP_INSET, Math.max(TOOLTIP_INSET, plot.height - tooltip.height - TOOLTIP_INSET)),
   };
 }
 
-export function useDemandMapTooltip() {
-  const [selectedPoint, setSelectedPoint] = useState<DemandChartPoint | null>(null);
+function getDefaultPoint(points: DemandChartPoint[]) {
+  return points.find((point) => point.major.major_name.toLocaleLowerCase("es-PE") === "medicina humana") ?? points[0] ?? null;
+}
+
+export function useDemandMapTooltip(points: DemandChartPoint[]) {
+  const [selectedMajorId, setSelectedMajorId] = useState<number | null>(() => getDefaultPoint(points)?.major.major_id ?? null);
+  const selectedPoint = points.find((point) => point.major.major_id === selectedMajorId) ?? getDefaultPoint(points);
+  const [tooltipVisible, setTooltipVisible] = useState(false);
   const [tooltipPosition, setTooltipPosition] = useState<TooltipPosition | null>(null);
   const plotRef = useRef<HTMLDivElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const pointerAnchorRef = useRef<{ majorId: number; x: number; y: number } | null>(null);
 
   const selectPoint = useCallback((point: DemandChartPoint) => {
+    pointerAnchorRef.current = null;
     setTooltipPosition(null);
-    setSelectedPoint(point);
+    setSelectedMajorId(point.major.major_id);
+    setTooltipVisible(true);
   }, []);
 
+  const moveTooltip = useCallback((majorId: number, clientX: number, clientY: number) => {
+    if (!tooltipVisible || selectedPoint?.major.major_id !== majorId || !plotRef.current || !tooltipRef.current) return;
+    pointerAnchorRef.current = { majorId, x: clientX, y: clientY };
+    setTooltipPosition(findTooltipPosition(
+      plotRef.current.getBoundingClientRect(),
+      tooltipRef.current.getBoundingClientRect(),
+      new DOMRect(clientX, clientY, 0, 0),
+    ));
+  }, [selectedPoint, tooltipVisible]);
+
   useLayoutEffect(() => {
-    if (!selectedPoint || !plotRef.current || !tooltipRef.current) return;
+    if (!tooltipVisible || !selectedPoint || !plotRef.current || !tooltipRef.current) return;
 
     const selected = plotRef.current.querySelector<HTMLButtonElement>(`[data-major-id="${selectedPoint.major.major_id}"]`);
     if (!selected) return;
 
-    setTooltipPosition(findTooltipPosition(
-      plotRef.current.getBoundingClientRect(),
-      tooltipRef.current.getBoundingClientRect(),
-      selected.getBoundingClientRect(),
-    ));
-  }, [selectedPoint]);
+    const anchor = pointerAnchorRef.current?.majorId === selectedPoint.major.major_id
+      ? new DOMRect(pointerAnchorRef.current.x, pointerAnchorRef.current.y, 0, 0)
+      : selected.getBoundingClientRect();
+    setTooltipPosition(findTooltipPosition(plotRef.current.getBoundingClientRect(), tooltipRef.current.getBoundingClientRect(), anchor));
+  }, [selectedPoint, tooltipVisible]);
 
-  return { plotRef, selectedPoint, selectPoint, tooltipPosition, tooltipRef };
+  return { plotRef, selectedPoint, selectPoint, moveTooltip, tooltipVisible, tooltipPosition, tooltipRef };
 }
