@@ -13,6 +13,22 @@ function direction(current: number, previous: number) {
   return current > previous ? "more" : "less";
 }
 
+function describeCountChange(label: string, current: number, previous: number) {
+  if (current === previous) return `${label} no variaron`;
+  if (previous === 0) return `${label} pasaron de 0 a ${formatNumber(current)}`;
+
+  const change = Math.abs((current - previous) / previous * 100);
+  const magnitude = change < 0.1 ? "menos del 0.1%" : `un ${formatNumber(change, 1)}%`;
+  return `${label} ${current > previous ? "aumentaron" : "disminuyeron"} ${magnitude}`;
+}
+
+function describeChanges(item: MajorDetailProcess, previous: MajorDetailProcess | undefined) {
+  if (!previous) return null;
+  const admitted = describeCountChange("Los ingresantes", item.admitted_count, previous.admitted_count);
+  const applicants = describeCountChange("los postulantes", item.total_results, previous.total_results);
+  return `${admitted}, mientras que ${applicants} respecto a ${formatProcessLabel(previous.process)}.`;
+}
+
 function takeaway(item: MajorDetailProcess, previous: MajorDetailProcess | undefined) {
   if (!item.total_results) return "Sin postulantes registrados";
   if (!previous?.total_results) return "Referencia de participación e ingreso";
@@ -39,6 +55,7 @@ export function buildMajorHistoryEntries(items: MajorDetailProcess[]) {
       label: formatProcessLabel(item.process),
       startsYear: index === 0 || items[index - 1].process.year !== item.process.year,
       takeaway: takeaway(item, previous),
+      changeDescription: describeChanges(item, previous),
       applicants: formatNumber(item.total_results),
       admitted: formatNumber(item.admitted_count),
       admission: {
