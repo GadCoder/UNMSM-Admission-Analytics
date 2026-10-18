@@ -5,6 +5,13 @@ import type { TooltipPosition } from "./useDemandMapTooltip";
 import { formatNumber } from "../utils/formatters";
 import styles from "../pages/DashboardPage.module.css";
 
+const QUADRANTS = [
+  { position: styles.demandMatrixQuadrantTopLeft, demand: "Menos postulantes", admission: "Ingresa un mayor porcentaje" },
+  { position: styles.demandMatrixQuadrantTopRight, demand: "Más postulantes", admission: "Ingresa un mayor porcentaje" },
+  { position: styles.demandMatrixQuadrantBottomLeft, demand: "Menos postulantes", admission: "Ingresa un menor porcentaje" },
+  { position: styles.demandMatrixQuadrantBottomRight, demand: "Más postulantes", admission: "Ingresa un menor porcentaje" },
+];
+
 type DemandMapPlotProps = Pick<DemandChartModel, "points" | "applicantRange" | "admissionRateRange"> & {
   plotRef: RefObject<HTMLDivElement | null>;
   selectedPoint: DemandChartPoint | null;
@@ -24,15 +31,15 @@ export function DemandMapPlot({
   tooltipRef,
 }: DemandMapPlotProps) {
   return (
+    <>
     <div className={styles.demandMatrix} role="group" aria-label="Mapa de demanda y tasa de ingreso por carrera">
       <div className={styles.demandMatrixYAxis} aria-hidden="true">
         <span>{formatNumber(admissionRateRange.max, 1)}%</span>
-        <span>Porcentaje de ingresantes</span>
+        <span>Postulantes que ingresaron (%)</span>
         <span>{formatNumber(admissionRateRange.min, 1)}%</span>
       </div>
       <div className={styles.demandMatrixPlot} ref={plotRef}>
-        <span className={`${styles.demandMatrixQuadrant} ${styles.demandMatrixQuadrantTopLeft}`}>Menor demanda<br />mayor ingreso</span>
-        <span className={`${styles.demandMatrixQuadrant} ${styles.demandMatrixQuadrantBottomRight}`}>Mayor demanda<br />menor ingreso</span>
+        {QUADRANTS.map(({ position, demand, admission }) => <span key={position} className={`${styles.demandMatrixQuadrant} ${position}`}>{demand}<br />{admission}</span>)}
         {points.map((point) => {
           const { major, rank, left, bottom, admissionRate } = point;
           const isSelected = selectedPoint?.major.major_id === major.major_id;
@@ -68,9 +75,13 @@ export function DemandMapPlot({
       </div>
       <div className={styles.demandMatrixXAxis} aria-hidden="true">
         <span>{formatNumber(applicantRange.min)} postulantes</span>
-        <strong>Demanda entre las carreras representadas</strong>
+        <strong>Número de postulantes</strong>
         <span>{formatNumber(applicantRange.max)} postulantes</span>
       </div>
     </div>
+      <div className={styles.demandMatrixQuadrantGuide} role="group" aria-label="Lectura de los cuadrantes">
+        {QUADRANTS.map(({ position, demand, admission }) => <span key={position}><strong>{demand}</strong><br />{admission}</span>)}
+      </div>
+    </>
   );
 }
