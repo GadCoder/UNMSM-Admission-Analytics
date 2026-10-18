@@ -25,12 +25,33 @@ describe("MajorDetailHistory", () => {
     const latest = screen.getByRole("article", { name: "Proceso 2026-2" });
     expect(within(latest).getByRole("heading", { name: "Hubo más postulantes y menos ingresantes que en 2026-1." })).toBeInTheDocument();
     expect(latest).toHaveTextContent("150 postulantes · 15 ingresantes");
+    expect(latest).toHaveTextContent("Los ingresantes disminuyeron un 25%, mientras que los postulantes aumentaron un 50% respecto a 2026-1.");
     expect(latest).toHaveTextContent("Ingresó el 10% de los postulantes, frente al 20% en 2026-1.");
     expect(latest).toHaveTextContent("Puntaje promedio75.25");
     expect(latest).toHaveTextContent("Puntaje máximo90.5");
     expect(latest).toHaveTextContent("Ausentes4 (2.7%)");
     expect(screen.queryByRole("table")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /detalles/i })).not.toBeInTheDocument();
+  });
+
+  it("quantifies changes even when the heading describes applicants as similar", () => {
+    render(<MajorDetailHistory items={[
+      process(2, 2026, "26-2", 1046, 389),
+      process(1, 2026, "26-1", 1000, 200),
+    ]} />);
+    const latest = screen.getByRole("article", { name: "Proceso 2026-2" });
+    expect(within(latest).getByRole("heading", { name: "Hubo más ingresantes que en 2026-1, con una cantidad similar de postulantes." })).toBeInTheDocument();
+    expect(latest).toHaveTextContent("Los ingresantes aumentaron un 94.5%, mientras que los postulantes aumentaron un 4.6% respecto a 2026-1.");
+    expect(screen.getByRole("article", { name: "Proceso 2026-1" })).not.toHaveTextContent("mientras que");
+  });
+
+  it("distinguishes unchanged counts from a small change that rounds to zero", () => {
+    render(<MajorDetailHistory items={[
+      process(2, 2026, "26-2", 10001, 200),
+      process(1, 2026, "26-1", 10000, 200),
+    ]} />);
+    const latest = screen.getByRole("article", { name: "Proceso 2026-2" });
+    expect(latest).toHaveTextContent("Los ingresantes no variaron, mientras que los postulantes aumentaron menos del 0.1% respecto a 2026-1.");
   });
 
   it.each([
@@ -66,6 +87,7 @@ describe("MajorDetailHistory", () => {
     render(<MajorDetailHistory items={[process(2, 2026, "26-1", 100, 10), process(1, 2025, "25-2", 100, 0)]} />);
     const latest = screen.getByRole("article", { name: "Proceso 2026-1" });
     expect(latest).toHaveTextContent("Hubo más ingresantes que en 2025-2, con una cantidad similar de postulantes.");
+    expect(latest).toHaveTextContent("Los ingresantes pasaron de 0 a 10, mientras que los postulantes no variaron respecto a 2025-2.");
     expect(latest).toHaveTextContent("frente al 0% en 2025-2.");
     expect(screen.queryByText(/NaN|Infinity/)).not.toBeInTheDocument();
   });

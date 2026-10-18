@@ -33,6 +33,7 @@ export function MajorHistoryEntry({ entry, selected, onSelectProcess }: Props) {
           <span className={styles.factSeparator} aria-hidden="true"> · </span>
           <span><strong>{entry.admitted}</strong> ingresantes</span>
         </p>
+        {entry.changeDescription && <p className={`${styles.context} ${styles.change}`}>{entry.changeDescription}</p>}
         <AdmissionContext admission={entry.admission} />
       </div>
       <dl className={styles.details}>

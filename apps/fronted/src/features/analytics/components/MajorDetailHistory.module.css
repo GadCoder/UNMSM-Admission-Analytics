@@ -24,6 +24,7 @@
 .facts > span { white-space: nowrap; }
 .factSeparator { padding-inline: .15rem; color: var(--color-muted); }
 .context { margin: 0; color: var(--color-muted); font-size: .8rem; line-height: 1.55; }
+.change { margin-bottom: .35rem; }
 .context strong { color: var(--color-text); font-weight: 600; }
 .reference { display: block; margin-top: .1rem; font-size: .75rem; }
 .details { display: flex; flex-wrap: wrap; gap: .25rem 1.25rem; margin: .7rem 0 0; color: var(--color-muted); font-size: .73rem; line-height: 1.5; }
