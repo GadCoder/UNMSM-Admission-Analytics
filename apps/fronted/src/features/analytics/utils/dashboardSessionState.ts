@@ -1,10 +1,9 @@
 export const DASHBOARD_VIEW_STORAGE_KEY = "unmsm-dashboard-view";
 
 export type DashboardFilters = { academicArea: string; faculty: string; modality: string };
-export type DashboardView = { comparisons: string[]; filters: DashboardFilters };
+export type DashboardView = { filters: DashboardFilters };
 
 export const emptyDashboardView: DashboardView = {
-  comparisons: [],
   filters: { academicArea: "", faculty: "", modality: "" },
 };
 
@@ -14,7 +13,6 @@ export function readDashboardView(): DashboardView {
     if (!saved) return emptyDashboardView;
     const parsed = JSON.parse(saved) as Partial<DashboardView>;
     return {
-      comparisons: Array.isArray(parsed.comparisons) ? parsed.comparisons.filter((id): id is string => typeof id === "string") : [],
       filters: { ...emptyDashboardView.filters, ...(parsed.filters ?? {}) },
     };
   } catch {
