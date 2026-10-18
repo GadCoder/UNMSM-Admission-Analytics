@@ -189,6 +189,7 @@ export function DashboardPage() {
                 previous={previous}
                 historyItems={historyQuery.data?.processes ?? []}
                 historyStatus={historyQuery.isFetching && !historyQuery.data ? "loading" : historyQuery.isError ? "error" : "ready"}
+                onSelectProcess={(processId) => updateSelection(String(processId), requestedComparisons)}
               />
             </div>
           )}

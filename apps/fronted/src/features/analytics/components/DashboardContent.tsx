@@ -12,6 +12,7 @@ type DashboardContentProps = {
   previous?: ProcessOverview;
   historyItems: ProcessHistoryItem[];
   historyStatus?: "ready" | "loading" | "error";
+  onSelectProcess?: (processId: number) => void;
 };
 
 export function DashboardContent({
@@ -20,12 +21,13 @@ export function DashboardContent({
   previous,
   historyItems,
   historyStatus = "ready",
+  onSelectProcess,
 }: DashboardContentProps) {
   return (
     <>
       <KpiGrid overview={primary} previous={previous} />
       <MetricHistoryChart items={historyItems} title="Evolución histórica" status={historyStatus} />
-      <ProcessComparisonChart overviews={[primary, ...comparisons]} />
+      <ProcessComparisonChart overviews={[primary, ...comparisons]} onSelectProcess={onSelectProcess} />
       <MajorDemandChart majors={getTopMajors(primary.majors)} process={primary.process} />
       <MajorBreakdown overview={primary} />
     </>
