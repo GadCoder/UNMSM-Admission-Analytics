@@ -1,7 +1,7 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { MemoryRouter, useLocation } from "react-router-dom";
+import { MemoryRouter, useLocation, useNavigate } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DashboardPage } from "./DashboardPage";
@@ -38,7 +38,11 @@ const processHistory = { processes: [
   { process: processes[1], total_results: 80, admitted_count: 16, absent_count: 8, average_score: "62.5", highest_score: "95.0" },
   { process: processes[0], total_results: 100, admitted_count: 20, absent_count: 10, average_score: "65.5", highest_score: "98.0" },
 ] };
-function LocationProbe() { const location = useLocation(); return <output data-testid="location">{location.search}</output>; }
+function LocationProbe() {
+  const location = useLocation();
+  const navigate = useNavigate();
+  return <><output data-testid="location">{location.search}</output><button type="button" onClick={() => navigate(-1)}>Atrás de prueba</button><button type="button" onClick={() => navigate(1)}>Adelante de prueba</button></>;
+}
 function renderPage(entry = "/") {
   const queryClient = new QueryClient({ defaultOptions: { queries: { retry: false } } });
   return render(<QueryClientProvider client={queryClient}><MemoryRouter initialEntries={[entry]}><DashboardPage /><LocationProbe /></MemoryRouter></QueryClientProvider>);
@@ -69,7 +73,7 @@ describe("DashboardPage", () => {
     renderPage();
     expect(screen.getByRole("heading", { name: "Resultados de admisión" })).toBeInTheDocument();
     expect(screen.getByText("Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.")).toBeInTheDocument();
-    expect(screen.getByText("Proceso analizado")).toBeInTheDocument();
+    expect(screen.getByText("Proceso", { selector: "label" })).toBeInTheDocument();
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("1");
     const history = screen.getByRole("region", { name: "Evolución histórica" });
     expect(history).toBeInTheDocument();
@@ -118,7 +122,7 @@ describe("DashboardPage", () => {
     expect(metricsToggle).toHaveAttribute("aria-expanded", "true");
     expect(within(firstPerformanceCard).getByText("Tasa de admisión")).toBeInTheDocument();
     const controlsSurface = screen.getByRole("region", { name: "Controles del análisis" });
-    expect(controlsSurface).toHaveClass(surfaceStyles.surface);
+    expect(controlsSurface).not.toHaveClass(surfaceStyles.surface);
     const careerFilters = within(controlsSurface).getByRole("group", { name: "Filtros de carreras" });
     const demandMap = screen.getByRole("region", { name: "Mapa de demanda y admisión" });
     const performance = screen.getByRole("region", { name: "Desempeño por carrera" });
@@ -127,7 +131,7 @@ describe("DashboardPage", () => {
     expect(within(careerFilters).queryByRole("heading", { name: "Filtros de carreras" })).not.toBeInTheDocument();
     expect(within(careerFilters).queryByText("Filtrar por área, facultad o modalidad")).not.toBeInTheDocument();
     expect(within(careerFilters).getByLabelText(/Abrir filtros de carreras/)).toBeInTheDocument();
-    expect(within(careerFilters).getByText("Filtros")).toBeInTheDocument();
+    expect(within(careerFilters).getByLabelText(/Abrir filtros de carreras/)).toHaveTextContent("Filtros");
     expect(careerFilters.compareDocumentPosition(demandMap) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(demandMap.compareDocumentPosition(performance) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(performance).not.toContainElement(careerFilters);
@@ -145,28 +149,15 @@ describe("DashboardPage", () => {
     expect(screen.queryByRole("group", { name: /Ver carreras representadas/ })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Ranking de postulantes" })).not.toBeInTheDocument();
   });
-  it("groups process and career controls in one surface before KPI cards", async () => {
+  it("groups compact controls before KPI cards without a bordered surface", async () => {
     renderPage();
-
-    const controlsSurface = await screen.findByRole("region", { name: "Controles del análisis" });
-    expect(controlsSurface).toHaveClass(surfaceStyles.surface);
-    expect(within(controlsSurface).queryByRole("heading", { name: "Proceso y comparación" })).not.toBeInTheDocument();
-    const processGroup = within(controlsSurface).getByRole("group", { name: "Proceso analizado y comparación" });
-    expect(within(processGroup).getByLabelText("Proceso analizado")).toHaveValue("1");
-    expect(within(processGroup).getByRole("button", { name: "Añadir proceso para comparar" })).toBeInTheDocument();
-    const careerFilters = within(controlsSurface).getByRole("group", { name: "Filtros de carreras" });
-    expect(within(careerFilters).queryByRole("heading", { name: "Filtros de carreras" })).not.toBeInTheDocument();
-    expect(within(careerFilters).queryByText("Filtrar por área, facultad o modalidad")).not.toBeInTheDocument();
-    expect(within(careerFilters).getByLabelText(/Abrir filtros de carreras/)).toBeInTheDocument();
-    const filterAction = within(careerFilters).getByLabelText(/Abrir filtros de carreras/);
-    const filterLabel = within(careerFilters).getByText("Filtros");
-    expect(filterAction).toHaveTextContent("Filtrar");
-    expect(filterAction).not.toContainElement(filterLabel);
-    expect(controlsSurface.querySelectorAll(`.${surfaceStyles.surface}`)).toHaveLength(0);
-    expect(screen.queryByRole("region", { name: "Filtros de carreras" })).not.toBeInTheDocument();
-
-    const firstKpiCard = screen.getAllByRole("article")[0];
-    expect(controlsSurface.compareDocumentPosition(firstKpiCard) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    const toolbar = await screen.findByRole("region", { name: "Controles del análisis" });
+    expect(toolbar).not.toHaveClass(surfaceStyles.surface);
+    expect(within(toolbar).getByLabelText("Proceso analizado")).toHaveValue("1");
+    expect(within(toolbar).getByRole("button", { name: "Añadir proceso para comparar" })).toBeInTheDocument();
+    expect(within(toolbar).getByLabelText(/Abrir filtros de carreras/)).toBeInTheDocument();
+    expect(within(toolbar).queryByRole("list", { name: "Filtros activos" })).not.toBeInTheDocument();
+    expect(toolbar.compareDocumentPosition(screen.getAllByRole("article")[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
   it("shows KPI trends against the previous process without rendering a comparison chart", async () => {
     vi.mocked(api.useAnalyticsOverview).mockReturnValue({
@@ -207,13 +198,23 @@ describe("DashboardPage", () => {
     await screen.findByRole("table");
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=1"));
     expect(screen.getByTestId("location")).not.toHaveTextContent("compare=");
-    expect(sessionStorage.getItem("unmsm-dashboard-view")).not.toContain('"comparisons":["');
+    expect(sessionStorage.getItem("unmsm-dashboard-view") ?? "").not.toContain('"comparisons":["');
   });
   it("updates the analyzed process when its select changes", async () => {
     renderPage();
     await screen.findByRole("table");
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=1"));
     fireEvent.change(screen.getByLabelText("Proceso analizado"), { target: { value: "2" } });
+    expect(screen.getByLabelText("Proceso analizado")).toHaveValue("2");
+  });
+  it("keeps the primary selector and analytics aligned with browser back and forward", async () => {
+    const user = userEvent.setup();
+    renderPage("/?process=1");
+    await user.selectOptions(screen.getByLabelText("Proceso analizado"), "2");
+    await user.click(screen.getByRole("button", { name: "Atrás de prueba" }));
+    expect(screen.getByLabelText("Proceso analizado")).toHaveValue("1");
+    expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("1", ["2"], { academicArea: "", faculty: "", modality: "" });
+    await user.click(screen.getByRole("button", { name: "Adelante de prueba" }));
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("2");
   });
   it("renders the comparison table for selected processes without a redundant chart", async () => {
@@ -267,7 +268,7 @@ describe("DashboardPage", () => {
 
   it("uses a dedicated three-process layout for mobile comparison values", async () => {
     const thirdProcess = { id: 3, year: 2024, sequence: "2", name: "Proceso 2024-II" };
-    const threeProcesses = [...processes, thirdProcess];
+    const threeProcesses = [...processes.slice(0, 2), thirdProcess];
     vi.mocked(api.usePublishedProcesses).mockReturnValue({ data: threeProcesses, isPending: false, isError: false } as unknown as ReturnType<typeof api.usePublishedProcesses>);
     vi.mocked(api.useAnalyticsOverview).mockReturnValue({
       data: {
@@ -297,7 +298,7 @@ describe("DashboardPage", () => {
   it("keeps the metric heading above a balanced two-column grid with four processes", async () => {
     const thirdProcess = { id: 3, year: 2024, sequence: "2", name: "Proceso 2024-II" };
     const fourthProcess = { id: 4, year: 2024, sequence: "1", name: "Proceso 2024-I" };
-    const fourProcesses = [...processes, thirdProcess, fourthProcess];
+    const fourProcesses = [...processes.slice(0, 2), thirdProcess, fourthProcess];
     vi.mocked(api.usePublishedProcesses).mockReturnValue({ data: fourProcesses, isPending: false, isError: false } as unknown as ReturnType<typeof api.usePublishedProcesses>);
     vi.mocked(api.useAnalyticsOverview).mockReturnValue({
       data: {
@@ -337,9 +338,8 @@ describe("DashboardPage", () => {
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=1"));
     expect(sessionStorage.getItem("unmsm-dashboard-view")).toContain('"comparisons":["2","3","4"]');
     const processGroup = screen.getByRole("group", { name: "Proceso analizado y comparación" });
-    expect(within(processGroup).getByRole("button", { name: "Editar comparaciones: 2025-1, 2024-2, 2024-1" })).toHaveTextContent("2025-1, 2024-2, 2024-1");
-    expect(within(processGroup).queryByRole("group", { name: "Procesos comparados" })).not.toBeInTheDocument();
-    expect(within(processGroup).queryByRole("button", { name: "Quitar comparación 2025-1" })).not.toBeInTheDocument();
+    expect(within(processGroup).getByRole("button", { name: "Editar comparaciones: 2025-1, 2024-2, 2024-1" })).toHaveTextContent("Comparar (3)");
+    expect(within(processGroup).getByRole("button", { name: "Quitar comparación 2025-1" })).toBeInTheDocument();
   });
 
   it("filters faculty options by the selected academic area", async () => {
@@ -347,7 +347,7 @@ describe("DashboardPage", () => {
     renderPage("/?academic_area=SALUD");
 
     const careerFilters = within(screen.getByRole("region", { name: "Controles del análisis" })).getByRole("group", { name: "Filtros de carreras" });
-    expect(within(careerFilters).getByText("Filtros")).toBeInTheDocument();
+    expect(within(careerFilters).getByLabelText(/Abrir filtros de carreras/)).toHaveTextContent("Filtros");
     expect(within(careerFilters).getByLabelText("Abrir filtros de carreras, 1 filtro activo")).toBeInTheDocument();
     expect(screen.queryByRole("region", { name: "Selección de procesos y filtros" })).not.toBeInTheDocument();
     await user.click(within(careerFilters).getByLabelText(/Abrir filtros de carreras/));
@@ -365,7 +365,7 @@ describe("DashboardPage", () => {
     expect(screen.getByLabelText("Facultad")).toBeVisible();
 
     await user.click(document.body);
-    await waitFor(() => expect(screen.queryByLabelText("Facultad")).not.toBeVisible());
+    await waitFor(() => expect(screen.queryByLabelText("Facultad")).not.toBeInTheDocument());
   });
 
   it("debounces filter changes before updating the URL", async () => {
@@ -382,6 +382,44 @@ describe("DashboardPage", () => {
 
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=1"), { timeout: 1000 });
     await waitFor(() => expect(sessionStorage.getItem("unmsm-dashboard-view")).toContain('"academicArea":"ING"'));
+  });
+
+  it("removes an area chip with its dependent faculty and preserves comparisons", async () => {
+    const user = userEvent.setup();
+    renderPage("/?process=1&compare=3&academic_area=ING&faculty=SIS");
+    await user.click(await screen.findByRole("button", { name: "Quitar filtro Área académica: Ingenierías" }));
+    await waitFor(() => {
+      const saved = JSON.parse(sessionStorage.getItem("unmsm-dashboard-view")!);
+      expect(saved.filters).toEqual({ academicArea: "", faculty: "", modality: "" });
+      expect(saved.comparisons).toEqual(["3"]);
+    });
+    expect(screen.queryByRole("list", { name: "Filtros activos" })).not.toBeInTheDocument();
+    expect(api.useProcessHistory).toHaveBeenLastCalledWith({ academicArea: "", faculty: "", modality: "" });
+  });
+
+  it("resets filters without clearing comparisons or restoring a pending filter edit", async () => {
+    const user = userEvent.setup();
+    renderPage("/?process=1&compare=3&academic_area=SALUD");
+    await user.click(await screen.findByLabelText(/Abrir filtros de carreras/));
+    await user.selectOptions(screen.getByLabelText("Área académica"), "ING");
+    await user.click(screen.getByRole("button", { name: /Restablecer filtros/ }));
+    await act(async () => { await new Promise((resolve) => setTimeout(resolve, 500)); });
+    await waitFor(() => {
+      const saved = JSON.parse(sessionStorage.getItem("unmsm-dashboard-view")!);
+      expect(saved.filters).toEqual({ academicArea: "", faculty: "", modality: "" });
+      expect(saved.comparisons).toEqual(["3"]);
+    });
+    await user.click(screen.getByLabelText(/Abrir filtros de carreras/));
+    expect(screen.getByLabelText("Área académica")).toHaveValue("");
+  });
+
+  it("removes only explicit comparison chips while retaining the automatic KPI baseline", async () => {
+    const user = userEvent.setup();
+    renderPage("/?process=1&compare=3");
+    expect(screen.queryByRole("button", { name: "Quitar comparación 2025-1" })).not.toBeInTheDocument();
+    await user.click(await screen.findByRole("button", { name: "Quitar comparación 2024-2" }));
+    await waitFor(() => expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("1", ["2"], { academicArea: "", faculty: "", modality: "" }));
+    expect(JSON.parse(sessionStorage.getItem("unmsm-dashboard-view")!).comparisons).toEqual([]);
   });
 
   it("filters and sorts the major breakdown", async () => {
