@@ -106,8 +106,17 @@ th { font-weight:700; } thead th { color:#8f7e7f; font-size:.62rem; letter-spaci
 .performanceTable thead { background:var(--color-primary); }
 .performanceTable thead th { color:#fff; border-bottom:0; }
 .performanceTable th, .performanceTable td { padding:.65rem .6rem; }
+.performanceSortButton { display:inline-flex; align-items:center; gap:.2rem; padding:.15rem 0; border:0; background:transparent; color:inherit; cursor:pointer; font:inherit; letter-spacing:inherit; text-align:left; text-transform:inherit; white-space:nowrap; }
+.performanceSortButton:hover { color:#fff; text-decoration:underline; text-underline-offset:.2rem; }
+.performanceSortButton:focus-visible { border-radius:.15rem; outline:2px solid #fff; outline-offset:3px; }
 .performanceTable tbody tr:nth-child(even) { background:#fbfcfd; }
 .performanceTable tbody tr:hover { background:var(--color-primary-soft); }
+.majorPagination { display:flex; align-items:center; justify-content:space-between; gap:var(--space-4); margin-top:var(--space-4); padding-top:var(--space-3); border-top:1px solid var(--color-border); }
+.majorPagination p { margin:0; color:var(--color-muted); font-size:.7rem; }
+.majorPagination > div { display:flex; gap:.5rem; }
+.majorPagination button { min-height:2.25rem; padding:.45rem .75rem; border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-surface); color:var(--color-primary); cursor:pointer; font:inherit; font-size:.7rem; font-weight:700; }
+.majorPagination button:hover:not(:disabled) { border-color:var(--color-primary); background:var(--color-primary-soft); }
+.majorPagination button:disabled { color:#a99c9c; cursor:not-allowed; }
 .performanceRank { color:var(--color-muted); font-size:.68rem; font-weight:800; font-variant-numeric:tabular-nums; }
 .performanceCards, .performanceCardsEmpty { display:none; }
 tbody tr:hover { background:#fdfafa; }
@@ -308,6 +317,9 @@ tbody tr:hover { background:#fdfafa; }
   .performanceCardDetails div { display:grid; gap:.2rem; min-width:0; text-align:center; }
   .performanceCardDetails dt { color:var(--color-muted); font-size:.58rem; font-weight:700; letter-spacing:.04em; text-transform:uppercase; }
   .performanceCardDetails dd { margin:0; color:var(--color-text); font-size:.82rem; font-variant-numeric:tabular-nums; }
+  .majorPagination { align-items:stretch; flex-direction:column; }
+  .majorPagination > div { justify-content:space-between; }
+  .majorPagination button { flex:1; }
 }
 @media (max-width:600px) { .page { padding:0; } .hero { align-items:flex-start; flex-direction:column; } .hero .processContext { width:100%; } .skeletonHero { flex-direction:column; } .skeletonControls { width:100%; grid-template-columns:minmax(7rem,8rem) minmax(0,1fr); } .skeletonKpis { grid-template-columns:repeat(2,minmax(0,1fr)); } .comparisonCardHeader { flex-direction:column; gap:var(--space-4); } .comparisonInsight { width:100%; min-width:0; } .processComparisonTable { min-width:0; } .processComparisonTable th, .processComparisonTable td { padding:.65rem .5rem; } .processComparisonTable thead th:first-child { width:34%; } .processComparisonTable thead th { font-size:.58rem; } .processComparisonTable thead th strong { font-size:.72rem; } .processComparisonTable tbody th { font-size:.62rem; } .processComparisonTable tbody td { font-size:.72rem; }
 

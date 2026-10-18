@@ -1,6 +1,6 @@
 import type { MajorOverview } from "../api/analytics.types";
 
-export type SortKey = "total_results" | "admitted_count" | "admission_rate" | "average_score" | "major_name";
+export type SortKey = "total_results" | "admitted_count" | "admission_rate" | "absent_count" | "average_score" | "major_name";
 export type SortDirection = "asc" | "desc";
 
 export function admissionRate(major: MajorOverview) {

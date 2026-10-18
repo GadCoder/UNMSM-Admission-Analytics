@@ -3,19 +3,36 @@ import { Link } from "react-router-dom";
 import type { MajorOverview, ProcessOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
 import { formatProcessLabel } from "../utils/processLabels";
-import { admissionRate } from "./majorPerformance.utils";
+import { admissionRate, type SortDirection, type SortKey } from "./majorPerformance.utils";
 import styles from "../pages/DashboardPage.module.css";
 
-type MajorPerformanceTableProps = { majors: MajorOverview[]; process: ProcessOverview["process"] };
+type MajorPerformanceTableProps = {
+  majors: MajorOverview[];
+  process: ProcessOverview["process"];
+  rankOffset?: number;
+  sortKey: SortKey;
+  sortDirection: SortDirection;
+  onSort: (key: SortKey) => void;
+};
 
-export function MajorPerformanceTable({ majors, process }: MajorPerformanceTableProps) {
+export function MajorPerformanceTable({ majors, process, rankOffset = 0, sortKey, sortDirection, onSort }: MajorPerformanceTableProps) {
+  const sortableHeader = (key: SortKey, label: string) => {
+    const active = sortKey === key;
+    const direction = active ? sortDirection : key === "major_name" ? "asc" : "desc";
+    return <th scope="col" aria-sort={active ? direction === "asc" ? "ascending" : "descending" : "none"}>
+      <button className={styles.performanceSortButton} type="button" onClick={() => onSort(key)} aria-label={`Ordenar por ${label}${active ? `, actualmente ${direction === "asc" ? "ascendente" : "descendente"}` : ""}`}>
+        {label}<span aria-hidden="true">{active ? direction === "asc" ? " ↑" : " ↓" : " ↕"}</span>
+      </button>
+    </th>;
+  };
+
   return <div className={`${styles.tableWrap} ${styles.performanceTableDesktop}`}>
     <table className={styles.performanceTable}>
       <caption className={styles.visuallyHidden}>Indicadores por carrera para {formatProcessLabel(process)}</caption>
-      <thead><tr><th scope="col">#</th><th scope="col">Carrera</th><th scope="col">Postulantes</th><th scope="col">Admitidos</th><th scope="col">Tasa de admisión</th><th scope="col">Ausentes</th><th scope="col">Promedio</th></tr></thead>
+      <thead><tr><th scope="col">#</th>{sortableHeader("major_name", "Carrera")}{sortableHeader("total_results", "Postulantes")}{sortableHeader("admitted_count", "Admitidos")}{sortableHeader("admission_rate", "Tasa de admisión")}{sortableHeader("absent_count", "Ausentes")}{sortableHeader("average_score", "Promedio")}</tr></thead>
       <tbody>
         {majors.map((major, index) => <tr key={major.major_id}>
-          <td className={styles.performanceRank}>{String(index + 1).padStart(2, "0")}</td>
+          <td className={styles.performanceRank}>{String(rankOffset + index + 1).padStart(2, "0")}</td>
           <th scope="row"><Link className={styles.majorDetailLink} to={`/analytics/careers/${major.major_id}?process=${process.id}`}>{major.major_name}</Link></th>
           <td>{formatNumber(major.total_results)}</td>
           <td>{formatNumber(major.admitted_count)}</td>
