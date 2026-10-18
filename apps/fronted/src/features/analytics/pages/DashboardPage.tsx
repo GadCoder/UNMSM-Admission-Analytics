@@ -99,39 +99,38 @@ export function DashboardPage() {
 
   return (
     <section className={styles.page}>
-      <div className={styles.hero}>
+      <div className={`${styles.hero} ${styles.resultsHero}`}>
         <div>
           <h1>Resultados de admisión</h1>
           <p className={styles.intro}>Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.</p>
         </div>
-      </div>
-
-      {processes.length > 0 && (
-        <section className={controlsStyles.toolbar} aria-label="Controles del análisis">
-          <DashboardControls
-            processes={processes}
-            primaryId={primaryId}
-            onChange={updateSelection}
-          />
-          <div className={controlsStyles.filterAction}>
-            <DashboardFilterControls
+        {processes.length > 0 && (
+          <section className={`${controlsStyles.toolbar} ${controlsStyles.toolbarInHeader}`} aria-label="Controles del análisis">
+            <DashboardControls
+              processes={processes}
+              primaryId={primaryId}
+              onChange={updateSelection}
+            />
+            <div className={controlsStyles.filterAction}>
+              <DashboardFilterControls
+                areas={areasQuery.data ?? []}
+                faculties={facultiesQuery.data ?? []}
+                modalities={modalitiesQuery.data ?? []}
+                filters={filters}
+                onChange={updateFilters}
+                onReset={resetFilters}
+              />
+            </div>
+            <ActiveFilterChips
+              filters={filters}
               areas={areasQuery.data ?? []}
               faculties={facultiesQuery.data ?? []}
               modalities={modalitiesQuery.data ?? []}
-              filters={filters}
               onChange={updateFilters}
-              onReset={resetFilters}
             />
-          </div>
-          <ActiveFilterChips
-            filters={filters}
-            areas={areasQuery.data ?? []}
-            faculties={facultiesQuery.data ?? []}
-            modalities={modalitiesQuery.data ?? []}
-            onChange={updateFilters}
-          />
-        </section>
-      )}
+          </section>
+        )}
+      </div>
 
       {processesQuery.isPending && <DashboardLoadingSkeleton />}
       {processesQuery.isError && (

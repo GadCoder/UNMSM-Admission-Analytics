@@ -1,5 +1,6 @@
 .page { max-width: var(--content-width); padding: var(--space-3) 0; }
 .hero { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-6); margin-bottom:var(--space-6); }
+.resultsHero { align-items:center; }
 .eyebrow, .cardLabel { margin:0 0 var(--space-3); color:var(--color-primary); font-size:.68rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
 .page h1 { max-width:680px; margin:0 0 .35rem; font-size:clamp(1.75rem,3.5vw,2.35rem); letter-spacing:-.045em; line-height:1.08; }
 .intro { max-width:650px; margin:0; color:var(--color-muted); font-size:.82rem; line-height:1.5; }
@@ -285,6 +286,7 @@ tbody tr:hover { background:#fdfafa; }
 @keyframes progress { 0% { transform:translateX(-100%); } 100% { transform:translateX(270%); } }
 .visuallyHidden { position:absolute; width:1px; height:1px; padding:0; margin:-1px; overflow:hidden; clip:rect(0,0,0,0); white-space:nowrap; border:0; }
 @media (max-width:900px) { .kpis { grid-template-columns:repeat(3,1fr); } }
+@media (max-width:900px) { .resultsHero { align-items:stretch; flex-direction:column; } }
 .detailBack { display:inline-block; margin-bottom:var(--space-5); color:var(--color-primary); font-size:.74rem; font-weight:700; text-decoration:none; }
 .detailBack:hover, .detailBack:focus-visible { text-decoration:underline; text-underline-offset:3px; }
 @media (max-width:600px) {
