@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
-import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 
 import * as api from "../api/analytics";
 import { ActiveFilterChips } from "../components/ActiveFilterChips";
@@ -8,15 +8,12 @@ import { DashboardContent } from "../components/DashboardContent";
 import { DashboardControls, DashboardFilterControls } from "../components/DashboardControls";
 import { DashboardLoadingSkeleton, DashboardOverviewLoadingSkeleton } from "../components/LoadingSkeletons";
 import { emptyDashboardView, readDashboardView, saveDashboardView, type DashboardView } from "../utils/dashboardSessionState";
-import { normalizeComparisons } from "../utils/comparisonSelection";
 import styles from "./DashboardPage.module.css";
 
 const FILTER_PARAM_NAMES = ["academic_area", "faculty", "modality"] as const;
 
 export function DashboardPage() {
   const [params, setParams] = useSearchParams();
-  const navigate = useNavigate();
-  const location = useLocation();
   const [savedView, setSavedView] = useState<DashboardView>(readDashboardView);
   const migratedParamsRef = useRef<string | null>(null);
   const initializedProcessRef = useRef(false);
@@ -33,16 +30,10 @@ export function DashboardPage() {
   const latest = processes[0];
   const primaryId = params.get("process") ?? (latest ? String(latest.id) : "");
   const comparisonParam = params.get("compare");
-  const requestedComparisons = normalizeComparisons(
-    primaryId,
-    comparisonParam !== null ? comparisonParam.split(",") : savedView.comparisons,
-    processes,
-  );
   const primaryIndex = processes.findIndex((process) => String(process.id) === primaryId);
   const previousProcess = primaryIndex >= 0 ? processes[primaryIndex + 1] : undefined;
   const previousId = previousProcess ? String(previousProcess.id) : "";
-  const automaticComparison = previousId && !requestedComparisons.includes(previousId) ? [previousId] : [];
-  const overviewComparisons = [...requestedComparisons, ...automaticComparison].slice(0, 3);
+  const overviewComparisons = previousId ? [previousId] : [];
 
   useEffect(() => {
     if (latest && !params.get("process") && !initializedProcessRef.current) {
@@ -61,7 +52,6 @@ export function DashboardPage() {
     migratedParamsRef.current = paramsKey;
 
     const migratedView = {
-      comparisons: requestedComparisons,
       filters: {
         academicArea: params.get("academic_area") ?? savedView.filters.academicArea,
         faculty: params.get("faculty") ?? savedView.filters.faculty,
@@ -71,48 +61,32 @@ export function DashboardPage() {
     setSavedView(migratedView);
     saveDashboardView(migratedView);
     const next = new URLSearchParams(params);
+    if (primaryId) next.set("process", primaryId);
     next.delete("compare");
     FILTER_PARAM_NAMES.forEach((name) => next.delete(name));
     setParams(next, { replace: true });
-  }, [comparisonParam, params, requestedComparisons, savedView, setParams]);
+  }, [comparisonParam, params, primaryId, savedView, setParams]);
 
   const overviewQuery = api.useAnalyticsOverview(primaryId, overviewComparisons, filters);
   const historyQuery = api.useProcessHistory(filters);
   const selected = overviewQuery.data?.processes ?? [];
   const primary = selected[0];
   const previous = selected.find((item) => String(item.process.id) === previousId);
-  const selectedComparisons = selected.slice(1).filter((item) => requestedComparisons.includes(String(item.process.id)));
-
-
-  const updateSelection = (process: string, compare: string[]) => {
+  const updateSelection = (process: string) => {
     const next = new URLSearchParams(process ? { process } : {});
-
-    const safeCompare = normalizeComparisons(process, compare, processes);
-    const nextView = { ...savedView, comparisons: safeCompare };
-    setSavedView(nextView);
-    saveDashboardView(nextView);
-    next.delete("compare");
-    FILTER_PARAM_NAMES.forEach((name) => next.delete(name));
-    navigate(`${location.pathname}?${next.toString()}`);
+    setParams(next);
   };
 
   const updateFilters = useCallback((nextFilters: { academicArea: string; faculty: string; modality: string }) => {
     const next = new URLSearchParams(primaryId ? { process: primaryId } : {});
-    const filterParams = { academicArea: "academic_area", faculty: "faculty", modality: "modality" } as const;
-    (Object.keys(filterParams) as Array<keyof typeof filterParams>).forEach((key) => {
-      const value = nextFilters[key];
-      if (value) next.set(filterParams[key], value); else next.delete(filterParams[key]);
-    });
-    const nextView = { comparisons: savedView.comparisons, filters: nextFilters };
+    const nextView = { filters: nextFilters };
     setSavedView(nextView);
     saveDashboardView(nextView);
-    FILTER_PARAM_NAMES.forEach((name) => next.delete(name));
-    next.delete("compare");
     setParams(next);
-  }, [primaryId, savedView.comparisons, setParams]);
+  }, [primaryId, setParams]);
 
   const resetFilters = () => {
-    const nextView = { comparisons: savedView.comparisons, filters: emptyDashboardView.filters };
+    const nextView = { filters: emptyDashboardView.filters };
     setSavedView(nextView);
     saveDashboardView(nextView);
     const next = new URLSearchParams(primaryId ? { process: primaryId } : {});
@@ -137,7 +111,6 @@ export function DashboardPage() {
           <DashboardControls
             processes={processes}
             primaryId={primaryId}
-            comparisons={requestedComparisons}
             onChange={updateSelection}
           />
           <div className={controlsStyles.filterAction}>
@@ -185,11 +158,11 @@ export function DashboardPage() {
             <div aria-busy={overviewQuery.isFetching}>
               <DashboardContent
                 primary={primary}
-                comparisons={selectedComparisons}
+                selectedProcessId={Number(primaryId)}
                 previous={previous}
                 historyItems={historyQuery.data?.processes ?? []}
                 historyStatus={historyQuery.isFetching && !historyQuery.data ? "loading" : historyQuery.isError ? "error" : "ready"}
-                onSelectProcess={(processId) => updateSelection(String(processId), requestedComparisons)}
+                onSelectProcess={(processId) => updateSelection(String(processId))}
               />
             </div>
           )}

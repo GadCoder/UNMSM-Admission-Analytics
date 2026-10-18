@@ -141,6 +141,7 @@ tbody tr:hover { background:#fdfafa; }
 .insightItem h3 { margin:0 0 .2rem; color:var(--color-text); font-size:.78rem; }
 .insightItem p { margin:0; color:var(--color-muted); font-size:.72rem; line-height:1.45; }
 .comparisonCard { display:grid; gap:var(--space-5); }
+.historyState { margin:0; color:var(--color-muted); font-size:.8rem; }
 .comparisonCardHeader { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-6); }
 .comparisonSectionTitle { margin:0; color:var(--color-primary); font-size:1.35rem; letter-spacing:-.035em; text-transform:uppercase; }
 .processComparisonTableWrap { min-width:0; overflow-x:auto; border:1px solid var(--color-border); border-radius:var(--radius-md); }

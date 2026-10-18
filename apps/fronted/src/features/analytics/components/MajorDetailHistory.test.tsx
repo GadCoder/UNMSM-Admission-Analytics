@@ -111,4 +111,25 @@ describe("MajorDetailHistory", () => {
     expect(screen.getByText("No hay resultados históricos disponibles para esta carrera.")).toBeInTheDocument();
     expect(screen.queryByRole("list")).not.toBeInTheDocument();
   });
+
+  it("shows three processes and still compares the last visible process with its hidden baseline", async () => {
+    const user = userEvent.setup();
+    render(<MajorDetailHistory initialProcessCount={3} items={[
+      process(6, 2026, "26-3", 160, 32),
+      process(5, 2026, "26-2", 150, 30),
+      process(4, 2026, "26-1", 140, 28),
+      process(3, 2025, "25-2", 130, 26),
+      process(2, 2025, "25-1", 120, 24),
+      process(1, 2024, "24-2", 100, 20),
+    ]} />);
+    expect(screen.getAllByRole("article")).toHaveLength(3);
+    expect(screen.queryByRole("heading", { name: "2025" })).not.toBeInTheDocument();
+    expect(screen.getByRole("article", { name: "Proceso 2026-1" })).toHaveTextContent("Los ingresantes aumentaron un 7.7%, mientras que los postulantes aumentaron un 7.7% respecto a 2025-2.");
+    expect(screen.getByRole("button", { name: "Ver más" })).toHaveAttribute("aria-expanded", "false");
+    await user.click(screen.getByRole("button", { name: "Ver más" }));
+    expect(screen.getAllByRole("article")).toHaveLength(6);
+    expect(screen.getByRole("button", { name: "Ver menos" })).toHaveAttribute("aria-expanded", "true");
+    await user.click(screen.getByRole("button", { name: "Ver menos" }));
+    expect(screen.getAllByRole("article")).toHaveLength(3);
+  });
 });

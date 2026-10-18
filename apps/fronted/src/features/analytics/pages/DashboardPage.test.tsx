@@ -98,7 +98,7 @@ describe("DashboardPage", () => {
     expect(screen.getAllByText("Puntaje promedio").length).toBeGreaterThan(0);
     expect(screen.getAllByText("Postulantes ausentes").length).toBeGreaterThan(0);
     expect(screen.queryByText(/Variaciones respecto a/)).not.toBeInTheDocument();
-    expect(screen.getAllByRole("article").map((article) => article.querySelector("span")?.textContent)).toEqual([
+    expect(screen.getAllByRole("article").filter((article) => !article.hasAttribute("aria-label")).map((article) => article.querySelector("span")?.textContent)).toEqual([
       "Postulantes",
       "Postulantes ausentes",
       "Ingresantes",
@@ -154,12 +154,12 @@ describe("DashboardPage", () => {
     const toolbar = await screen.findByRole("region", { name: "Controles del análisis" });
     expect(toolbar).not.toHaveClass(surfaceStyles.surface);
     expect(within(toolbar).getByLabelText("Proceso analizado")).toHaveValue("1");
-    expect(within(toolbar).getByRole("button", { name: "Añadir proceso para comparar" })).toBeInTheDocument();
+    expect(within(toolbar).queryByRole("button", { name: /comparar/i })).not.toBeInTheDocument();
     expect(within(toolbar).getByLabelText(/Abrir filtros de carreras/)).toBeInTheDocument();
     expect(within(toolbar).queryByRole("list", { name: "Filtros activos" })).not.toBeInTheDocument();
     expect(toolbar.compareDocumentPosition(screen.getAllByRole("article")[0]) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
-  it("shows KPI trends against the previous process without rendering a comparison chart", async () => {
+  it("shows KPI trends against the previous process alongside the full timeline", async () => {
     vi.mocked(api.useAnalyticsOverview).mockReturnValue({
       data: {
         processes: [
@@ -206,6 +206,8 @@ describe("DashboardPage", () => {
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=1"));
     fireEvent.change(screen.getByLabelText("Proceso analizado"), { target: { value: "2" } });
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("2");
+    const timeline = screen.getByRole("region", { name: "Resultados históricos" });
+    expect(within(timeline).getByRole("button", { name: "2025-1" })).toHaveAttribute("aria-pressed", "true");
   });
   it("keeps the primary selector and analytics aligned with browser back and forward", async () => {
     const user = userEvent.setup();
@@ -217,129 +219,86 @@ describe("DashboardPage", () => {
     await user.click(screen.getByRole("button", { name: "Adelante de prueba" }));
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("2");
   });
-  it("renders the comparison table for selected processes without a redundant chart", async () => {
-    vi.mocked(api.useAnalyticsOverview).mockReturnValue({
-      data: comparisonOverview,
-      isPending: false,
-      isError: false,
-      isSuccess: true,
-    } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
-    renderPage("/?process=1&compare=2");
-    expect(await screen.findByRole("region", { name: "Comparación de procesos" })).toBeInTheDocument();
-    expect(screen.getByRole("region", { name: "Cambios destacados" })).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Qué deberías notar" })).not.toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Valores por proceso" })).toBeInTheDocument();
-    expect(screen.getByText("Máximo y mínimo del período seleccionado")).toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Comparación por procesos" })).not.toBeInTheDocument();
-    expect(screen.queryByTestId("process-evolution-chart")).not.toBeInTheDocument();
-    expect(screen.queryByText(/puntos porcentuales entre/)).not.toBeInTheDocument();
-    expect(screen.queryByText("Comparación de procesos")).not.toBeInTheDocument();
-    expect(screen.queryByText("Compara volumen, resultados y rendimiento entre procesos sin perder el contexto.")).not.toBeInTheDocument();
-    const comparisonTable = screen.getByRole("table", { name: /comparación de postulantes/i });
-    const mobileComparison = screen.getByTestId("comparison-mobile");
-    expect(mobileComparison).toHaveAttribute("data-process-count", "2");
-    expect(mobileComparison).toHaveAttribute("data-mobile-layout", "heading-above-values");
-    const mobileMetric = mobileComparison.querySelector("section");
-    expect(mobileMetric?.firstElementChild?.tagName).toBe("H3");
-    expect(mobileMetric?.firstElementChild?.nextElementSibling).toHaveAttribute("data-process-values");
-    expect(mobileMetric?.querySelectorAll("[data-process-value]")).toHaveLength(2);
-    const insights = screen.getByRole("region", { name: "Cambios destacados" });
-    expect(comparisonTable).toBeInTheDocument();
-    expect(comparisonTable.compareDocumentPosition(insights) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
-    expect(screen.queryByText("La primera columna corresponde al proceso seleccionado.")).not.toBeInTheDocument();
-    expect(within(comparisonTable).getByRole("columnheader", { name: "Métrica" })).toBeInTheDocument();
-    expect(within(comparisonTable).queryByText("Métrica")).not.toBeInTheDocument();
-    const baseHeader = within(comparisonTable).getByRole("columnheader", { name: "2025-2" });
-    expect(baseHeader).toBeInTheDocument();
-    expect(within(comparisonTable).getByRole("columnheader", { name: "2025-1" })).toBeInTheDocument();
-    expect(within(comparisonTable).queryByText("Comparación 1")).not.toBeInTheDocument();
-    expect(within(comparisonTable).queryByText("Comp. 1")).not.toBeInTheDocument();
-    expect(within(comparisonTable).queryByText("Analizado")).not.toBeInTheDocument();
-    expect(within(comparisonTable).queryByText("Comparado")).not.toBeInTheDocument();
-    expect(within(comparisonTable).getByRole("row", { name: /Postulantes ausentes/ })).toHaveTextContent("10");
-    expect(within(comparisonTable).getByRole("row", { name: /Ingresantes/ })).toHaveTextContent("16");
-    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("?process=1"));
-    expect(sessionStorage.getItem("unmsm-dashboard-view")).toContain('"comparisons":["2"]');
-    expect(screen.queryByRole("img", { name: /comparación de postulantes/i })).not.toBeInTheDocument();
-    expect(screen.queryByRole("list", { name: "Datos de comparación" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("region", { name: "Carreras con mayor demanda" })).not.toBeInTheDocument();
-    expect(screen.queryByRole("heading", { name: "Ranking de postulantes" })).not.toBeInTheDocument();
-  });
-
-  it("uses a dedicated three-process layout for mobile comparison values", async () => {
-    const thirdProcess = { id: 3, year: 2024, sequence: "2", name: "Proceso 2024-II" };
-    const threeProcesses = [...processes.slice(0, 2), thirdProcess];
-    vi.mocked(api.usePublishedProcesses).mockReturnValue({ data: threeProcesses, isPending: false, isError: false } as unknown as ReturnType<typeof api.usePublishedProcesses>);
-    vi.mocked(api.useAnalyticsOverview).mockReturnValue({
-      data: {
-        processes: [
-          ...comparisonOverview.processes,
-          { ...overview.processes[0], process: thirdProcess, total_results: 60, admitted_count: 12, absent_count: 6, average_score: "60.5", highest_score: "90.0" },
-        ],
-      },
-      isPending: false,
-      isError: false,
-      isSuccess: true,
-    } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
-
-    renderPage("/?process=1&compare=2,3");
-    const mobileComparison = await screen.findByTestId("comparison-mobile");
-    expect(mobileComparison).toHaveAttribute("data-process-count", "3");
-    expect(mobileComparison).toHaveAttribute("data-mobile-layout", "heading-above-values");
-    const metricRows = mobileComparison.querySelectorAll("section");
-    expect(metricRows.length).toBeGreaterThan(0);
-    for (const row of metricRows) {
-      expect(row.firstElementChild?.tagName).toBe("H3");
-      expect(row.firstElementChild?.nextElementSibling).toHaveAttribute("data-process-values");
-      expect(row.querySelectorAll("[data-process-value]")).toHaveLength(3);
-    }
-  });
-
-  it("keeps the metric heading above a balanced two-column grid with four processes", async () => {
-    const thirdProcess = { id: 3, year: 2024, sequence: "2", name: "Proceso 2024-II" };
-    const fourthProcess = { id: 4, year: 2024, sequence: "1", name: "Proceso 2024-I" };
-    const fourProcesses = [...processes.slice(0, 2), thirdProcess, fourthProcess];
-    vi.mocked(api.usePublishedProcesses).mockReturnValue({ data: fourProcesses, isPending: false, isError: false } as unknown as ReturnType<typeof api.usePublishedProcesses>);
-    vi.mocked(api.useAnalyticsOverview).mockReturnValue({
-      data: {
-        processes: [
-          ...comparisonOverview.processes,
-          { ...overview.processes[0], process: thirdProcess, total_results: 60, admitted_count: 12, absent_count: 6, average_score: "60.5", highest_score: "90.0" },
-          { ...overview.processes[0], process: fourthProcess, total_results: 55, admitted_count: 10, absent_count: 5, average_score: "58.5", highest_score: "88.0" },
-        ],
-      },
-      isPending: false,
-      isError: false,
-      isSuccess: true,
-    } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
-
-    renderPage("/?process=1&compare=2,3,4");
-    const mobileComparison = await screen.findByTestId("comparison-mobile");
-    expect(mobileComparison).toHaveAttribute("data-process-count", "4");
-    expect(mobileComparison).toHaveAttribute("data-mobile-layout", "heading-above-values");
-    for (const row of mobileComparison.querySelectorAll("section")) {
-      expect(row.firstElementChild?.tagName).toBe("H3");
-      expect(row.firstElementChild?.nextElementSibling).toHaveAttribute("data-process-values");
-      expect(row.querySelectorAll("[data-process-value]")).toHaveLength(4);
-    }
-  });
-
-  it("opens comparison independently and applies selected processes", async () => {
+  it("shows the latest three processes and expands older entries without comparison controls", async () => {
     const user = userEvent.setup();
-    renderPage();
+    const allProcesses = [...processes,
+      { id: 5, year: 2023, sequence: "2", name: "" },
+      { id: 6, year: 2023, sequence: "1", name: "" },
+    ];
+    vi.mocked(api.usePublishedProcesses).mockReturnValue({ data: allProcesses, isPending: false, isError: false } as unknown as ReturnType<typeof api.usePublishedProcesses>);
+    vi.mocked(api.useProcessHistory).mockReturnValue({
+      data: { processes: [
+        ...processHistory.processes,
+        ...allProcesses.slice(2).reverse().map((process) => ({ ...processHistory.processes[0], process })),
+      ] },
+      isPending: false, isFetching: false, isError: false,
+    } as unknown as ReturnType<typeof api.useProcessHistory>);
+    renderPage("/?process=1");
+    const timeline = screen.getByRole("region", { name: "Resultados históricos" });
+    expect(within(timeline).getAllByRole("article")).toHaveLength(3);
+    expect(within(timeline).queryByRole("button", { name: "2023-1" })).not.toBeInTheDocument();
+    await user.click(within(timeline).getByRole("button", { name: "Ver más" }));
+    expect(within(timeline).getAllByRole("article")).toHaveLength(6);
+    expect(within(timeline).getAllByRole("article").map((article) => within(article).getByRole("button").textContent)).toEqual(["2025-2", "2025-1", "2024-2", "2024-1", "2023-2", "2023-1"]);
+    await user.click(within(timeline).getByRole("button", { name: "Ver menos" }));
+    expect(within(timeline).getAllByRole("article")).toHaveLength(3);
+    await user.selectOptions(screen.getByLabelText("Proceso analizado"), "6");
+    expect(within(timeline).getAllByRole("article")).toHaveLength(6);
+    expect(within(timeline).getByRole("button", { name: "2023-1" })).toHaveAttribute("aria-pressed", "true");
+    expect(within(timeline).getByRole("button", { name: "2025-2" })).toHaveAttribute("aria-pressed", "false");
+    expect(screen.queryByRole("button", { name: /comparar/i })).not.toBeInTheDocument();
+    expect(screen.queryByRole("list", { name: "Procesos en comparación" })).not.toBeInTheDocument();
+  });
 
-    await user.click(screen.getByRole("button", { name: "Añadir proceso para comparar" }));
-    expect(within(screen.getByRole("dialog")).getByText("Comparar con")).toBeInTheDocument();
-    await user.click(screen.getByRole("checkbox", { name: "2025-1" }));
-    await user.click(screen.getByRole("checkbox", { name: "2024-2" }));
-    await user.click(screen.getByRole("checkbox", { name: "2024-1" }));
-    expect(screen.getByTestId("location")).not.toHaveTextContent("compare=2");
-    await user.click(screen.getByRole("button", { name: "Aplicar comparación" }));
-    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("process=1"));
-    expect(sessionStorage.getItem("unmsm-dashboard-view")).toContain('"comparisons":["2","3","4"]');
-    const processGroup = screen.getByRole("group", { name: "Proceso analizado y comparación" });
-    expect(within(processGroup).getByRole("button", { name: "Editar comparaciones: 2025-1, 2024-2, 2024-1" })).toHaveTextContent("Comparar (3)");
-    expect(within(processGroup).getByRole("button", { name: "Quitar comparación 2025-1" })).toBeInTheDocument();
+  it("shows history even when only one process is published", () => {
+    vi.mocked(api.usePublishedProcesses).mockReturnValue({ data: [processes[0]], isPending: false, isError: false } as unknown as ReturnType<typeof api.usePublishedProcesses>);
+    vi.mocked(api.useProcessHistory).mockReturnValue({ data: { processes: [overview.processes[0]] }, isFetching: false, isError: false } as unknown as ReturnType<typeof api.useProcessHistory>);
+    renderPage("/?process=1");
+    const timeline = screen.getByRole("region", { name: "Resultados históricos" });
+    expect(within(timeline).getAllByRole("article")).toHaveLength(1);
+    expect(within(timeline).getByRole("button", { name: "2025-2" })).toHaveAttribute("aria-pressed", "true");
+    expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("1", [], { academicArea: "", faculty: "", modality: "" });
+  });
+
+  it("updates KPIs and the history highlight without removing any history entries", async () => {
+    const user = userEvent.setup();
+    vi.mocked(api.useAnalyticsOverview).mockImplementation((primaryId) => ({
+      data: { processes: [comparisonOverview.processes.find((item) => String(item.process.id) === primaryId)!] },
+      isPending: false, isError: false, isSuccess: true,
+    } as unknown as ReturnType<typeof api.useAnalyticsOverview>));
+    renderPage("/?process=1");
+    const timeline = screen.getByRole("region", { name: "Resultados históricos" });
+    const applicants = screen.getByText("Postulantes", { selector: "span" }).closest("article")!;
+    expect(applicants).toHaveTextContent("100");
+    await user.selectOptions(screen.getByLabelText("Proceso analizado"), "2");
+    expect(applicants).toHaveTextContent("80");
+    expect(within(timeline).getByRole("button", { name: "2025-1" })).toHaveAttribute("aria-pressed", "true");
+    expect(within(timeline).getByRole("button", { name: "2025-2" })).toHaveAttribute("aria-pressed", "false");
+    expect(within(timeline).getAllByRole("article")).toHaveLength(2);
+    expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("2", ["3"], { academicArea: "", faculty: "", modality: "" });
+  });
+
+  it("selects a historical process and synchronizes the selector and URL", async () => {
+    const user = userEvent.setup();
+    renderPage("/?process=1");
+    const timeline = screen.getByRole("region", { name: "Resultados históricos" });
+    await user.click(within(timeline).getByRole("button", { name: "2025-1" }));
+    expect(screen.getByLabelText("Proceso analizado")).toHaveValue("2");
+    expect(screen.getByTestId("location")).toHaveTextContent("?process=2");
+    expect(within(timeline).getByRole("button", { name: "2025-1" })).toHaveAttribute("aria-pressed", "true");
+  });
+
+  it.each([
+    ["loading", "Cargando resultados históricos…"],
+    ["error", "No pudimos cargar los resultados históricos."],
+    ["empty", "Aún no hay resultados históricos disponibles."],
+  ])("keeps the history section visible in its %s state", (state, message) => {
+    vi.mocked(api.useProcessHistory).mockReturnValue({
+      data: state === "empty" ? { processes: [] } : undefined,
+      isPending: state === "loading", isFetching: state === "loading", isError: state === "error",
+    } as unknown as ReturnType<typeof api.useProcessHistory>);
+    renderPage("/?process=1");
+    expect(within(screen.getByRole("region", { name: "Resultados históricos" })).getByText(message)).toBeInTheDocument();
   });
 
   it("filters faculty options by the selected academic area", async () => {
@@ -384,20 +343,20 @@ describe("DashboardPage", () => {
     await waitFor(() => expect(sessionStorage.getItem("unmsm-dashboard-view")).toContain('"academicArea":"ING"'));
   });
 
-  it("removes an area chip with its dependent faculty and preserves comparisons", async () => {
+  it("removes an area chip with its dependent faculty", async () => {
     const user = userEvent.setup();
     renderPage("/?process=1&compare=3&academic_area=ING&faculty=SIS");
     await user.click(await screen.findByRole("button", { name: "Quitar filtro Área académica: Ingenierías" }));
     await waitFor(() => {
       const saved = JSON.parse(sessionStorage.getItem("unmsm-dashboard-view")!);
       expect(saved.filters).toEqual({ academicArea: "", faculty: "", modality: "" });
-      expect(saved.comparisons).toEqual(["3"]);
+      expect(saved.comparisons).toBeUndefined();
     });
     expect(screen.queryByRole("list", { name: "Filtros activos" })).not.toBeInTheDocument();
     expect(api.useProcessHistory).toHaveBeenLastCalledWith({ academicArea: "", faculty: "", modality: "" });
   });
 
-  it("resets filters without clearing comparisons or restoring a pending filter edit", async () => {
+  it("resets filters without restoring a pending filter edit", async () => {
     const user = userEvent.setup();
     renderPage("/?process=1&compare=3&academic_area=SALUD");
     await user.click(await screen.findByLabelText(/Abrir filtros de carreras/));
@@ -407,19 +366,22 @@ describe("DashboardPage", () => {
     await waitFor(() => {
       const saved = JSON.parse(sessionStorage.getItem("unmsm-dashboard-view")!);
       expect(saved.filters).toEqual({ academicArea: "", faculty: "", modality: "" });
-      expect(saved.comparisons).toEqual(["3"]);
+      expect(saved.comparisons).toBeUndefined();
     });
     await user.click(screen.getByLabelText(/Abrir filtros de carreras/));
     expect(screen.getByLabelText("Área académica")).toHaveValue("");
   });
 
-  it("removes only explicit comparison chips while retaining the automatic KPI baseline", async () => {
-    const user = userEvent.setup();
-    renderPage("/?process=1&compare=3");
-    expect(screen.queryByRole("button", { name: "Quitar comparación 2025-1" })).not.toBeInTheDocument();
-    await user.click(await screen.findByRole("button", { name: "Quitar comparación 2024-2" }));
-    await waitFor(() => expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("1", ["2"], { academicArea: "", faculty: "", modality: "" }));
-    expect(JSON.parse(sessionStorage.getItem("unmsm-dashboard-view")!).comparisons).toEqual([]);
+  it("ignores retired comparison settings and removes legacy comparison URLs while preserving filters", async () => {
+    sessionStorage.setItem("unmsm-dashboard-view", JSON.stringify({ comparisons: ["3"], filters: { academicArea: "ING", faculty: "", modality: "" } }));
+    renderPage("/?process=1&compare=4");
+    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("?process=1"));
+    expect(screen.getByTestId("location")).not.toHaveTextContent("compare=");
+    expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("1", ["2"], { academicArea: "ING", faculty: "", modality: "" });
+    expect(api.useProcessHistory).toHaveBeenLastCalledWith({ academicArea: "ING", faculty: "", modality: "" });
+    const saved = JSON.parse(sessionStorage.getItem("unmsm-dashboard-view")!);
+    expect(saved.comparisons).toBeUndefined();
+    expect(saved.filters.academicArea).toBe("ING");
   });
 
   it("filters and sorts the major breakdown", async () => {
