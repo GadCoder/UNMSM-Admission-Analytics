@@ -2,12 +2,13 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate, useSearchParams } from "react-router-dom";
 
 import * as api from "../api/analytics";
-import { AnalyticsSurface } from "../components/AnalyticsSurface";
+import { ActiveFilterChips } from "../components/ActiveFilterChips";
+import controlsStyles from "../components/ResultsControls.module.css";
 import { DashboardContent } from "../components/DashboardContent";
 import { DashboardControls, DashboardFilterControls } from "../components/DashboardControls";
 import { DashboardLoadingSkeleton, DashboardOverviewLoadingSkeleton } from "../components/LoadingSkeletons";
-import { MajorCareerFilters } from "../components/MajorCareerFilters";
 import { emptyDashboardView, readDashboardView, saveDashboardView, type DashboardView } from "../utils/dashboardSessionState";
+import { normalizeComparisons } from "../utils/comparisonSelection";
 import styles from "./DashboardPage.module.css";
 
 const FILTER_PARAM_NAMES = ["academic_area", "faculty", "modality"] as const;
@@ -17,7 +18,6 @@ export function DashboardPage() {
   const navigate = useNavigate();
   const location = useLocation();
   const [savedView, setSavedView] = useState<DashboardView>(readDashboardView);
-  const [primaryOverride, setPrimaryOverride] = useState<string | null>(null);
   const migratedParamsRef = useRef<string | null>(null);
   const initializedProcessRef = useRef(false);
   const processesQuery = api.usePublishedProcesses();
@@ -31,11 +31,13 @@ export function DashboardPage() {
     modality: params.get("modality") ?? savedView.filters.modality,
   };
   const latest = processes[0];
-  const primaryId = primaryOverride ?? params.get("process") ?? (latest ? String(latest.id) : "");
+  const primaryId = params.get("process") ?? (latest ? String(latest.id) : "");
   const comparisonParam = params.get("compare");
-  const requestedComparisons = (comparisonParam !== null ? comparisonParam.split(",").filter(Boolean) : savedView.comparisons)
-    .filter((id) => id !== primaryId)
-    .slice(0, 3);
+  const requestedComparisons = normalizeComparisons(
+    primaryId,
+    comparisonParam !== null ? comparisonParam.split(",") : savedView.comparisons,
+    processes,
+  );
   const primaryIndex = processes.findIndex((process) => String(process.id) === primaryId);
   const previousProcess = primaryIndex >= 0 ? processes[primaryIndex + 1] : undefined;
   const previousId = previousProcess ? String(previousProcess.id) : "";
@@ -83,10 +85,9 @@ export function DashboardPage() {
 
 
   const updateSelection = (process: string, compare: string[]) => {
-    setPrimaryOverride(process || null);
     const next = new URLSearchParams(process ? { process } : {});
 
-    const safeCompare = compare.filter((id) => id !== process).slice(0, 3);
+    const safeCompare = normalizeComparisons(process, compare, processes);
     const nextView = { ...savedView, comparisons: safeCompare };
     setSavedView(nextView);
     saveDashboardView(nextView);
@@ -111,7 +112,7 @@ export function DashboardPage() {
   }, [primaryId, savedView.comparisons, setParams]);
 
   const resetFilters = () => {
-    const nextView = emptyDashboardView;
+    const nextView = { comparisons: savedView.comparisons, filters: emptyDashboardView.filters };
     setSavedView(nextView);
     saveDashboardView(nextView);
     const next = new URLSearchParams(primaryId ? { process: primaryId } : {});
@@ -132,24 +133,31 @@ export function DashboardPage() {
       </div>
 
       {processes.length > 0 && (
-        <AnalyticsSurface className={styles.analysisControls} aria-label="Controles del análisis">
-          <div className={styles.analysisProcessGroup}>
-            <DashboardControls
-              processes={processes}
-              primaryId={primaryId}
-              comparisons={requestedComparisons}
-              onChange={updateSelection}
+        <section className={controlsStyles.toolbar} aria-label="Controles del análisis">
+          <DashboardControls
+            processes={processes}
+            primaryId={primaryId}
+            comparisons={requestedComparisons}
+            onChange={updateSelection}
+          />
+          <div className={controlsStyles.filterAction}>
+            <DashboardFilterControls
+              areas={areasQuery.data ?? []}
+              faculties={facultiesQuery.data ?? []}
+              modalities={modalitiesQuery.data ?? []}
+              filters={filters}
+              onChange={updateFilters}
+              onReset={resetFilters}
             />
           </div>
-          <MajorCareerFilters controls={<DashboardFilterControls
+          <ActiveFilterChips
+            filters={filters}
             areas={areasQuery.data ?? []}
             faculties={facultiesQuery.data ?? []}
             modalities={modalitiesQuery.data ?? []}
-            filters={filters}
             onChange={updateFilters}
-            onReset={resetFilters}
-          />} />
-        </AnalyticsSurface>
+          />
+        </section>
       )}
 
       {processesQuery.isPending && <DashboardLoadingSkeleton />}
