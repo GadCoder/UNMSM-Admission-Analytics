@@ -43,6 +43,7 @@ export function MajorBreakdownControls({ query, suggestionsOpen, suggestions, so
       <option value="total_results-desc">Más postulantes</option><option value="total_results-asc">Menos postulantes</option>
       <option value="admitted_count-desc">Más admitidos</option><option value="admitted_count-asc">Menos admitidos</option>
       <option value="admission_rate-desc">Mayor tasa de admisión</option><option value="admission_rate-asc">Menor tasa de admisión</option>
+      <option value="absent_count-desc">Más ausentes</option><option value="absent_count-asc">Menos ausentes</option>
       <option value="average_score-desc">Mayor promedio</option><option value="average_score-asc">Menor promedio</option>
       <option value="major_name-asc">Nombre de carrera (A-Z)</option><option value="major_name-desc">Nombre de carrera (Z-A)</option>
     </SelectField>
