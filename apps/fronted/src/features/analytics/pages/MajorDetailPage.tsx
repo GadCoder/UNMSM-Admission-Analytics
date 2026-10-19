@@ -3,14 +3,15 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 
 import type { MajorDetailProcess, ProcessOverview } from "../api/analytics.types";
 import * as api from "../api/analytics";
+import { DashboardControls } from "../components/DashboardControls";
 import { SelectField } from "../components/SelectField";
 import { MajorDetailHistory } from "../components/MajorDetailHistory";
 import { canCompareMinimumScores } from "../components/metricHistory";
 import { MetricHistoryChart } from "../components/MetricHistoryChart";
 import { MajorDetailLoadingSkeleton } from "../components/LoadingSkeletons";
 import { KpiGrid } from "../components/KpiGrid";
-import { resolveAdmissionModality } from "../utils/admissionModality";
-import { formatProcessLabel } from "../utils/processLabels";
+import { formatAdmissionModalityLabel, resolveAdmissionModality } from "../utils/admissionModality";
+import controlsStyles from "../components/ResultsControls.module.css";
 import styles from "./DashboardPage.module.css";
 
 const ROMAN_SEQUENCE_ORDER: Record<string, number> = { I: 1, II: 2, III: 3, IV: 4 };
@@ -82,22 +83,21 @@ export function MajorDetailPage() {
         <h1>{detail.major.name}</h1>
         <p className={styles.intro}>{detail.major.faculty} · {detail.major.academic_area}</p>
       </div>
-      <section className={`${styles.processContext} ${styles.detailProcessContext}`} aria-label="Contexto del análisis">
-        <div className={styles.primaryProcessControl}>
-          <label htmlFor="primary-process">Proceso analizado</label>
-          <select id="primary-process" value={primary} onChange={(event) => updateSelection(event.target.value)}>
-            {processes.map((process) => <option key={process.id} value={process.id}>{formatProcessLabel(process)}</option>)}
-          </select>
-        </div>
-        {(modalitiesQuery.data?.length ?? 0) > 0 && <div className={styles.detailModalityControl}><SelectField label="Modalidad" aria-label="Modalidad" aria-description={modality} title={modality} value={modality} onChange={(event) => {
+    </header>
+    <section className={`${controlsStyles.toolbar} ${styles.processToolbar} ${styles.careerToolbar}`} aria-label="Contexto del análisis">
+      <DashboardControls processes={processes} primaryId={primary} onChange={updateSelection} />
+      <div className={styles.modalityControl}>
+        <SelectField label="Modalidad" aria-label="Modalidad" aria-description={modality} title={modality} value={modality} onChange={(event) => {
           const next = new URLSearchParams(params);
           next.set("modality", event.target.value);
           setParams(next);
         }}>
-          {modalitiesQuery.data?.map((item) => <option key={item.id} value={item.name} title={item.name}>{item.name}</option>)}
-        </SelectField></div>}
-      </section>
-    </header>
+          {!(modalitiesQuery.data ?? []).some((item) => item.name === modality)
+            && <option value={modality}>{formatAdmissionModalityLabel(modality)}</option>}
+          {(modalitiesQuery.data ?? []).map((item) => <option key={item.id} value={item.name} title={item.name}>{formatAdmissionModalityLabel(item.name)}</option>)}
+        </SelectField>
+      </div>
+    </section>
 
     <KpiGrid variant="career" overview={currentOverview} previous={previous ? asProcessOverview(previous) : undefined} />
     <MetricHistoryChart items={timeline} title="Evolución histórica de la carrera"

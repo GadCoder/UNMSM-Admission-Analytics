@@ -25,7 +25,6 @@ const blank: DashboardFilters = { academicArea: "", faculty: "", modality: DEFAU
 const props = (overrides: Partial<React.ComponentProps<typeof DashboardFilterControls>> = {}) => ({
   areas,
   faculties,
-  modalities: [],
   filters: blank,
   onChange: vi.fn(),
   onReset: vi.fn(),
