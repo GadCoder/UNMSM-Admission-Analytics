@@ -58,7 +58,10 @@ class ComparativeOverviewView(APIView):
             ),
             OpenApiParameter(name="academic_area", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False),
             OpenApiParameter(name="faculty", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False),
-            OpenApiParameter(name="modality", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False),
+            OpenApiParameter(
+                name="modality", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False,
+                description="Admission modality name. Omitted or blank values default to Educación Básica Regular (EBR) y Educación Básica Alternativa (EBA).",
+            ),
         ],
         responses={
             200: ComparativeOverviewSerializer,
@@ -129,7 +132,10 @@ class ProcessHistoryView(APIView):
         parameters=[
             OpenApiParameter(name="academic_area", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False),
             OpenApiParameter(name="faculty", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False),
-            OpenApiParameter(name="modality", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False),
+            OpenApiParameter(
+                name="modality", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False,
+                description="Admission modality name. Omitted or blank values default to Educación Básica Regular (EBR) y Educación Básica Alternativa (EBA).",
+            ),
         ],
         responses={200: ProcessHistorySerializer},
     )

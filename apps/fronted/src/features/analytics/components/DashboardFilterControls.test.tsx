@@ -1,5 +1,6 @@
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { DEFAULT_ADMISSION_MODALITY } from "../utils/admissionModality";
 import { DashboardFilterControls, type DashboardFilters } from "./DashboardFilterControls";
 
 vi.mock("./ResponsiveControlPanel", () => ({
@@ -20,12 +21,11 @@ const faculties = [
   { id: 1, code: "FA", name: "Facultad A", academic_area_id: 1 },
   { id: 2, code: "FB", name: "Facultad B", academic_area_id: 2 },
 ];
-const modalities = [{ id: 1, name: "Ordinario" }];
-const blank: DashboardFilters = { academicArea: "", faculty: "", modality: "" };
+const blank: DashboardFilters = { academicArea: "", faculty: "", modality: DEFAULT_ADMISSION_MODALITY };
 const props = (overrides: Partial<React.ComponentProps<typeof DashboardFilterControls>> = {}) => ({
   areas,
   faculties,
-  modalities,
+  modalities: [],
   filters: blank,
   onChange: vi.fn(),
   onReset: vi.fn(),
@@ -40,13 +40,13 @@ describe("DashboardFilterControls", () => {
     const onChange = vi.fn();
     render(<DashboardFilterControls {...props({ onChange })} />);
     fireEvent.click(screen.getByRole("button", { name: "Abrir filtros de carreras" }));
-    fireEvent.change(screen.getByLabelText("Modalidad"), { target: { value: "Ordinario" } });
+    fireEvent.change(screen.getByLabelText("Área académica"), { target: { value: "A" } });
     fireEvent.click(screen.getByRole("button", { name: "Cerrar panel" }));
     fireEvent.click(screen.getByRole("button", { name: "Abrir filtros de carreras" }));
 
-    expect(screen.getByLabelText("Modalidad")).toHaveValue("Ordinario");
+    expect(screen.getByLabelText("Área académica")).toHaveValue("A");
     vi.advanceTimersByTime(400);
-    expect(onChange).toHaveBeenCalledWith({ ...blank, modality: "Ordinario" });
+    expect(onChange).toHaveBeenCalledWith({ ...blank, academicArea: "A" });
   });
 
   it("cancels a pending edit and adopts an external filter update", () => {
@@ -54,11 +54,10 @@ describe("DashboardFilterControls", () => {
     const initial = props({ onChange });
     const view = render(<DashboardFilterControls {...initial} />);
     fireEvent.click(screen.getByRole("button", { name: "Abrir filtros de carreras" }));
-    fireEvent.change(screen.getByLabelText("Modalidad"), { target: { value: "Ordinario" } });
+    fireEvent.change(screen.getByLabelText("Área académica"), { target: { value: "A" } });
 
     const external = { ...blank, academicArea: "B", faculty: "FB" };
     view.rerender(<DashboardFilterControls {...initial} filters={external} />);
-    expect(screen.getByLabelText("Modalidad")).toHaveValue("");
     expect(screen.getByLabelText("Área académica")).toHaveValue("B");
     expect(screen.getByLabelText("Facultad")).toHaveValue("FB");
     vi.advanceTimersByTime(400);
@@ -70,7 +69,7 @@ describe("DashboardFilterControls", () => {
     const onReset = vi.fn();
     render(<DashboardFilterControls {...props({ onChange, onReset })} />);
     fireEvent.click(screen.getByRole("button", { name: "Abrir filtros de carreras" }));
-    fireEvent.change(screen.getByLabelText("Modalidad"), { target: { value: "Ordinario" } });
+    fireEvent.change(screen.getByLabelText("Área académica"), { target: { value: "A" } });
     fireEvent.click(screen.getByRole("button", { name: "↻ Restablecer filtros" }));
     vi.advanceTimersByTime(400);
 

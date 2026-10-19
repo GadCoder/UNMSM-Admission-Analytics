@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 
 import { apiFetch } from "../../../shared/api/client";
 import type { AcademicArea, AdmissionProcess, ComparativeOverview, Faculty, MajorDetail, Modality, ProcessHistory } from "./analytics.types";
@@ -33,7 +33,6 @@ export function useProcessHistory(filters: AnalyticsFilters = {}) {
     queryKey: ["analytics-history", filters],
     queryFn: () => getProcessHistory(filters),
     staleTime: 300000,
-    placeholderData: keepPreviousData,
   });
 }
 
@@ -64,6 +63,9 @@ export function useAnalyticsOverview(primary: string, comparisons: string[], fil
     queryKey: ["analytics-overview", primary, comparisons, filters],
     queryFn: () => getAnalyticsOverview(primary, comparisons, filters),
     enabled: Boolean(primary),
-    placeholderData: keepPreviousData,
+    placeholderData: (previousData, previousQuery) =>
+      JSON.stringify(previousQuery?.queryKey[3]) === JSON.stringify(filters)
+      && previousData?.processes.some((item) => String(item.process.id) === String(primary))
+        ? previousData : undefined,
   });
 }

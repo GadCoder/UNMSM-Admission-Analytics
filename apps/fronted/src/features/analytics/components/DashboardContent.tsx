@@ -8,6 +8,7 @@ import { MajorBreakdown } from "./MajorBreakdown";
 
 type DashboardContentProps = {
   primary: ProcessOverview;
+  modality?: string;
   selectedProcessId: number;
   previous?: ProcessOverview;
   historyItems: ProcessHistoryItem[];
@@ -17,6 +18,7 @@ type DashboardContentProps = {
 
 export function DashboardContent({
   primary,
+  modality,
   selectedProcessId,
   previous,
   historyItems,
@@ -29,7 +31,7 @@ export function DashboardContent({
       <MetricHistoryChart items={historyItems} title="Evolución histórica" status={historyStatus} />
       <ProcessHistory items={historyItems} selectedProcessId={selectedProcessId} status={historyStatus} onSelectProcess={onSelectProcess} />
       <MajorDemandChart majors={getTopMajors(primary.majors)} process={primary.process} />
-      <MajorBreakdown overview={primary} />
+      <MajorBreakdown overview={primary} modality={modality} />
     </>
   );
 }

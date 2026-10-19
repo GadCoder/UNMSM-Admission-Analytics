@@ -13,9 +13,9 @@ import { AnalyticsSurface } from "./AnalyticsSurface";
 
 const PAGE_SIZE = 10;
 
-type MajorBreakdownProps = { overview: ProcessOverview };
+type MajorBreakdownProps = { overview: ProcessOverview; modality?: string };
 
-export function MajorBreakdown({ overview }: MajorBreakdownProps) {
+export function MajorBreakdown({ overview, modality }: MajorBreakdownProps) {
   const [query, setQuery] = useState("");
   const [pageSelection, setPageSelection] = useState({ processId: overview.process.id, page: 1 });
   const page = pageSelection.processId === overview.process.id ? pageSelection.page : 1;
@@ -84,10 +84,11 @@ export function MajorBreakdown({ overview }: MajorBreakdownProps) {
     />
     <div ref={contentRef} style={isSorting && contentHeight ? { minHeight: `${contentHeight}px` } : undefined}>
       {isSorting ? <MajorBreakdownSortingSkeleton /> : <>
-        <MajorPerformanceCards majors={visibleMajors} processId={overview.process.id} rankOffset={rankOffset} />
+        <MajorPerformanceCards majors={visibleMajors} processId={overview.process.id} modality={modality} rankOffset={rankOffset} />
         <MajorPerformanceTable
           majors={visibleMajors}
           process={overview.process}
+          modality={modality}
           rankOffset={rankOffset}
           sortKey={sortKey}
           sortDirection={sortDirection}

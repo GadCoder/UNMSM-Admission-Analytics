@@ -10,12 +10,13 @@ type MajorPerformanceTableProps = {
   majors: MajorOverview[];
   process: ProcessOverview["process"];
   rankOffset?: number;
+  modality?: string;
   sortKey: SortKey;
   sortDirection: SortDirection;
   onSort: (key: SortKey) => void;
 };
 
-export function MajorPerformanceTable({ majors, process, rankOffset = 0, sortKey, sortDirection, onSort }: MajorPerformanceTableProps) {
+export function MajorPerformanceTable({ majors, process, modality, rankOffset = 0, sortKey, sortDirection, onSort }: MajorPerformanceTableProps) {
   const sortableHeader = (key: SortKey, label: string) => {
     const active = sortKey === key;
     const direction = active ? sortDirection : key === "major_name" ? "asc" : "desc";
@@ -33,7 +34,7 @@ export function MajorPerformanceTable({ majors, process, rankOffset = 0, sortKey
       <tbody>
         {majors.map((major, index) => <tr key={major.major_id}>
           <td className={styles.performanceRank}>{String(rankOffset + index + 1).padStart(2, "0")}</td>
-          <th scope="row"><Link className={styles.majorDetailLink} to={`/analytics/careers/${major.major_id}?process=${process.id}`}>{major.major_name}</Link></th>
+          <th scope="row"><Link className={styles.majorDetailLink} to={`/analytics/careers/${major.major_id}?${new URLSearchParams({ process: String(process.id), ...(modality ? { modality } : {}) })}`}>{major.major_name}</Link></th>
           <td>{formatNumber(major.total_results)}</td>
           <td>{formatNumber(major.admitted_count)}</td>
           <td>{formatNumber(admissionRate(major), 1)}%</td>

@@ -19,7 +19,7 @@ describe("MajorDetailHistory", () => {
     ]} selectedProcessId={3} />);
     const timeline = screen.getByRole("list", { name: "Historial por proceso" });
     expect(within(timeline).getAllByRole("listitem")).toHaveLength(3);
-    expect(within(timeline).getAllByRole("button").map(button => button.textContent)).toEqual(["2026-2", "2026-1", "2025-2"]);
+    expect(within(timeline).getAllByRole("button", { name: /^\d{4}-/ }).map(button => button.textContent)).toEqual(["2026-2", "2026-1", "2025-2"]);
     expect(screen.getAllByRole("heading", { name: "2026" })).toHaveLength(1);
     expect(screen.getByRole("heading", { name: "2025" })).toBeInTheDocument();
     const latest = screen.getByRole("article", { name: "Proceso 2026-2" });

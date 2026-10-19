@@ -1,4 +1,4 @@
-# Career admission scores
+# Admission scores
 
 ## Career page layout
 
@@ -7,7 +7,7 @@
 3. One historical evolution chart with the existing metric selector.
 4. Existing historical results timeline, with minimum, average and maximum scores in its detail area.
 
-Admission scores are integrated into the existing KPIs, historical chart and timeline without an additional section or chart. The process overview keeps its existing six cards, order, absentee KPI and comparison styling; the shared KPI grid uses an explicit career variant.
+Admission scores are integrated into the existing KPIs, historical chart and timeline without an additional section or chart. The process overview retains its six-card structure and absentee KPI. Its average KPI uses the same admitted-applicant definition and asterisk note as the career page. The full-name modality selector lives in the existing Filtros panel alongside area and faculty. The applied modality is always shown in a slim context row above the KPIs, with a burgundy label, dark text and a subtle bottom divider, preserving the full modality name and its original capitalization. Basic education remains the default; alternative modalities count as active filters.
 
 ## Score definitions and API
 
@@ -15,17 +15,21 @@ Admission scores are integrated into the existing KPIs, historical chart and tim
 
 The minimum includes only records whose status is exactly `admitted` and whose score is non-null and within the model's DecimalField precision (-9999.9999 through 9999.9999). Absent, disqualified and other statuses do not contribute. Valid zero and negative numeric scores are not treated as missing. Unavailable minima remain null.
 
-On the career endpoint, `average_score` is SQL AVG over the same valid admitted-applicant population used by the minimum, within the selected process and modality. It excludes non-admitted, absent, disqualified and missing/invalid scores and returns null if no valid admitted scores exist. Selected and historical observations use the same definition, including KPI differences, the chart and timeline. This deliberately changes the career endpoint's prior all-scored-applicant average; no response field names or precision change.
+Across process overview, latest-process, process-history, career-detail and per-career breakdown responses, `average_score` is SQL AVG over the same valid admitted-applicant population used by the minimum, within the selected process and modality. It excludes non-admitted, absent, disqualified and missing/invalid scores and returns null if no valid admitted scores exist. Selected and historical observations use the same definition, including KPI differences, the chart and timeline. This deliberately changes the former all-scored-applicant averages; no response field names or precision change.
 
-The career average KPI has an asterisk linked to a small note: “El puntaje promedio considera solo a los ingresantes con puntaje válido.” The process overview/history averages retain their existing all-non-null-score definition. `highest_score` also retains its existing maximum over all scored records, regardless of status. The career timeline shows minimum, average and maximum scores, formatted to two decimals; unavailable values display an em dash. On mobile they appear under “Estadísticas adicionales”. The process overview timeline retains its absentee detail; absentee calculations and API fields remain intact.
+The average KPI on both pages has an asterisk linked to a small note: “El puntaje promedio considera solo a los ingresantes con puntaje válido.” `highest_score` also retains its existing maximum over all scored records, regardless of status. The career timeline shows minimum, average and maximum scores, formatted to two decimals; unavailable values display an em dash. On mobile they appear under “Estadísticas adicionales”. The process overview timeline retains its absentee detail; absentee calculations and API fields remain intact.
 
 ## Modality and comparisons
 
-The career page requires a selected modality and defaults to “EDUCACIÓN BÁSICA REGULAR (EBR) Y EDUCACIÓN BÁSICA ALTERNATIVA (EBA)”. There is no “Todas las modalidades” option. Missing or empty modality parameters resolve to that default before the first statistics request, and the resolved selection is written to the URL. Explicit modality selections are preserved when switching processes. The career endpoint applies that same default server-side for omitted or blank modality values and always filters its queryset by one modality. Explicit names are trimmed and matched exactly; an unavailable modality returns empty statistics rather than falling back to combined results. This changes the career endpoint’s former unfiltered behavior when the parameter was omitted. The shared process overview/history endpoints still support combined data and retain the mixed-modality safeguards. The same filter applies to KPI values, the chart and historical results, and forms part of the React Query cache key. The selector uses the full original modality name, including “EDUCACIÓN BÁSICA REGULAR (EBR) Y EDUCACIÓN BÁSICA ALTERNATIVA (EBA)”, for its option label and value, selected-control description and titles.
+Both pages require a selected modality and default to “EDUCACIÓN BÁSICA REGULAR (EBR) Y EDUCACIÓN BÁSICA ALTERNATIVA (EBA)”. There is no combined/all-modalities choice. Missing or blank selections resolve before the first statistics request, including legacy empty dashboard session preferences. Explicit selections persist across process changes; dashboard filter resets restore basic education, while clearing optional area/faculty filters. Modality is changed in the Filtros panel; filter chips are reserved for optional area and faculty selections.
+
+All analytics services apply the same server-side default for omitted or blank modality parameters and always filter by one named modality. Explicit names are trimmed and matched exactly; unknown modalities return empty statistics rather than combined results. This changes the process overview/history endpoints' former unfiltered behavior when the parameter was omitted. The latest-process endpoint also uses basic education.
+
+The dashboard keeps filter preferences in session storage and migrates explicit filter URL parameters through its existing flow. Career URLs retain their selected modality. Dashboard career links carry the chosen process and modality into the detail page. The same scope applies to KPIs, historical data, demand/ranking data and per-career averages. Both selectors use full modality names, with titles and accessible descriptions.
 
 A minimum is null when admitted scores span multiple modalities. `admitted_score_modality_count` explains that state; `admitted_score_modality` identifies a single known modality. Unknown modality is a separate group and is never pooled with a known one.
 
-Minimum KPI differences require finite values, exactly one identified modality in each process, and matching modality names. The reference is always the immediately preceding published process; an unavailable previous observation is not replaced by an older one. Missing or mixed/unknown/different modalities yield a neutral “No disponible” comparison. Score differences use the existing signed, two-decimal `pts` formatting; all three career score KPIs use neutral arrows rather than positive/negative colors.
+Minimum KPI differences require finite values, exactly one identified modality in each process, and matching modality names. The reference is always the immediately preceding published process; an unavailable previous observation is not replaced by an older one. Missing or mixed/unknown/different modalities yield a neutral “No disponible” comparison. Score differences use the existing signed, two-decimal `pts` formatting; all three career score KPIs and the process average use neutral arrows rather than positive/negative colors.
 
 The minimum is the initial career chart metric when the current process has a valid minimum and another historical observation meets the same modality checks. Otherwise the initial metric remains Postulantes. All previous metric options remain available, and an explicit user metric selection persists across process changes. The process overview retains Postulantes as its chart default.
 
@@ -41,12 +45,15 @@ When the minimum is selected, the only permanent explanation is:
 
 > Menor puntaje obtenido por un ingresante en cada proceso. Los resultados históricos no garantizan el ingreso futuro.
 
-A process change can reuse the full cached history for the same modality, selecting the requested process's row while the API refreshes. A career or modality change does not reuse data from the previous career or modality; it uses the existing loading state. The backend still uses three queries for the entire career response, independent of history length. There are no persisted aggregates or backend caches to rebuild.
+A process change can reuse the full cached history for the same modality, selecting the requested process's row while the API refreshes. A career or modality change does not reuse data from the previous career or modality; it uses the existing loading state. Process overview placeholder data is reused only for identical filters and when it contains the requested process; history data is not reused across filter changes. The backend still uses three queries for full career/overview responses and two for process history, independent of process count. There are no persisted aggregates or backend caches to rebuild.
 
 ## Validation
 
-- Focused frontend tests cover exact KPI count/order, the unchanged process variant, neutral point comparisons, missing and incompatible observations, the minimum chart default, selected highlighting, precise tooltips, on-demand limitations, historical gaps, full modality naming, filter propagation and existing loading/error states.
+- All 101 frontend tests pass, covering KPI count/order, the average footnote, neutral average comparisons, missing observations, historical charts and timelines, full modality naming, default/explicit filters, legacy session values, resets and career-link scope.
 - TypeScript/Vite production build succeeds.
-- The complete backend suite passes all 55 tests, including admitted-status filtering, career/process/modality isolation, null and zero scores, serialization, ordering and constant query count.
-- Full frontend testing during the original implementation identified three existing assertion failures in dashboard/timeline tests, reproduced against unmodified HEAD in a temporary checkout. They concern existing supplemental-statistics buttons and duplicate applicant labels.
+- The complete backend suite passes all 59 tests, including admitted-status filtering, career/process/modality isolation, null and zero scores, serialization, ordering and constant query count.
 - Live Tailscale browser checks at 375px and 1440px confirm six ordered career KPIs, one chart, the minimum default for an identified modality, selected-process highlighting, an on-demand tooltip within the viewport, the full EBR/EBA name and 2024-II filtered minimum, with no horizontal overflow.
+
+- Process-page browser checks at 375px, 1024px and 1440px verify initially filtered requests, the admitted average and asterisk note, six KPIs, mode/process/reload/reset persistence, matching career-link modality, and no horizontal overflow.
+
+The subsequent move of the process modality selector into Filtros has not been retested; the validation results above precede that UI refinement.

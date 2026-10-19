@@ -1,6 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import type { AcademicArea, Faculty, Modality } from "../api/analytics.types";
+import { DEFAULT_ADMISSION_MODALITY } from "../utils/admissionModality";
 import { ResponsiveControlPanel } from "./ResponsiveControlPanel";
 import styles from "./DashboardFilterControls.module.css";
 
@@ -14,7 +15,7 @@ export type DashboardFilterControlsProps = {
   onReset: () => void;
 };
 
-const emptyFilters = (): DashboardFilters => ({ academicArea: "", faculty: "", modality: "" });
+const emptyFilters = (): DashboardFilters => ({ academicArea: "", faculty: "", modality: DEFAULT_ADMISSION_MODALITY });
 const sameFilters = (a: DashboardFilters, b: DashboardFilters) =>
   a.academicArea === b.academicArea && a.faculty === b.faculty && a.modality === b.modality;
 
@@ -87,7 +88,8 @@ export function DashboardFilterControls({ areas, faculties, modalities, filters,
   const availableFaculties = selectedArea
     ? faculties.filter((faculty) => faculty.academic_area_id === selectedArea.id)
     : faculties;
-  const activeCount = Object.values(filters).filter(Boolean).length;
+  const activeCount = [filters.academicArea, filters.faculty].filter(Boolean).length
+    + (filters.modality !== DEFAULT_ADMISSION_MODALITY ? 1 : 0);
 
   return (
     <div className={styles.wrapper} role="group" aria-label="Filtros de carreras">
@@ -111,9 +113,18 @@ export function DashboardFilterControls({ areas, faculties, modalities, filters,
         <button className={styles.reset} type="button" onClick={reset}>↻ Restablecer filtros</button>
       }>
         <div className={styles.fields}>
+          <div className={`${styles.field} ${styles.modalityField}`}>
+            <label className={styles.fieldLabel} htmlFor="dashboard-filter-modalidad">Modalidad</label>
+            <select className={styles.fieldSelect} id="dashboard-filter-modalidad" value={draftFilters.modality}
+              title={draftFilters.modality} aria-description={draftFilters.modality}
+              onChange={(event) => updateFilter("modality", event.target.value)}>
+              {!modalities.some((item) => item.name === draftFilters.modality)
+                && <option value={draftFilters.modality}>{draftFilters.modality}</option>}
+              {modalities.map((item) => <option key={item.id} value={item.name}>{item.name}</option>)}
+            </select>
+          </div>
           <FilterSelect label="Área académica" value={draftFilters.academicArea} options={areas.map((item) => [item.code, item.name])} onChange={(value) => updateFilter("academicArea", value)} />
           <FilterSelect label="Facultad" value={draftFilters.faculty} options={availableFaculties.map((item) => [item.code, item.name])} onChange={(value) => updateFilter("faculty", value)} />
-          <FilterSelect label="Modalidad" value={draftFilters.modality} options={modalities.map((item) => [item.name, item.name])} onChange={(value) => updateFilter("modality", value)} />
         </div>
       </ResponsiveControlPanel>
     </div>

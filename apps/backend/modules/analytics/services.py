@@ -7,7 +7,7 @@ from modules.academics.models import Major
 from modules.admission_processes.models import AdmissionProcess
 from modules.results.models import AdmissionResult
 
-DEFAULT_CAREER_MODALITY = "EDUCACIÓN BÁSICA REGULAR (EBR) Y EDUCACIÓN BÁSICA ALTERNATIVA (EBA)"
+DEFAULT_ADMISSION_MODALITY = "EDUCACIÓN BÁSICA REGULAR (EBR) Y EDUCACIÓN BÁSICA ALTERNATIVA (EBA)"
 
 _EMPTY_TOTALS = {
     "total_results": 0,
@@ -21,24 +21,26 @@ _EMPTY_TOTALS = {
 }
 
 
-def _aggregate_totals(results, *, admitted_average=False):
-    # DecimalField enforces numeric precision; null scores are unavailable.
-    valid_admitted = Q(
-        status=AdmissionResult.Status.ADMITTED,
-        score__gte=Decimal("-9999.9999"), score__lte=Decimal("9999.9999"),
-    )
+# Minimum and average use the same valid admitted-applicant population.
+_VALID_ADMITTED_SCORES = Q(
+    status=AdmissionResult.Status.ADMITTED,
+    score__gte=Decimal("-9999.9999"), score__lte=Decimal("9999.9999"),
+)
+
+
+def _aggregate_totals(results):
     rows = results.values("process_id").annotate(
         total_results=Count("id"),
         admitted_count=Count(
             "id", filter=Q(status=AdmissionResult.Status.ADMITTED)
         ),
         absent_count=Count("id", filter=Q(status=AdmissionResult.Status.ABSENT)),
-        average_score=Avg("score", filter=valid_admitted if admitted_average else None),
+        average_score=Avg("score", filter=_VALID_ADMITTED_SCORES),
         highest_score=Max("score"),
-        minimum_admitted_score=Min("score", filter=valid_admitted),
-        admitted_score_modality=Min("modality__name", filter=valid_admitted),
+        minimum_admitted_score=Min("score", filter=_VALID_ADMITTED_SCORES),
+        admitted_score_modality=Min("modality__name", filter=_VALID_ADMITTED_SCORES),
         admitted_score_modality_count=Count(
-            Coalesce("modality_id", Value(-1)), distinct=True, filter=valid_admitted,
+            Coalesce("modality_id", Value(-1)), distinct=True, filter=_VALID_ADMITTED_SCORES,
         ),
     )
     totals = {}
@@ -60,7 +62,7 @@ def _aggregate_majors(results):
                 "id", filter=Q(status=AdmissionResult.Status.ADMITTED)
             ),
             absent_count=Count("id", filter=Q(status=AdmissionResult.Status.ABSENT)),
-            average_score=Avg("score"),
+            average_score=Avg("score", filter=_VALID_ADMITTED_SCORES),
         )
         .order_by("process_id", "major__code")
     )
@@ -85,13 +87,12 @@ def _build_overviews(processes, totals_by_process, majors_by_process):
 
 
 def _filtered_results(process_ids, *, academic_area=None, faculty=None, modality=None):
-    results = AdmissionResult.objects.filter(process_id__in=process_ids)
+    modality = (modality or "").strip() or DEFAULT_ADMISSION_MODALITY
+    results = AdmissionResult.objects.filter(process_id__in=process_ids, modality__name=modality)
     if academic_area:
         results = results.filter(major__faculty__academic_area__code=academic_area)
     if faculty:
         results = results.filter(major__faculty__code=faculty)
-    if modality:
-        results = results.filter(modality__name=modality)
     return results
 
 
@@ -178,13 +179,13 @@ def major_detail(major_id, selected_process_ids, *, modality=None):
         raise AdmissionProcess.DoesNotExist
 
     process_ids = list(process_by_id)
-    modality = (modality or "").strip() or DEFAULT_CAREER_MODALITY
+    modality = (modality or "").strip() or DEFAULT_ADMISSION_MODALITY
     results = AdmissionResult.objects.filter(
         major_id=major_id,
         process_id__in=process_ids,
         modality__name=modality,
     )
-    aggregates = _aggregate_totals(results, admitted_average=True)
+    aggregates = _aggregate_totals(results)
 
     def build(process):
         return {"process": process, **_EMPTY_TOTALS, **aggregates.get(process.id, {})}

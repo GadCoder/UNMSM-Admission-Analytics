@@ -9,10 +9,9 @@ import { canCompareMinimumScores } from "../components/metricHistory";
 import { MetricHistoryChart } from "../components/MetricHistoryChart";
 import { MajorDetailLoadingSkeleton } from "../components/LoadingSkeletons";
 import { KpiGrid } from "../components/KpiGrid";
+import { resolveAdmissionModality } from "../utils/admissionModality";
 import { formatProcessLabel } from "../utils/processLabels";
 import styles from "./DashboardPage.module.css";
-
-const DEFAULT_MODALITY = "EDUCACIÓN BÁSICA REGULAR (EBR) Y EDUCACIÓN BÁSICA ALTERNATIVA (EBA)";
 
 const ROMAN_SEQUENCE_ORDER: Record<string, number> = { I: 1, II: 2, III: 3, IV: 4 };
 
@@ -38,7 +37,7 @@ export function MajorDetailPage() {
   const { majorId = "" } = useParams();
   const [params, setParams] = useSearchParams();
   const modalitiesQuery = api.useModalities();
-  const modality = params.get("modality")?.trim() || DEFAULT_MODALITY;
+  const modality = resolveAdmissionModality(params.get("modality"));
   const processesQuery = api.usePublishedProcesses();
   const processes = processesQuery.data ?? [];
   const latest = processes[0];
