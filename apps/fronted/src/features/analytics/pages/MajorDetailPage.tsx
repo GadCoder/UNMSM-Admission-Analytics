@@ -12,6 +12,8 @@ import { KpiGrid } from "../components/KpiGrid";
 import { formatProcessLabel } from "../utils/processLabels";
 import styles from "./DashboardPage.module.css";
 
+const DEFAULT_MODALITY = "EDUCACIÓN BÁSICA REGULAR (EBR) Y EDUCACIÓN BÁSICA ALTERNATIVA (EBA)";
+
 const ROMAN_SEQUENCE_ORDER: Record<string, number> = { I: 1, II: 2, III: 3, IV: 4 };
 
 function sequenceOrder(sequence: string) {
@@ -36,19 +38,11 @@ export function MajorDetailPage() {
   const { majorId = "" } = useParams();
   const [params, setParams] = useSearchParams();
   const modalitiesQuery = api.useModalities();
-  const modality = params.get("modality") || undefined;
+  const modality = params.get("modality")?.trim() || DEFAULT_MODALITY;
   const processesQuery = api.usePublishedProcesses();
   const processes = processesQuery.data ?? [];
   const latest = processes[0];
   const primary = params.get("process") ?? (latest ? String(latest.id) : "");
-  const comparisonParam = params.get("compare");
-
-  useEffect(() => {
-    if (comparisonParam === null) return;
-    const next = new URLSearchParams(params);
-    next.delete("compare");
-    setParams(next, { replace: true });
-  }, [comparisonParam, params, setParams]);
 
   const query = api.useMajorDetail(majorId, primary, [], modality);
   const detail = query.data;
@@ -63,12 +57,12 @@ export function MajorDetailPage() {
   };
 
   useEffect(() => {
-    if (latest && !params.get("process")) {
-      const next = new URLSearchParams(params);
-      next.set("process", String(latest.id));
-      setParams(next, { replace: true });
-    }
-  }, [latest, params, setParams]);
+    const next = new URLSearchParams(params);
+    next.delete("compare");
+    if (latest && !params.get("process")) next.set("process", String(latest.id));
+    next.set("modality", modality);
+    if (next.toString() !== params.toString()) setParams(next, { replace: true });
+  }, [latest, modality, params, setParams]);
 
   if (query.isPending) return <section className={styles.page}><MajorDetailLoadingSkeleton /></section>;
   if (query.isError || !detail || !current) return <section className={styles.page}><p role="alert" className={styles.state}>No pudimos cargar el detalle de esta carrera.</p><Link className={styles.detailBack} to="/">Volver a la vista de proceso</Link></section>;
@@ -96,13 +90,11 @@ export function MajorDetailPage() {
             {processes.map((process) => <option key={process.id} value={process.id}>{formatProcessLabel(process)}</option>)}
           </select>
         </div>
-        {(modalitiesQuery.data?.length ?? 0) > 0 && <div className={styles.detailModalityControl}><SelectField label="Modalidad" aria-label="Modalidad" aria-description={modality} title={modality ?? "Todas las modalidades"} value={modality ?? ""} onChange={(event) => {
+        {(modalitiesQuery.data?.length ?? 0) > 0 && <div className={styles.detailModalityControl}><SelectField label="Modalidad" aria-label="Modalidad" aria-description={modality} title={modality} value={modality} onChange={(event) => {
           const next = new URLSearchParams(params);
-          if (event.target.value) next.set("modality", event.target.value);
-          else next.delete("modality");
+          next.set("modality", event.target.value);
           setParams(next);
         }}>
-          <option value="">Todas las modalidades</option>
           {modalitiesQuery.data?.map((item) => <option key={item.id} value={item.name} title={item.name}>{item.name}</option>)}
         </SelectField></div>}
       </section>
