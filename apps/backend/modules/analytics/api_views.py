@@ -144,7 +144,10 @@ class ProcessHistoryView(APIView):
 class MajorDetailView(APIView):
     @extend_schema(
         parameters=[
-            OpenApiParameter(name="modality", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False),
+            OpenApiParameter(
+                name="modality", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False,
+                description="Admission modality name. Omitted or blank values default to Educación Básica Regular (EBR) y Educación Básica Alternativa (EBA); this endpoint always filters by one modality.",
+            ),
             OpenApiParameter(name="process", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=True),
             OpenApiParameter(name="compare", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False),
         ],

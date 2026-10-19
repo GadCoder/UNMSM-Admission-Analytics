@@ -15,6 +15,8 @@ vi.mock("../api/analytics", async (importOriginal) => ({
   useModalities: vi.fn(),
 }));
 
+const defaultModality = "EDUCACIÓN BÁSICA REGULAR (EBR) Y EDUCACIÓN BÁSICA ALTERNATIVA (EBA)";
+
 const processes = [
   { id: 2, year: 2026, sequence: "26-1", name: "" },
   { id: 1, year: 2025, sequence: "25-2", name: "" },
@@ -54,7 +56,7 @@ describe("MajorDetailPage", () => {
   beforeEach(() => {
     cleanup();
     sessionStorage.clear();
-    vi.mocked(api.useModalities).mockReturnValue({ data: [{ id: 1, name: "Ordinario" }] } as ReturnType<typeof api.useModalities>);
+    vi.mocked(api.useModalities).mockReturnValue({ data: [{ id: 1, name: "Ordinario" }, { id: 2, name: defaultModality }] } as ReturnType<typeof api.useModalities>);
     vi.mocked(api.usePublishedProcesses).mockReturnValue({
       data: processes,
       isPending: false,
@@ -69,10 +71,14 @@ describe("MajorDetailPage", () => {
     } as unknown as ReturnType<typeof api.useMajorDetail>);
   });
 
-  it("uses the latest published process when the URL omits process", () => {
+  it("uses the latest published process and EBR/EBA before the first statistics request", () => {
+    vi.mocked(api.useMajorDetail).mockClear();
     renderPage();
 
-    expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "2", [], undefined);
+    expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "2", [], defaultModality);
+    expect(vi.mocked(api.useMajorDetail).mock.calls.every((call) => call[3] === defaultModality)).toBe(true);
+    expect(screen.getByLabelText("Modalidad")).toHaveValue(defaultModality);
+    expect(screen.queryByRole("option", { name: "Todas las modalidades" })).not.toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Ingeniería de Sistemas" })).toBeInTheDocument();
   });
 
@@ -182,14 +188,14 @@ describe("MajorDetailPage", () => {
     await user.click(screen.getAllByRole("button", { name: "2025-2" })[0]);
 
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("1");
-    expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "1", [], undefined);
+    expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "1", [], defaultModality);
   });
 
   it("ignores legacy comparison query state and fetches only the analyzed process", () => {
     renderPage("/analytics/careers/42?process=2&compare=1,3,4");
 
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("2");
-    expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "2", [], undefined);
+    expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "2", [], defaultModality);
     expect(screen.queryByRole("region", { name: "Comparación de procesos" })).not.toBeInTheDocument();
   });
   it("shows six career KPIs in order, one chart, and retains the modality filter", async () => {
@@ -205,6 +211,9 @@ describe("MajorDetailPage", () => {
     expect(screen.getAllByRole("img", { name: /por proceso/ })).toHaveLength(1);
     await userEvent.selectOptions(screen.getByLabelText("Modalidad"), "Ordinario");
     expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "2", [], "Ordinario");
+    await userEvent.selectOptions(screen.getByLabelText("Proceso analizado"), "1");
+    expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "1", [], "Ordinario");
+    expect(screen.getByLabelText("Modalidad")).toHaveValue("Ordinario");
   });
 
   it("defaults to minimum scores for the same identified modality and displays the full modality name", () => {
@@ -220,6 +229,13 @@ describe("MajorDetailPage", () => {
     expect(screen.getByLabelText("Métrica")).toHaveValue("minimum_admitted_score");
     expect(screen.getByRole("option", { name: modality })).toHaveAttribute("title", modality);
     expect(screen.getByLabelText("Modalidad")).toHaveAttribute("title", modality);
+  });
+
+  it.each(["", "%20%20"])("resolves an empty modality to EBR/EBA without requesting combined statistics", (value) => {
+    vi.mocked(api.useMajorDetail).mockClear();
+    renderPage(`/analytics/careers/42?process=2&modality=${value}`);
+    expect(screen.getByLabelText("Modalidad")).toHaveValue(defaultModality);
+    expect(vi.mocked(api.useMajorDetail).mock.calls.every((call) => call[3] === defaultModality)).toBe(true);
   });
 
   it("uses existing loading and error states for score requests", () => {

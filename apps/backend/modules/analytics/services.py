@@ -7,6 +7,8 @@ from modules.academics.models import Major
 from modules.admission_processes.models import AdmissionProcess
 from modules.results.models import AdmissionResult
 
+DEFAULT_CAREER_MODALITY = "EDUCACIÓN BÁSICA REGULAR (EBR) Y EDUCACIÓN BÁSICA ALTERNATIVA (EBA)"
+
 _EMPTY_TOTALS = {
     "total_results": 0,
     "admitted_count": 0,
@@ -176,12 +178,12 @@ def major_detail(major_id, selected_process_ids, *, modality=None):
         raise AdmissionProcess.DoesNotExist
 
     process_ids = list(process_by_id)
+    modality = (modality or "").strip() or DEFAULT_CAREER_MODALITY
     results = AdmissionResult.objects.filter(
         major_id=major_id,
         process_id__in=process_ids,
+        modality__name=modality,
     )
-    if modality:
-        results = results.filter(modality__name=modality)
     aggregates = _aggregate_totals(results)
 
     def build(process):
