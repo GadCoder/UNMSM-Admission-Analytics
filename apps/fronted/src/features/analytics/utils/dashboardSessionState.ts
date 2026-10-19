@@ -1,10 +1,12 @@
+import { DEFAULT_ADMISSION_MODALITY, resolveAdmissionModality } from "./admissionModality";
+
 export const DASHBOARD_VIEW_STORAGE_KEY = "unmsm-dashboard-view";
 
 export type DashboardFilters = { academicArea: string; faculty: string; modality: string };
 export type DashboardView = { filters: DashboardFilters };
 
 export const emptyDashboardView: DashboardView = {
-  filters: { academicArea: "", faculty: "", modality: "" },
+  filters: { academicArea: "", faculty: "", modality: DEFAULT_ADMISSION_MODALITY },
 };
 
 export function readDashboardView(): DashboardView {
@@ -13,7 +15,7 @@ export function readDashboardView(): DashboardView {
     if (!saved) return emptyDashboardView;
     const parsed = JSON.parse(saved) as Partial<DashboardView>;
     return {
-      filters: { ...emptyDashboardView.filters, ...(parsed.filters ?? {}) },
+      filters: { ...emptyDashboardView.filters, ...(parsed.filters ?? {}), modality: resolveAdmissionModality(parsed.filters?.modality) },
     };
   } catch {
     return emptyDashboardView;

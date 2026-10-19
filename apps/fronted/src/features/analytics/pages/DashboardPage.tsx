@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
+import { resolveAdmissionModality } from "../utils/admissionModality";
 import * as api from "../api/analytics";
 import { ActiveFilterChips } from "../components/ActiveFilterChips";
 import controlsStyles from "../components/ResultsControls.module.css";
@@ -25,7 +26,7 @@ export function DashboardPage() {
   const filters = {
     academicArea: params.get("academic_area") ?? savedView.filters.academicArea,
     faculty: params.get("faculty") ?? savedView.filters.faculty,
-    modality: params.get("modality") ?? savedView.filters.modality,
+    modality: resolveAdmissionModality(params.get("modality") ?? savedView.filters.modality),
   };
   const latest = processes[0];
   const primaryId = params.get("process") ?? (latest ? String(latest.id) : "");
@@ -55,7 +56,7 @@ export function DashboardPage() {
       filters: {
         academicArea: params.get("academic_area") ?? savedView.filters.academicArea,
         faculty: params.get("faculty") ?? savedView.filters.faculty,
-        modality: params.get("modality") ?? savedView.filters.modality,
+        modality: resolveAdmissionModality(params.get("modality") ?? savedView.filters.modality),
       },
     };
     setSavedView(migratedView);
@@ -70,7 +71,7 @@ export function DashboardPage() {
   const overviewQuery = api.useAnalyticsOverview(primaryId, overviewComparisons, filters);
   const historyQuery = api.useProcessHistory(filters);
   const selected = overviewQuery.data?.processes ?? [];
-  const primary = selected[0];
+  const primary = selected.find((item) => String(item.process.id) === primaryId);
   const previous = selected.find((item) => String(item.process.id) === previousId);
   const updateSelection = (process: string) => {
     const next = new URLSearchParams(process ? { process } : {});
@@ -79,7 +80,7 @@ export function DashboardPage() {
 
   const updateFilters = useCallback((nextFilters: { academicArea: string; faculty: string; modality: string }) => {
     const next = new URLSearchParams(primaryId ? { process: primaryId } : {});
-    const nextView = { filters: nextFilters };
+    const nextView = { filters: { ...nextFilters, modality: resolveAdmissionModality(nextFilters.modality) } };
     setSavedView(nextView);
     saveDashboardView(nextView);
     setParams(next);
@@ -125,12 +126,18 @@ export function DashboardPage() {
               filters={filters}
               areas={areasQuery.data ?? []}
               faculties={facultiesQuery.data ?? []}
-              modalities={modalitiesQuery.data ?? []}
               onChange={updateFilters}
             />
           </section>
         )}
       </div>
+
+      {processes.length > 0 && (
+        <div className={styles.modalityContext} title={filters.modality}>
+          <span className={styles.modalityLabel}>Modalidad</span>
+          <span className={styles.modalityName}>{filters.modality}</span>
+        </div>
+      )}
 
       {processesQuery.isPending && <DashboardLoadingSkeleton />}
       {processesQuery.isError && (
@@ -157,6 +164,7 @@ export function DashboardPage() {
             <div aria-busy={overviewQuery.isFetching}>
               <DashboardContent
                 primary={primary}
+                modality={filters.modality}
                 selectedProcessId={Number(primaryId)}
                 previous={previous}
                 historyItems={historyQuery.data?.processes ?? []}

@@ -11,7 +11,8 @@ class MajorOverviewSerializer(serializers.Serializer):
     admitted_count = serializers.IntegerField()
     absent_count = serializers.IntegerField()
     average_score = serializers.DecimalField(
-        max_digits=8, decimal_places=4, allow_null=True
+        max_digits=8, decimal_places=4, allow_null=True,
+        help_text="Average valid score among admitted applicants in this career within the applied filters.",
     )
 
 
@@ -21,7 +22,8 @@ class ProcessOverviewSerializer(serializers.Serializer):
     admitted_count = serializers.IntegerField()
     absent_count = serializers.IntegerField()
     average_score = serializers.DecimalField(
-        max_digits=8, decimal_places=4, allow_null=True
+        max_digits=8, decimal_places=4, allow_null=True,
+        help_text="Average valid score among admitted applicants within the applied filters.",
     )
     minimum_admitted_score = serializers.FloatField(allow_null=True)
     admitted_score_modality_count = serializers.IntegerField()
@@ -41,7 +43,10 @@ class ProcessHistoryItemSerializer(serializers.Serializer):
     total_results = serializers.IntegerField()
     admitted_count = serializers.IntegerField()
     absent_count = serializers.IntegerField()
-    average_score = serializers.DecimalField(max_digits=8, decimal_places=4, allow_null=True)
+    average_score = serializers.DecimalField(
+        max_digits=8, decimal_places=4, allow_null=True,
+        help_text="Average valid score among admitted applicants within the applied filters.",
+    )
     minimum_admitted_score = serializers.FloatField(allow_null=True)
     admitted_score_modality_count = serializers.IntegerField()
     admitted_score_modality = serializers.CharField(allow_null=True)

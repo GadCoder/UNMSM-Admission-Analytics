@@ -26,9 +26,9 @@ describe("KpiGrid", () => {
     expect(screen.getAllByRole("article")).toHaveLength(6);
     expect(screen.queryByText("Puntaje mínimo de ingreso")).not.toBeInTheDocument();
     expect(metric("Postulantes ausentes")).toBeInTheDocument();
-    expect(screen.queryByText("El puntaje promedio considera solo a los ingresantes con puntaje válido.")).not.toBeInTheDocument();
+    expect(screen.getByText("El puntaje promedio considera solo a los ingresantes con puntaje válido.")).toBeInTheDocument();
     const labels = screen.getAllByRole("article").map((item) => item.querySelector("span")?.textContent);
-    expect(labels).toEqual(["Postulantes", "Postulantes ausentes", "Ingresantes", "Porcentaje de ingresantes", "Puntaje máximo", "Puntaje promedio"]);
+    expect(labels).toEqual(["Postulantes", "Postulantes ausentes", "Ingresantes", "Porcentaje de ingresantes", "Puntaje máximo", "Puntaje promedio*"]);
     expect(within(metric("Puntaje máximo")).getByLabelText("Subió: +10 pts").parentElement?.className).toContain("kpiTrendPositive");
   });
 

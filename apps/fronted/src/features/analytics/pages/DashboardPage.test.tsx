@@ -4,6 +4,7 @@ import userEvent from "@testing-library/user-event";
 import { MemoryRouter, useLocation, useNavigate } from "react-router-dom";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import { DEFAULT_ADMISSION_MODALITY } from "../utils/admissionModality";
 import { DashboardPage } from "./DashboardPage";
 import * as api from "../api/analytics";
 import surfaceStyles from "../components/AnalyticsSurface.module.css";
@@ -55,13 +56,13 @@ describe("DashboardPage", () => {
     vi.mocked(api.usePublishedProcesses).mockReturnValue({ data: processes, isPending: false, isError: false } as unknown as ReturnType<typeof api.usePublishedProcesses>);
     vi.mocked(api.useAcademicAreas).mockReturnValue({ data: academicAreas, isPending: false, isError: false } as unknown as ReturnType<typeof api.useAcademicAreas>);
     vi.mocked(api.useFaculties).mockReturnValue({ data: faculties, isPending: false, isError: false } as unknown as ReturnType<typeof api.useFaculties>);
-    vi.mocked(api.useModalities).mockReturnValue({ data: [], isPending: false, isError: false } as unknown as ReturnType<typeof api.useModalities>);
-    vi.mocked(api.useAnalyticsOverview).mockReturnValue({
-      data: overview,
+    vi.mocked(api.useModalities).mockReturnValue({ data: [{ id: 1, name: DEFAULT_ADMISSION_MODALITY }, { id: 2, name: "Especial" }], isPending: false, isError: false } as unknown as ReturnType<typeof api.useModalities>);
+    vi.mocked(api.useAnalyticsOverview).mockImplementation((primaryId) => ({
+      data: { processes: [{ ...overview.processes[0], process: processes.find((item) => String(item.id) === primaryId) ?? { ...processes[0], id: Number(primaryId) } }] },
       isPending: false,
       isError: false,
       isSuccess: true,
-    } as unknown as ReturnType<typeof api.useAnalyticsOverview>);
+    } as unknown as ReturnType<typeof api.useAnalyticsOverview>));
     vi.mocked(api.useProcessHistory).mockReturnValue({
       data: processHistory,
       isPending: false,
@@ -104,7 +105,7 @@ describe("DashboardPage", () => {
       "Ingresantes",
       "Porcentaje de ingresantes",
       "Puntaje máximo",
-      "Puntaje promedio",
+      "Puntaje promedio*",
     ]);
     expect(screen.getByRole("table")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Vista comparativa" })).not.toBeInTheDocument();
@@ -112,7 +113,7 @@ describe("DashboardPage", () => {
     expect(screen.getByText("50 postulantes · 12 admitidos")).toBeInTheDocument();
     const firstPerformanceCard = screen.getByTestId("major-performance-cards");
     const majorLink = within(firstPerformanceCard).getByRole("link", { name: "Ingeniería" });
-    expect(majorLink).toHaveAttribute("href", "/analytics/careers/1?process=1");
+    expect(majorLink).toHaveAttribute("href", `/analytics/careers/1?${new URLSearchParams({ process: "1", modality: DEFAULT_ADMISSION_MODALITY })}`);
     expect(within(firstPerformanceCard).queryByText("Ver más")).not.toBeInTheDocument();
     const metricsToggle = within(firstPerformanceCard).getByRole("button", { name: "Mostrar indicadores de Ingeniería" });
     expect(metricsToggle).toHaveAttribute("aria-expanded", "false");
@@ -215,7 +216,7 @@ describe("DashboardPage", () => {
     await user.selectOptions(screen.getByLabelText("Proceso analizado"), "2");
     await user.click(screen.getByRole("button", { name: "Atrás de prueba" }));
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("1");
-    expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("1", ["2"], { academicArea: "", faculty: "", modality: "" });
+    expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("1", ["2"], { academicArea: "", faculty: "", modality: DEFAULT_ADMISSION_MODALITY });
     await user.click(screen.getByRole("button", { name: "Adelante de prueba" }));
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("2");
   });
@@ -239,14 +240,14 @@ describe("DashboardPage", () => {
     expect(within(timeline).queryByRole("button", { name: "2023-1" })).not.toBeInTheDocument();
     await user.click(within(timeline).getByRole("button", { name: "Ver más" }));
     expect(within(timeline).getAllByRole("article")).toHaveLength(6);
-    expect(within(timeline).getAllByRole("article").map((article) => within(article).getByRole("button").textContent)).toEqual(["2025-2", "2025-1", "2024-2", "2024-1", "2023-2", "2023-1"]);
+    expect(within(timeline).getAllByRole("article").map((article) => within(article).getByRole("button", { name: /^\d{4}-/ }).textContent)).toEqual(["2025-2", "2025-1", "2024-2", "2024-1", "2023-2", "2023-1"]);
     await user.click(within(timeline).getByRole("button", { name: "Ver menos" }));
     expect(within(timeline).getAllByRole("article")).toHaveLength(3);
     await user.selectOptions(screen.getByLabelText("Proceso analizado"), "6");
     expect(within(timeline).getAllByRole("article")).toHaveLength(6);
     expect(within(timeline).getByRole("button", { name: "2023-1" })).toHaveAttribute("aria-pressed", "true");
     expect(within(timeline).getByRole("button", { name: "2025-2" })).toHaveAttribute("aria-pressed", "false");
-    expect(screen.queryByRole("button", { name: /comparar/i })).not.toBeInTheDocument();
+    expect(within(screen.getByRole("region", { name: "Controles del análisis" })).queryByRole("button", { name: /comparar/i })).not.toBeInTheDocument();
     expect(screen.queryByRole("list", { name: "Procesos en comparación" })).not.toBeInTheDocument();
   });
 
@@ -257,7 +258,7 @@ describe("DashboardPage", () => {
     const timeline = screen.getByRole("region", { name: "Resultados históricos" });
     expect(within(timeline).getAllByRole("article")).toHaveLength(1);
     expect(within(timeline).getByRole("button", { name: "2025-2" })).toHaveAttribute("aria-pressed", "true");
-    expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("1", [], { academicArea: "", faculty: "", modality: "" });
+    expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("1", [], { academicArea: "", faculty: "", modality: DEFAULT_ADMISSION_MODALITY });
   });
 
   it("updates KPIs and the history highlight without removing any history entries", async () => {
@@ -268,14 +269,14 @@ describe("DashboardPage", () => {
     } as unknown as ReturnType<typeof api.useAnalyticsOverview>));
     renderPage("/?process=1");
     const timeline = screen.getByRole("region", { name: "Resultados históricos" });
-    const applicants = screen.getByText("Postulantes", { selector: "span" }).closest("article")!;
+    const applicants = within(screen.getByLabelText("Indicadores del proceso")).getByText("Postulantes", { selector: "span" }).closest("article")!;
     expect(applicants).toHaveTextContent("100");
     await user.selectOptions(screen.getByLabelText("Proceso analizado"), "2");
     expect(applicants).toHaveTextContent("80");
     expect(within(timeline).getByRole("button", { name: "2025-1" })).toHaveAttribute("aria-pressed", "true");
     expect(within(timeline).getByRole("button", { name: "2025-2" })).toHaveAttribute("aria-pressed", "false");
     expect(within(timeline).getAllByRole("article")).toHaveLength(2);
-    expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("2", ["3"], { academicArea: "", faculty: "", modality: "" });
+    expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("2", ["3"], { academicArea: "", faculty: "", modality: DEFAULT_ADMISSION_MODALITY });
   });
 
   it("selects a historical process and synchronizes the selector and URL", async () => {
@@ -349,11 +350,11 @@ describe("DashboardPage", () => {
     await user.click(await screen.findByRole("button", { name: "Quitar filtro Área académica: Ingenierías" }));
     await waitFor(() => {
       const saved = JSON.parse(sessionStorage.getItem("unmsm-dashboard-view")!);
-      expect(saved.filters).toEqual({ academicArea: "", faculty: "", modality: "" });
+      expect(saved.filters).toEqual({ academicArea: "", faculty: "", modality: DEFAULT_ADMISSION_MODALITY });
       expect(saved.comparisons).toBeUndefined();
     });
     expect(screen.queryByRole("list", { name: "Filtros activos" })).not.toBeInTheDocument();
-    expect(api.useProcessHistory).toHaveBeenLastCalledWith({ academicArea: "", faculty: "", modality: "" });
+    expect(api.useProcessHistory).toHaveBeenLastCalledWith({ academicArea: "", faculty: "", modality: DEFAULT_ADMISSION_MODALITY });
   });
 
   it("resets filters without restoring a pending filter edit", async () => {
@@ -365,7 +366,7 @@ describe("DashboardPage", () => {
     await act(async () => { await new Promise((resolve) => setTimeout(resolve, 500)); });
     await waitFor(() => {
       const saved = JSON.parse(sessionStorage.getItem("unmsm-dashboard-view")!);
-      expect(saved.filters).toEqual({ academicArea: "", faculty: "", modality: "" });
+      expect(saved.filters).toEqual({ academicArea: "", faculty: "", modality: DEFAULT_ADMISSION_MODALITY });
       expect(saved.comparisons).toBeUndefined();
     });
     await user.click(screen.getByLabelText(/Abrir filtros de carreras/));
@@ -373,12 +374,12 @@ describe("DashboardPage", () => {
   });
 
   it("ignores retired comparison settings and removes legacy comparison URLs while preserving filters", async () => {
-    sessionStorage.setItem("unmsm-dashboard-view", JSON.stringify({ comparisons: ["3"], filters: { academicArea: "ING", faculty: "", modality: "" } }));
+    sessionStorage.setItem("unmsm-dashboard-view", JSON.stringify({ comparisons: ["3"], filters: { academicArea: "ING", faculty: "", modality: DEFAULT_ADMISSION_MODALITY } }));
     renderPage("/?process=1&compare=4");
     await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("?process=1"));
     expect(screen.getByTestId("location")).not.toHaveTextContent("compare=");
-    expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("1", ["2"], { academicArea: "ING", faculty: "", modality: "" });
-    expect(api.useProcessHistory).toHaveBeenLastCalledWith({ academicArea: "ING", faculty: "", modality: "" });
+    expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("1", ["2"], { academicArea: "ING", faculty: "", modality: DEFAULT_ADMISSION_MODALITY });
+    expect(api.useProcessHistory).toHaveBeenLastCalledWith({ academicArea: "ING", faculty: "", modality: DEFAULT_ADMISSION_MODALITY });
     const saved = JSON.parse(sessionStorage.getItem("unmsm-dashboard-view")!);
     expect(saved.comparisons).toBeUndefined();
     expect(saved.filters.academicArea).toBe("ING");
@@ -422,7 +423,7 @@ describe("DashboardPage", () => {
     await waitFor(() => expect(screen.queryByRole("status", { name: "Ordenando carreras" })).not.toBeInTheDocument(), { timeout: 1000 });
     const rows = screen.getAllByRole("row");
     expect(rows[1]).toHaveTextContent("Derecho");
-    expect(within(table).getByRole("link", { name: "Derecho" })).toHaveAttribute("href", "/analytics/careers/2?process=1");
+    expect(within(table).getByRole("link", { name: "Derecho" })).toHaveAttribute("href", `/analytics/careers/2?${new URLSearchParams({ process: "1", modality: DEFAULT_ADMISSION_MODALITY })}`);
   });
   it("shows visible feedback while refreshing existing analytics", async () => {
     vi.mocked(api.useAnalyticsOverview).mockReturnValue({
@@ -455,4 +456,50 @@ describe("DashboardPage", () => {
     renderPage();
     expect(await screen.findByRole("alert")).toHaveTextContent(/no pudimos/i);
   });
+  it.each([undefined, "", "   "])("defaults missing or legacy empty modality preferences before fetching data: %s", (modality) => {
+    if (modality !== undefined) sessionStorage.setItem("unmsm-dashboard-view", JSON.stringify({ filters: { academicArea: "", faculty: "", modality } }));
+    vi.mocked(api.useAnalyticsOverview).mockClear();
+    vi.mocked(api.useProcessHistory).mockClear();
+    renderPage();
+    fireEvent.click(screen.getByLabelText(/Abrir filtros de carreras/));
+    expect(screen.getByLabelText("Modalidad")).toHaveValue(DEFAULT_ADMISSION_MODALITY);
+    expect(within(screen.getByLabelText("Modalidad")).queryByRole("option", { name: /Todas/ })).not.toBeInTheDocument();
+    expect(vi.mocked(api.useAnalyticsOverview).mock.calls.every((call) => call[2]?.modality === DEFAULT_ADMISSION_MODALITY)).toBe(true);
+    expect(vi.mocked(api.useProcessHistory).mock.calls.every((call) => call[0]?.modality === DEFAULT_ADMISSION_MODALITY)).toBe(true);
+    expect(screen.getByText("El puntaje promedio considera solo a los ingresantes con puntaje válido.")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /Quitar filtro Modalidad/ })).not.toBeInTheDocument();
+  });
+
+  it("preserves an explicit modality across process changes and reloads, and resets to basic education", async () => {
+    const user = userEvent.setup();
+    const view = renderPage("/?process=1&modality=Especial");
+    await user.click(screen.getByLabelText(/Abrir filtros de carreras/));
+    expect(screen.getByLabelText("Modalidad")).toHaveValue("Especial");
+    await user.selectOptions(screen.getByLabelText("Proceso analizado"), "2");
+    expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("2", ["3"], { academicArea: "", faculty: "", modality: "Especial" });
+    expect(api.useProcessHistory).toHaveBeenLastCalledWith({ academicArea: "", faculty: "", modality: "Especial" });
+    const majorLink = within(screen.getByRole("table")).getByRole("link", { name: "Ingeniería" });
+    expect(new URL(majorLink.getAttribute("href")!, "http://localhost").searchParams.get("modality")).toBe("Especial");
+    view.unmount();
+    renderPage("/?process=2");
+    await user.click(screen.getByLabelText(/Abrir filtros de carreras/));
+    expect(screen.getByLabelText("Modalidad")).toHaveValue("Especial");
+    await user.click(screen.getByRole("button", { name: /Restablecer filtros/ }));
+    await user.click(screen.getByLabelText(/Abrir filtros de carreras/));
+    expect(screen.getByLabelText("Modalidad")).toHaveValue(DEFAULT_ADMISSION_MODALITY);
+    expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("2", ["3"], { academicArea: "", faculty: "", modality: DEFAULT_ADMISSION_MODALITY });
+  });
+
+  it("updates the shared modality from the filter panel", async () => {
+    const user = userEvent.setup();
+    renderPage("/?process=1");
+    expect(screen.queryByLabelText("Modalidad")).not.toBeInTheDocument();
+    await user.click(screen.getByLabelText(/Abrir filtros de carreras/));
+    await user.selectOptions(screen.getByLabelText("Modalidad"), "Especial");
+    await waitFor(() => expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("1", ["2"], { academicArea: "", faculty: "", modality: "Especial" }));
+    expect(api.useProcessHistory).toHaveBeenLastCalledWith({ academicArea: "", faculty: "", modality: "Especial" });
+    expect(screen.getAllByLabelText("Modalidad")).toHaveLength(1);
+    expect(screen.getByLabelText("Área académica")).toBeInTheDocument();
+  });
+
 });
