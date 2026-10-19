@@ -5,11 +5,12 @@ type KpiProps = {
   label: string;
   value: string;
   trend?: KpiTrendProps;
+  description?: string;
 };
 
-export function Kpi({ label, value, trend }: KpiProps) {
+export function Kpi({ label, value, trend, description }: KpiProps) {
   return (
-    <article className={styles.kpi}>
+    <article className={styles.kpi} title={description} aria-description={description}>
       <div className={styles.kpiValueBlock}>
         <span className={styles.kpiLabel}>{label}</span>
         <div className={styles.kpiValuePrimary}>

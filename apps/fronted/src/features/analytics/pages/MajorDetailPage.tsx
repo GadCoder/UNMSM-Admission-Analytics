@@ -3,7 +3,9 @@ import { Link, useParams, useSearchParams } from "react-router-dom";
 
 import type { MajorDetailProcess, ProcessOverview } from "../api/analytics.types";
 import * as api from "../api/analytics";
+import { SelectField } from "../components/SelectField";
 import { MajorDetailHistory } from "../components/MajorDetailHistory";
+import { canCompareMinimumScores } from "../components/metricHistory";
 import { MetricHistoryChart } from "../components/MetricHistoryChart";
 import { MajorDetailLoadingSkeleton } from "../components/LoadingSkeletons";
 import { KpiGrid } from "../components/KpiGrid";
@@ -33,6 +35,8 @@ function asProcessOverview(item: MajorDetailProcess): ProcessOverview {
 export function MajorDetailPage() {
   const { majorId = "" } = useParams();
   const [params, setParams] = useSearchParams();
+  const modalitiesQuery = api.useModalities();
+  const modality = params.get("modality") || undefined;
   const processesQuery = api.usePublishedProcesses();
   const processes = processesQuery.data ?? [];
   const latest = processes[0];
@@ -46,10 +50,10 @@ export function MajorDetailPage() {
     setParams(next, { replace: true });
   }, [comparisonParam, params, setParams]);
 
-  const query = api.useMajorDetail(majorId, primary, []);
+  const query = api.useMajorDetail(majorId, primary, [], modality);
   const detail = query.data;
   const selected = detail?.selected_processes ?? [];
-  const current = selected[0];
+  const current = [...selected, ...(detail?.history ?? [])].find((item) => String(item.process.id) === primary);
 
   const updateSelection = (nextPrimary: string) => {
     const next = new URLSearchParams(params);
@@ -92,17 +96,30 @@ export function MajorDetailPage() {
             {processes.map((process) => <option key={process.id} value={process.id}>{formatProcessLabel(process)}</option>)}
           </select>
         </div>
+        {(modalitiesQuery.data?.length ?? 0) > 0 && <div className={styles.detailModalityControl}><SelectField label="Modalidad" aria-label="Modalidad" aria-description={modality} title={modality ?? "Todas las modalidades"} value={modality ?? ""} onChange={(event) => {
+          const next = new URLSearchParams(params);
+          if (event.target.value) next.set("modality", event.target.value);
+          else next.delete("modality");
+          setParams(next);
+        }}>
+          <option value="">Todas las modalidades</option>
+          {modalitiesQuery.data?.map((item) => <option key={item.id} value={item.name} title={item.name}>{item.name}</option>)}
+        </SelectField></div>}
       </section>
     </header>
 
-    <KpiGrid overview={currentOverview} previous={previous ? asProcessOverview(previous) : undefined} />
-    <MetricHistoryChart items={timeline} title="Evolución histórica de la carrera" />
+    <KpiGrid variant="career" overview={currentOverview} previous={previous ? asProcessOverview(previous) : undefined} />
+    <MetricHistoryChart items={timeline} title="Evolución histórica de la carrera"
+      selectedProcessId={current.process.id}
+      defaultMetric={timeline.some((item) => item.process.id !== current.process.id && canCompareMinimumScores(current, item)) ? "minimum_admitted_score" : "total_results"}
+    />
 
     <section className={`${styles.card} ${styles.comparisonCard}`} aria-labelledby="history-heading">
       <header className={styles.comparisonCardHeader}>
         <h2 id="history-heading" className={styles.comparisonSectionTitle}>Resultados históricos</h2>
       </header>
       <MajorDetailHistory
+        variant="career"
         items={historyTimeline}
         selectedProcessId={current.process.id}
         onSelectProcess={(processId) => updateSelection(String(processId))}

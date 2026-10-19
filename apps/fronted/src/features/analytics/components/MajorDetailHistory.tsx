@@ -10,12 +10,13 @@ type Props = {
   items: MajorDetailProcess[];
   selectedProcessId?: number;
   initialProcessCount?: number;
+  variant?: "process" | "career";
   onSelectProcess?: (processId: number) => void;
 };
 
-export function MajorDetailHistory({ items, selectedProcessId, initialProcessCount, onSelectProcess }: Props) {
+export function MajorDetailHistory({ items, selectedProcessId, initialProcessCount, onSelectProcess, variant = "process" }: Props) {
   const timelineId = useId();
-  const entries = buildMajorHistoryEntries(items);
+  const entries = buildMajorHistoryEntries(items, variant);
   const initialEntries = entries.slice(0, initialProcessCount);
   const recentIds = new Set(initialEntries.map((entry) => entry.id));
   const hasOlderEntries = entries.length > initialEntries.length;

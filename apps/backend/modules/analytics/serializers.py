@@ -23,6 +23,9 @@ class ProcessOverviewSerializer(serializers.Serializer):
     average_score = serializers.DecimalField(
         max_digits=8, decimal_places=4, allow_null=True
     )
+    minimum_admitted_score = serializers.FloatField(allow_null=True)
+    admitted_score_modality_count = serializers.IntegerField()
+    admitted_score_modality = serializers.CharField(allow_null=True)
     highest_score = serializers.DecimalField(
         max_digits=8, decimal_places=4, allow_null=True
     )
@@ -39,6 +42,9 @@ class ProcessHistoryItemSerializer(serializers.Serializer):
     admitted_count = serializers.IntegerField()
     absent_count = serializers.IntegerField()
     average_score = serializers.DecimalField(max_digits=8, decimal_places=4, allow_null=True)
+    minimum_admitted_score = serializers.FloatField(allow_null=True)
+    admitted_score_modality_count = serializers.IntegerField()
+    admitted_score_modality = serializers.CharField(allow_null=True)
     highest_score = serializers.DecimalField(max_digits=8, decimal_places=4, allow_null=True)
 
 
@@ -54,6 +60,9 @@ class MajorProcessDetailSerializer(serializers.Serializer):
     average_score = serializers.DecimalField(
         max_digits=8, decimal_places=4, allow_null=True
     )
+    minimum_admitted_score = serializers.FloatField(allow_null=True)
+    admitted_score_modality_count = serializers.IntegerField()
+    admitted_score_modality = serializers.CharField(allow_null=True)
     highest_score = serializers.DecimalField(
         max_digits=8, decimal_places=4, allow_null=True
     )

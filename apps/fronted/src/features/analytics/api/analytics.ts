@@ -39,18 +39,19 @@ export function useProcessHistory(filters: AnalyticsFilters = {}) {
 
 export function usePublishedProcesses() { return useQuery({ queryKey: ["published-processes"], queryFn: getPublishedProcesses }); }
 
-export function getMajorDetail(majorId: string | number, primary: string | number, comparisons: Array<string | number> = []): Promise<MajorDetail> {
+export function getMajorDetail(majorId: string | number, primary: string | number, comparisons: Array<string | number> = [], modality?: string): Promise<MajorDetail> {
   const params = new URLSearchParams({ process: String(primary) });
   if (comparisons.length) params.set("compare", comparisons.slice(0, 3).map(String).join(","));
+  if (modality) params.set("modality", modality);
   return apiFetch<MajorDetail>(`/api/v1/analytics/majors/${majorId}/?${params.toString()}`);
 }
 
-export function useMajorDetail(majorId: string, primary: string, comparisons: string[]) {
+export function useMajorDetail(majorId: string, primary: string, comparisons: string[], modality?: string) {
   return useQuery({
-    queryKey: ["major-detail", majorId, primary, comparisons],
-    queryFn: () => getMajorDetail(majorId, primary, comparisons),
+    queryKey: ["major-detail", majorId, primary, comparisons, modality],
+    queryFn: () => getMajorDetail(majorId, primary, comparisons, modality),
     enabled: Boolean(majorId && primary),
-    placeholderData: keepPreviousData,
+    placeholderData: (previousData, previousQuery) => previousQuery?.queryKey[1] === majorId && previousQuery.queryKey[4] === modality ? previousData : undefined,
   });
 }
 
