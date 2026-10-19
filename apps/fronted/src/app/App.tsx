@@ -10,7 +10,6 @@ export function App() {
           <img className={styles.brandLogo} src="https://assets.resultados-unmsm.com/brand/unmsm-2e787805.png" alt="UNMSM" />
           <span>
             <strong>Admisión UNMSM</strong>
-            <small>Resultados oficiales</small>
           </span>
         </Link>
       </header>
