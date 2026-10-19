@@ -12,6 +12,7 @@ vi.mock("../api/analytics", async (importOriginal) => ({
   ...await importOriginal<typeof import("../api/analytics")>(),
   usePublishedProcesses: vi.fn(),
   useMajorDetail: vi.fn(),
+  useModalities: vi.fn(),
 }));
 
 const processes = [
@@ -29,6 +30,7 @@ const detailProcess = (process: typeof processes[number], total: number): MajorD
   absent_count: 2,
   average_score: "70.0000",
   highest_score: "95.0000",
+  minimum_admitted_score: 80.1234,
 });
 
 const detail: MajorDetail = {
@@ -52,6 +54,7 @@ describe("MajorDetailPage", () => {
   beforeEach(() => {
     cleanup();
     sessionStorage.clear();
+    vi.mocked(api.useModalities).mockReturnValue({ data: [{ id: 1, name: "Ordinario" }] } as ReturnType<typeof api.useModalities>);
     vi.mocked(api.usePublishedProcesses).mockReturnValue({
       data: processes,
       isPending: false,
@@ -69,7 +72,7 @@ describe("MajorDetailPage", () => {
   it("uses the latest published process when the URL omits process", () => {
     renderPage();
 
-    expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "2", []);
+    expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "2", [], undefined);
     expect(screen.getByRole("heading", { name: "Ingeniería de Sistemas" })).toBeInTheDocument();
   });
 
@@ -84,8 +87,8 @@ describe("MajorDetailPage", () => {
     const historyChart = screen.getByRole("region", { name: "Evolución histórica de la carrera" });
     expect(within(historyChart).getByLabelText("Métrica")).toHaveValue("total_results");
     expect(within(historyChart).getByRole("img", { name: "Postulantes por proceso" })).toBeInTheDocument();
-    expect(within(historyChart).getByText("80")).toBeInTheDocument();
-    expect(within(historyChart).getByText("100")).toBeInTheDocument();
+    expect(within(historyChart).getByRole("button", { name: /2025-2: 80[.]/ })).toBeInTheDocument();
+    expect(within(historyChart).getByRole("button", { name: /2026-1: 100[.]/ })).toBeInTheDocument();
     expect(screen.queryByText("Historial completo")).not.toBeInTheDocument();
     expect(screen.queryByText("Resultados por proceso")).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Añadir proceso para comparar" })).not.toBeInTheDocument();
@@ -161,14 +164,15 @@ describe("MajorDetailPage", () => {
     expect(oldest).not.toHaveTextContent("frente al");
   });
 
-  it("keeps supplemental scores and absences visible in every timeline entry", () => {
+  it("shows minimum, average and maximum scores in every career timeline entry", () => {
     renderPage("/analytics/careers/42?process=2");
 
     const history = screen.getByLabelText("Historial por proceso");
     expect(within(history).getByRole("button", { name: "2025-2" })).toBeInTheDocument();
     expect(within(history).getAllByText("Puntaje promedio")).toHaveLength(2);
     expect(within(history).getAllByText("Puntaje máximo")).toHaveLength(2);
-    expect(within(history).getAllByText("Ausentes")).toHaveLength(2);
+    expect(within(history).getAllByText("Puntaje mínimo de ingreso")).toHaveLength(2);
+    expect(within(history).queryByText("Ausentes")).not.toBeInTheDocument();
   });
 
   it("selects a process from history and updates the page URL-driven query", async () => {
@@ -178,14 +182,54 @@ describe("MajorDetailPage", () => {
     await user.click(screen.getAllByRole("button", { name: "2025-2" })[0]);
 
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("1");
-    expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "1", []);
+    expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "1", [], undefined);
   });
 
   it("ignores legacy comparison query state and fetches only the analyzed process", () => {
     renderPage("/analytics/careers/42?process=2&compare=1,3,4");
 
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("2");
-    expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "2", []);
+    expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "2", [], undefined);
     expect(screen.queryByRole("region", { name: "Comparación de procesos" })).not.toBeInTheDocument();
   });
+  it("shows six career KPIs in order, one chart, and retains the modality filter", async () => {
+    renderPage("/analytics/careers/42?process=2");
+    const kpis = screen.getByLabelText("Indicadores de la carrera");
+    expect(within(kpis).getAllByRole("article")).toHaveLength(6);
+    expect([...kpis.querySelectorAll("article span")].filter((item) => item.className.includes("kpiLabel")).map((item) => item.textContent)).toEqual([
+      "Postulantes", "Ingresantes", "Porcentaje de ingresantes", "Puntaje mínimo de ingreso", "Puntaje promedio", "Puntaje máximo",
+    ]);
+    expect(within(kpis).queryByText("Postulantes ausentes")).not.toBeInTheDocument();
+    expect(within(kpis).getByText("80.12")).toBeInTheDocument();
+    expect(screen.queryByRole("region", { name: "Puntajes de ingreso" })).not.toBeInTheDocument();
+    expect(screen.getAllByRole("img", { name: /por proceso/ })).toHaveLength(1);
+    await userEvent.selectOptions(screen.getByLabelText("Modalidad"), "Ordinario");
+    expect(vi.mocked(api.useMajorDetail)).toHaveBeenLastCalledWith("42", "2", [], "Ordinario");
+  });
+
+  it("defaults to minimum scores for the same identified modality and displays the full modality name", () => {
+    const modality = "EDUCACIÓN BÁSICA REGULAR (EBR) Y EDUCACIÓN BÁSICA ALTERNATIVA (EBA)";
+    vi.mocked(api.useModalities).mockReturnValue({ data: [{ id: 1, name: modality }] } as ReturnType<typeof api.useModalities>);
+    vi.mocked(api.useMajorDetail).mockReturnValue({
+      data: { ...detail,
+        selected_processes: [{ ...detail.selected_processes[0], admitted_score_modality_count: 1, admitted_score_modality: modality }],
+        history: [{ ...detail.history[0], admitted_score_modality_count: 1, admitted_score_modality: modality }],
+      }, isPending: false,
+    } as ReturnType<typeof api.useMajorDetail>);
+    renderPage(`/analytics/careers/42?process=2&modality=${encodeURIComponent(modality)}`);
+    expect(screen.getByLabelText("Métrica")).toHaveValue("minimum_admitted_score");
+    expect(screen.getByRole("option", { name: modality })).toHaveAttribute("title", modality);
+    expect(screen.getByLabelText("Modalidad")).toHaveAttribute("title", modality);
+  });
+
+  it("uses existing loading and error states for score requests", () => {
+    vi.mocked(api.useMajorDetail).mockReturnValue({ isPending: true } as ReturnType<typeof api.useMajorDetail>);
+    const { unmount } = renderPage();
+    expect(screen.getByRole("status")).toHaveAccessibleName("Cargando detalle de la carrera");
+    unmount();
+    vi.mocked(api.useMajorDetail).mockReturnValue({ isPending: false, isError: true } as ReturnType<typeof api.useMajorDetail>);
+    renderPage();
+    expect(screen.getByRole("alert")).toHaveTextContent("No pudimos cargar el detalle");
+  });
+
 });

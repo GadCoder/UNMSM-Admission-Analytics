@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { getAnalyticsOverview, getProcessHistory, getPublishedProcesses } from "./analytics";
+import { getAnalyticsOverview, getMajorDetail, getProcessHistory, getPublishedProcesses } from "./analytics";
 
 describe("analytics API", () => {
   it("fetches published processes", async () => {
@@ -31,4 +31,12 @@ describe("analytics API", () => {
     expect(fetchMock.mock.calls[0][0]).toBe("http://localhost:8000/api/v1/analytics/history/?academic_area=A&faculty=F01&modality=Ordinario");
     fetchMock.mockRestore();
   });
+  it("requests selected and historical career scores together with an encoded modality", async () => {
+    const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response('{}'));
+    await getMajorDetail(42, 12, [], "Educación Básica");
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    expect(fetchMock.mock.calls[0][0]).toBe("http://localhost:8000/api/v1/analytics/majors/42/?process=12&modality=Educaci%C3%B3n+B%C3%A1sica");
+    fetchMock.mockRestore();
+  });
+
 });

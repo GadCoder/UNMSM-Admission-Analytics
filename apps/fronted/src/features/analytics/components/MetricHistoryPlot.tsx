@@ -7,13 +7,13 @@ import type { MetricOption } from "./metricHistory";
 import { formatMetricValue, getMetricValue } from "./metricHistory";
 import styles from "./MetricHistoryChart.module.css";
 
-type MetricHistoryPlotProps = { items: ProcessMetrics[]; metric: MetricOption };
+type MetricHistoryPlotProps = { items: ProcessMetrics[]; metric: MetricOption; selectedProcessId?: number };
 type ChartPoint = { item: ProcessMetrics; value: number; index: number; x: number; y: number };
 const chartHeight = 300;
 const plotTop = 18;
 const plotBottom = 248;
 
-export function MetricHistoryPlot({ items, metric }: MetricHistoryPlotProps) {
+export function MetricHistoryPlot({ items, metric, selectedProcessId }: MetricHistoryPlotProps) {
   const [chartWidth, setChartWidth] = useState(600);
   const [activePointIndex, setActivePointIndex] = useState<number | null>(null);
   const chartHostRef = useRef<HTMLDivElement>(null);
@@ -33,31 +33,61 @@ export function MetricHistoryPlot({ items, metric }: MetricHistoryPlotProps) {
     return () => observer.disconnect();
   }, []);
 
-  const values = useMemo(() => items.flatMap((item) => {
+  const values = useMemo(() => items.flatMap((item, itemIndex) => {
     const value = getMetricValue(item, metric.key);
-    return value === null ? [] : [{ item, value }];
+    return value === null || !Number.isFinite(value) ? [] : [{ item, value, itemIndex }];
   }), [items, metric.key]);
   const minValue = values.length ? Math.min(...values.map(({ value }) => value)) : 0;
   const maxValue = values.length ? Math.max(...values.map(({ value }) => value)) : 1;
   const naturalRange = maxValue - minValue;
   const padding = naturalRange ? naturalRange * 0.18 : Math.max(Math.abs(maxValue) * 0.1, 1);
-  const domainMin = minValue - padding;
-  const domainMax = maxValue + padding;
+  const isScoreMetric = metric.key === "minimum_admitted_score"
+    || metric.key === "average_score" || metric.key === "highest_score";
+  const paddedMin = minValue - padding;
+  const paddedMax = maxValue + padding;
+  // Round the score scale itself so labels, grid lines and points stay aligned.
+  const rawStep = (paddedMax - paddedMin) / 4;
+  const magnitude = 10 ** Math.floor(Math.log10(rawStep));
+  const fraction = rawStep / magnitude;
+  const roundedStep = Math.max(1, (fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10) * magnitude);
+  const domainMin = isScoreMetric ? Math.floor(paddedMin / roundedStep) * roundedStep : paddedMin;
+  const domainMax = isScoreMetric ? Math.ceil(paddedMax / roundedStep) * roundedStep : paddedMax;
   const left = 62;
   const right = Math.max(left + 1, chartWidth - 18);
-  const points: ChartPoint[] = values.map(({ item, value }, index) => ({
+  const points: ChartPoint[] = values.map(({ item, value, itemIndex }, index) => ({
     item,
     value,
     index,
-    x: values.length === 1 ? (left + right) / 2 : left + (index / (values.length - 1)) * (right - left),
+    x: items.length === 1 ? (left + right) / 2 : left + (itemIndex / (items.length - 1)) * (right - left),
     y: plotBottom - ((value - domainMin) / (domainMax - domainMin)) * (plotBottom - plotTop),
   }));
-  const linePoints = points.map(({ x, y }) => `${x},${y}`).join(" ");
-  const average = values.length ? values.reduce((total, point) => total + point.value, 0) / values.length : null;
+  const segments: ChartPoint[][] = [];
+  let segment: ChartPoint[] = [];
+  const pointsById = new Map(points.map((point) => [point.item.process.id, point]));
+  for (const item of items) {
+    const point = pointsById.get(item.process.id);
+    if (point) {
+      const previous = segment.at(-1);
+      if (metric.key === "minimum_admitted_score" && previous
+        && previous.item.admitted_score_modality !== point.item.admitted_score_modality) {
+        segments.push(segment);
+        segment = [];
+      }
+      segment.push(point);
+    } else {
+      if (segment.length) segments.push(segment);
+      segment = [];
+    }
+  }
+  if (segment.length) segments.push(segment);
+  const isAdmissionScore = metric.key === "minimum_admitted_score";
+  const labelStep = Math.max(1, Math.ceil(items.length / Math.max(2, Math.floor((right - left) / 72))));
+  const average = values.length && metric.key !== "minimum_admitted_score" ? values.reduce((total, point) => total + point.value, 0) / values.length : null;
   const averageY = average === null ? plotBottom : plotBottom - ((average - domainMin) / (domainMax - domainMin)) * (plotBottom - plotTop);
-  const ticks = Array.from({ length: 5 }, (_, index) => ({
-    value: domainMax - ((domainMax - domainMin) * index) / 4,
-    y: plotTop + ((plotBottom - plotTop) * index) / 4,
+  const tickCount = isScoreMetric ? Math.round((domainMax - domainMin) / roundedStep) + 1 : 5;
+  const ticks = Array.from({ length: tickCount }, (_, index) => ({
+    value: domainMax - ((domainMax - domainMin) * index) / (tickCount - 1),
+    y: plotTop + ((plotBottom - plotTop) * index) / (tickCount - 1),
   }));
 
   const variationFor = (point: ChartPoint) => {
@@ -74,7 +104,7 @@ export function MetricHistoryPlot({ items, metric }: MetricHistoryPlotProps) {
     return `Variación: ${formatSignedDifference(difference, metric.digits)} (${formatSignedDifference(percentDifference, 1, "%")}) respecto a ${formatProcessLabel(previous.item.process)}.`;
   };
 
-  const pointDescription = (point: ChartPoint) => `${formatProcessLabel(point.item.process)}: ${formatMetricValue(point.value, metric)}. ${variationFor(point)}`;
+  const pointDescription = (point: ChartPoint) => `${formatProcessLabel(point.item.process)}: ${formatMetricValue(point.value, metric)}.${isAdmissionScore ? (point.item.process.id === selectedProcessId ? " Proceso seleccionado." : "") : ` ${variationFor(point)}`}`;
   const activePoint = activePointIndex === null ? null : points[activePointIndex] ?? null;
   const tooltipLeft = activePoint ? Math.max(120, Math.min(chartWidth - 120, activePoint.x)) : 0;
 
@@ -84,11 +114,11 @@ export function MetricHistoryPlot({ items, metric }: MetricHistoryPlotProps) {
         {ticks.map((tick, index) => (
           <g key={index} aria-hidden="true">
             <line className={styles.metricHistoryGridLine} x1={left} y1={tick.y} x2={right} y2={tick.y} />
-            <text className={styles.metricHistoryTick} x={left - 10} y={tick.y + 4}>{formatNumber(tick.value, metric.digits)}{metric.suffix ?? ""}</text>
+            <text className={styles.metricHistoryTick} x={left - 10} y={tick.y + 4}>{formatNumber(tick.value, isScoreMetric ? 0 : metric.digits)}{metric.suffix ?? ""}</text>
           </g>
         ))}
         {average !== null && <line className={styles.metricHistoryAverageLine} x1={left} y1={averageY} x2={right} y2={averageY} />}
-        {points.length > 1 && <polyline className={styles.metricHistoryLine} points={linePoints} />}
+        {segments.filter((entry) => entry.length > 1).map((entry) => <polyline key={entry[0].item.process.id} className={styles.metricHistoryLine} points={entry.map(({ x, y }) => `${x},${y}`).join(" ")} />)}
         {points.map((point) => (
           <g
             key={point.item.process.id}
@@ -112,13 +142,17 @@ export function MetricHistoryPlot({ items, metric }: MetricHistoryPlotProps) {
             }}
           >
             <circle className={styles.metricHistoryTouchTarget} cx={point.x} cy={point.y} r="14" />
-            <circle className={styles.metricHistoryPoint} cx={point.x} cy={point.y} r="5" />
-            <text className={styles.metricHistoryPeriod} x={point.x} y="274">
-              <tspan className={styles.metricHistoryPeriodFull}>{formatProcessLabel(point.item.process)}</tspan>
-              <tspan className={styles.metricHistoryPeriodShort}>{formatProcessLabel(point.item.process).replace(/^(\d{2})\d{2}/, "$1")}</tspan>
-            </text>
+            <circle className={styles.metricHistoryPoint} data-selected={point.item.process.id === selectedProcessId || undefined} cx={point.x} cy={point.y} r={point.item.process.id === selectedProcessId ? 8 : 5} />
           </g>
         ))}
+        {items.map((item, index) => {
+          if (index % labelStep !== 0 && index !== items.length - 1) return null;
+          const x = items.length === 1 ? (left + right) / 2 : left + (index / (items.length - 1)) * (right - left);
+          return <text key={item.process.id} className={styles.metricHistoryPeriod} x={x} y="274">
+            <tspan className={styles.metricHistoryPeriodFull}>{formatProcessLabel(item.process)}</tspan>
+            <tspan className={styles.metricHistoryPeriodShort}>{formatProcessLabel(item.process).replace(/^\d{2}(\d{2})/, "$1")}</tspan>
+          </text>;
+        })}
       </svg>
       {activePoint && (
         <div
@@ -130,7 +164,9 @@ export function MetricHistoryPlot({ items, metric }: MetricHistoryPlotProps) {
         >
           <strong>{formatProcessLabel(activePoint.item.process)}</strong>
           <span>{metric.label}: <b>{formatMetricValue(activePoint.value, metric)}</b></span>
-          <span>{variationFor(activePoint)}</span>
+          {!isAdmissionScore && <span>{variationFor(activePoint)}</span>}
+          {isAdmissionScore && <span>{activePoint.item.admitted_score_modality ?? "Modalidad no registrada"}</span>}
+          {activePoint.item.process.id === selectedProcessId && <span>Proceso seleccionado</span>}
         </div>
       )}
       {average !== null && (

@@ -26,6 +26,9 @@ export type ProcessMetrics = {
   absent_count: number;
   average_score: string | null;
   highest_score: string | null;
+  minimum_admitted_score?: number | null;
+  admitted_score_modality_count?: number;
+  admitted_score_modality?: string | null;
 };
 
 export type ProcessOverview = ProcessMetrics & { majors: MajorOverview[] };

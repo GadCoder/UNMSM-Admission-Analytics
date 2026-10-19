@@ -1,7 +1,9 @@
-import { useMemo, useState } from "react";
+import { useId, useMemo, useState } from "react";
 
 import type { ProcessMetrics } from "../api/analytics.types";
-import { METRIC_OPTIONS, getMetricValue, type MetricKey } from "./metricHistory";
+import { METRIC_OPTIONS, canCompareMinimumScores, getMetricValue, type MetricKey } from "./metricHistory";
+import { formatNumber } from "../utils/formatters";
+import { formatProcessLabel } from "../utils/processLabels";
 import { MetricHistoryPlot } from "./MetricHistoryPlot";
 import { AnalyticsSurface } from "./AnalyticsSurface";
 import { SelectField } from "./SelectField";
@@ -11,6 +13,8 @@ type MetricHistoryChartProps = {
   items: ProcessMetrics[];
   title: string;
   status?: "ready" | "loading" | "error";
+  defaultMetric?: MetricKey;
+  selectedProcessId?: number;
 };
 
 function getStatusMessage(status: MetricHistoryChartProps["status"], hasValues: boolean) {
@@ -33,6 +37,35 @@ function processOrder(sequence: string) {
   const romanOrder: Record<string, number> = { I: 1, II: 2, III: 3, IV: 4 };
   const numeric = romanOrder[suffix] ?? Number(suffix);
   return Number.isFinite(numeric) ? numeric : 0;
+}
+
+function getMinimumScoreInsight(items: ProcessMetrics[], selectedProcessId?: number) {
+  const selected = items.find((item) => item.process.id === selectedProcessId);
+  const anchor = selected ?? items.findLast((item) => canCompareMinimumScores(item, item));
+  if (!anchor || !canCompareMinimumScores(anchor, anchor)) return null;
+
+  // Retain process positions: a missing or different modality breaks the series.
+  const lastIndex = items.findLastIndex((item) => canCompareMinimumScores(anchor, item));
+  const segment: ProcessMetrics[] = [];
+  for (let index = lastIndex; index >= 0; index -= 1) {
+    if (!canCompareMinimumScores(anchor, items[index])) break;
+    segment.unshift(items[index]);
+  }
+  if (segment.length < 2) return null;
+
+  const last = segment.at(-1)!;
+  const prior = segment.at(-2)!;
+  const changes = segment.slice(1).map((item, index) => item.minimum_admitted_score! - segment[index].minimum_admitted_score!);
+  const monotonic = changes.every((change) => change > 0) || changes.every((change) => change < 0);
+  const first = monotonic ? segment[0] : prior;
+  const difference = last.minimum_admitted_score! - first.minimum_admitted_score!;
+  const period = `Entre ${formatProcessLabel(first.process)} y ${formatProcessLabel(last.process)}`;
+  if (difference === 0) {
+    return `${period}, el puntaje mínimo de ingreso se mantuvo en ${formatNumber(last.minimum_admitted_score!, 4)} puntos en esta modalidad.`;
+  }
+  const direction = difference > 0 ? "aumentó" : "disminuyó";
+  const continuity = monotonic && segment.length > 2 ? ` a lo largo de ${segment.length} procesos consecutivos` : "";
+  return `${period}, el puntaje mínimo de ingreso ${direction} ${formatNumber(Math.abs(difference), 2)} puntos${continuity} en esta modalidad.`;
 }
 
 function getInsight(items: ProcessMetrics[], metric: MetricKey) {
@@ -70,6 +103,7 @@ function getInsight(items: ProcessMetrics[], metric: MetricKey) {
       absent_count: "la cantidad de postulantes ausentes",
       average_score: "el puntaje promedio",
       highest_score: "el puntaje máximo",
+      minimum_admitted_score: "el puntaje mínimo de ingreso",
     };
     const subject = repeatedPattern.direction ? "los primeros" : "los segundos";
     const comparator = repeatedPattern.direction ? "los segundos" : "los primeros";
@@ -123,8 +157,11 @@ function getInsight(items: ProcessMetrics[], metric: MetricKey) {
   return null;
 }
 
-export function MetricHistoryChart({ items, title, status = "ready" }: MetricHistoryChartProps) {
-  const [selectedMetric, setSelectedMetric] = useState<MetricKey>("total_results");
+export function MetricHistoryChart({ items, title, status = "ready", defaultMetric = "total_results", selectedProcessId }: MetricHistoryChartProps) {
+  const [metricChoice, setSelectedMetric] = useState<MetricKey | null>(null);
+  const selectedMetric = metricChoice ?? defaultMetric;
+  const [showLimitations, setShowLimitations] = useState(false);
+  const limitationsId = useId();
   const metric = METRIC_OPTIONS.find((option) => option.key === selectedMetric) ?? METRIC_OPTIONS[0];
   const orderedItems = useMemo(() => [...items].sort((a, b) => chronologicalValue(a) - chronologicalValue(b)), [items]);
   const values = useMemo(() => orderedItems.flatMap((item) => {
@@ -132,7 +169,9 @@ export function MetricHistoryChart({ items, title, status = "ready" }: MetricHis
     return value === null ? [] : [{ item, value }];
   }), [orderedItems, selectedMetric]);
   const statusMessage = getStatusMessage(status, values.length > 0);
-  const insight = getInsight(orderedItems, selectedMetric);
+  const insight = selectedMetric === "minimum_admitted_score"
+    ? getMinimumScoreInsight(orderedItems, selectedProcessId)
+    : getInsight(orderedItems, selectedMetric);
 
   return (
     <AnalyticsSurface className={styles.metricHistory} aria-label={title}>
@@ -142,13 +181,24 @@ export function MetricHistoryChart({ items, title, status = "ready" }: MetricHis
             <h2>{title}</h2>
             <p>{metric.label} por proceso de admisión</p>
           </div>
-          <SelectField label="Métrica" value={selectedMetric} onChange={(event) => setSelectedMetric(event.target.value as MetricKey)}>
+          <SelectField label="Métrica" aria-label="Métrica" value={selectedMetric} onChange={(event) => setSelectedMetric(event.target.value as MetricKey)}>
             {METRIC_OPTIONS.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}
           </SelectField>
         </header>
+        {selectedMetric === "minimum_admitted_score" && <div className={styles.metricHistoryExplanation}>
+          <p>Menor puntaje obtenido por un ingresante en cada proceso. Los resultados históricos no garantizan el ingreso futuro.</p>
+          <div className={styles.metricHistoryHelp} onMouseEnter={() => setShowLimitations(true)} onMouseLeave={() => setShowLimitations(false)}>
+            <button type="button" aria-label="Información sobre comparabilidad de puntajes" aria-describedby={showLimitations ? limitationsId : undefined}
+              onFocus={() => setShowLimitations(true)} onBlur={() => setShowLimitations(false)} onClick={() => setShowLimitations(true)}
+              onKeyDown={(event) => { if (event.key === "Escape") setShowLimitations(false); }}>ⓘ</button>
+            {showLimitations && <span id={limitationsId} role="tooltip" className={styles.metricHistoryHelpTooltip}>
+              Las comparaciones usan mínimos válidos de una misma modalidad identificada. Los procesos con modalidades mezcladas o sin datos se muestran como huecos. Las escalas y reglas históricas no están documentadas; una modalidad común no confirma que esas reglas sean iguales.
+            </span>}
+          </div>
+        </div>}
         {statusMessage ?? (
           <>
-            <MetricHistoryPlot items={orderedItems} metric={metric} />
+            <MetricHistoryPlot items={orderedItems} metric={metric} selectedProcessId={selectedProcessId} />
             {insight && <aside className={styles.metricHistoryInsight}><strong>Patrón histórico</strong><p>{insight}</p></aside>}
           </>
         )}

@@ -1,4 +1,7 @@
-from django.db.models import Avg, Count, Max, Q
+from decimal import Decimal
+
+from django.db.models import Avg, Count, Max, Min, Q, Value
+from django.db.models.functions import Coalesce
 
 from modules.academics.models import Major
 from modules.admission_processes.models import AdmissionProcess
@@ -10,10 +13,18 @@ _EMPTY_TOTALS = {
     "absent_count": 0,
     "average_score": None,
     "highest_score": None,
+    "minimum_admitted_score": None,
+    "admitted_score_modality_count": 0,
+    "admitted_score_modality": None,
 }
 
 
 def _aggregate_totals(results):
+    # DecimalField enforces numeric precision; null scores are unavailable.
+    valid_admitted = Q(
+        status=AdmissionResult.Status.ADMITTED,
+        score__gte=Decimal("-9999.9999"), score__lte=Decimal("9999.9999"),
+    )
     rows = results.values("process_id").annotate(
         total_results=Count("id"),
         admitted_count=Count(
@@ -22,8 +33,20 @@ def _aggregate_totals(results):
         absent_count=Count("id", filter=Q(status=AdmissionResult.Status.ABSENT)),
         average_score=Avg("score"),
         highest_score=Max("score"),
+        minimum_admitted_score=Min("score", filter=valid_admitted),
+        admitted_score_modality=Min("modality__name", filter=valid_admitted),
+        admitted_score_modality_count=Count(
+            Coalesce("modality_id", Value(-1)), distinct=True, filter=valid_admitted,
+        ),
     )
-    return {row["process_id"]: row for row in rows}
+    totals = {}
+    for row in rows:
+        # Unknown modality is its own group; never pool it with a known modality.
+        if row["admitted_score_modality_count"] > 1:
+            row["minimum_admitted_score"] = None
+            row["admitted_score_modality"] = None
+        totals[row["process_id"]] = row
+    return totals
 
 
 def _aggregate_majors(results):
@@ -139,7 +162,7 @@ def process_history(*, academic_area=None, faculty=None, modality=None):
     ]
 
 
-def major_detail(major_id, selected_process_ids):
+def major_detail(major_id, selected_process_ids, *, modality=None):
     major = Major.objects.select_related("faculty__academic_area").get(
         id=major_id, is_active=True
     )
@@ -157,6 +180,8 @@ def major_detail(major_id, selected_process_ids):
         major_id=major_id,
         process_id__in=process_ids,
     )
+    if modality:
+        results = results.filter(modality__name=modality)
     aggregates = _aggregate_totals(results)
 
     def build(process):

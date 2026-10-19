@@ -144,6 +144,7 @@ class ProcessHistoryView(APIView):
 class MajorDetailView(APIView):
     @extend_schema(
         parameters=[
+            OpenApiParameter(name="modality", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False),
             OpenApiParameter(name="process", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=True),
             OpenApiParameter(name="compare", type=OpenApiTypes.STR, location=OpenApiParameter.QUERY, required=False),
         ],
@@ -167,7 +168,7 @@ class MajorDetailView(APIView):
         if len(process_ids) > 4:
             return Response({"detail": "A maximum of 4 unique processes may be compared."}, status=400)
         try:
-            detail = major_detail(major_id, process_ids)
+            detail = major_detail(major_id, process_ids, modality=request.query_params.get("modality"))
         except (AdmissionProcess.DoesNotExist, Major.DoesNotExist):
             return Response({"detail": "Major or admission process not found."}, status=404)
         return Response(MajorDetailSerializer(detail).data)

@@ -49,7 +49,7 @@ function takeaway(item: MajorDetailProcess, previous: MajorDetailProcess | undef
 }
 
 /** Build display data from newest-first processes, comparing each with the next. */
-export function buildMajorHistoryEntries(items: MajorDetailProcess[]) {
+export function buildMajorHistoryEntries(items: MajorDetailProcess[], variant: "process" | "career" = "process") {
   return items.map((item, index) => {
     const previous = items[index + 1];
     const rate = admissionRate(item);
@@ -76,9 +76,10 @@ export function buildMajorHistoryEntries(items: MajorDetailProcess[]) {
           : "Primer proceso disponible; sin comparación anterior.",
       },
       details: [
+        ...(variant === "career" ? [{ label: "Puntaje mínimo de ingreso", value: formatNumber(item.minimum_admitted_score != null && Number.isFinite(item.minimum_admitted_score) ? item.minimum_admitted_score : null, 2) }] : []),
         { label: "Puntaje promedio", value: formatNumber(item.average_score, 2) },
         { label: "Puntaje máximo", value: formatNumber(item.highest_score, 2) },
-        { label: "Ausentes", value: `${formatNumber(item.absent_count)}${absenceRate === null ? "" : ` (${formatNumber(absenceRate, 1)}%)`}` },
+        ...(variant === "process" ? [{ label: "Ausentes", value: `${formatNumber(item.absent_count)}${absenceRate === null ? "" : ` (${formatNumber(absenceRate, 1)}%)`}` }] : []),
       ],
     };
   });

@@ -46,3 +46,12 @@
 @media (max-width:360px) {
   .metricHistorySvg { height:250px; }
 }
+
+.metricHistoryPoint[data-selected="true"] { stroke:var(--color-primary-dark); stroke-width:3; fill:var(--color-primary-pale); }
+
+.metricHistoryExplanation { display:flex; align-items:flex-start; gap:.4rem; width:94%; margin:0 auto .65rem; color:var(--color-muted); font-size:.7rem; line-height:1.5; }
+.metricHistoryExplanation p { margin:0; }
+.metricHistoryHelp { position:relative; flex-shrink:0; }
+.metricHistoryHelp button { display:block; min-width:1.5rem; min-height:1.5rem; margin-top:-.2rem; padding:0; border:0; background:transparent; color:var(--color-muted); font:inherit; font-size:.9rem; cursor:help; }
+.metricHistoryHelpTooltip { position:absolute; z-index:4; top:100%; right:0; width:min(19rem,calc(100vw - 5rem)); padding:.65rem .75rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); box-shadow:0 .4rem 1.2rem rgb(45 34 35 / 14%); color:var(--color-text); font-size:.7rem; line-height:1.5; }
+@media (max-width:600px) { .metricHistoryExplanation { width:100%; } }
