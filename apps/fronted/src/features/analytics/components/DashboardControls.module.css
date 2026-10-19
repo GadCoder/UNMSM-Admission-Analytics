@@ -1,26 +1,5 @@
-.processControls { display: contents; }
-
-.primaryControl {
-  position: relative; order: 0; display: flex; align-items: center;
-  gap: .75rem; width: 200px; min-width: 0; height: 2.75rem;
-  padding-inline: .875rem; white-space: nowrap;
-  border: 1px solid var(--color-border); border-radius: var(--radius-md);
-  background-color: var(--color-primary-soft);
-}
+.processControls { display:contents; }
+.primaryControl { order:0; display:grid; gap:.35rem; width:100%; min-width:0; }
 .primaryLabel { composes: label from "./SelectField.module.css"; }
-.primaryControl .primaryLabel {
-  position: relative; z-index: 1; flex-shrink: 0; pointer-events: none;
-}
-.primarySelect { composes: select from "./SelectField.module.css"; }
-.primaryControl .primarySelect {
-  /* Keep the native select over the entire control, including the label. */
-  position: absolute; inset: 0; width: 100%; height: 100%; min-height: 0;
-  padding: 0 2.5rem 0 4.5rem;
-  text-align: right; text-align-last: right;
-  background-color: transparent; background-position: right .875rem center;
-  border: 0; border-radius: inherit; cursor: pointer;
-}
-
-@media (max-width: 600px) {
-  .primaryControl { width: 100%; height: 2.9rem; }
-}
+.primarySelect { composes: select from "./SelectField.module.css"; min-height:2.75rem; background-color:var(--color-primary-soft); font-weight:600; }
+@media (max-width:600px) { .primarySelect { min-height:2.9rem; } }

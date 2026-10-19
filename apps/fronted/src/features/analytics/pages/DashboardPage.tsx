@@ -1,7 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-import { resolveAdmissionModality } from "../utils/admissionModality";
+import { SelectField } from "../components/SelectField";
+import { formatAdmissionModalityLabel, resolveAdmissionModality } from "../utils/admissionModality";
 import * as api from "../api/analytics";
 import { ActiveFilterChips } from "../components/ActiveFilterChips";
 import controlsStyles from "../components/ResultsControls.module.css";
@@ -105,38 +106,38 @@ export function DashboardPage() {
           <h1>Resultados de admisión</h1>
           <p className={styles.intro}>Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.</p>
         </div>
-        {processes.length > 0 && (
-          <section className={`${controlsStyles.toolbar} ${controlsStyles.toolbarInHeader}`} aria-label="Controles del análisis">
-            <DashboardControls
-              processes={processes}
-              primaryId={primaryId}
-              onChange={updateSelection}
-            />
-            <div className={controlsStyles.filterAction}>
-              <DashboardFilterControls
-                areas={areasQuery.data ?? []}
-                faculties={facultiesQuery.data ?? []}
-                modalities={modalitiesQuery.data ?? []}
-                filters={filters}
-                onChange={updateFilters}
-                onReset={resetFilters}
-              />
-            </div>
-            <ActiveFilterChips
-              filters={filters}
+      </div>
+      {processes.length > 0 && (
+        <section className={`${controlsStyles.toolbar} ${styles.processToolbar}`} aria-label="Controles del análisis">
+          <DashboardControls
+            processes={processes}
+            primaryId={primaryId}
+            onChange={updateSelection}
+          />
+          <div className={styles.modalityControl}>
+            <SelectField label="Modalidad" aria-label="Modalidad" value={filters.modality} title={filters.modality}
+              aria-description={filters.modality} onChange={(event) => updateFilters({ ...filters, modality: event.target.value })}>
+              {!(modalitiesQuery.data ?? []).some((item) => item.name === filters.modality)
+                && <option value={filters.modality}>{formatAdmissionModalityLabel(filters.modality)}</option>}
+              {(modalitiesQuery.data ?? []).map((item) => <option key={item.id} value={item.name} title={item.name}>{formatAdmissionModalityLabel(item.name)}</option>)}
+            </SelectField>
+          </div>
+          <div className={`${controlsStyles.filterAction} ${styles.filterControl}`}>
+            <DashboardFilterControls
               areas={areasQuery.data ?? []}
               faculties={facultiesQuery.data ?? []}
+              filters={filters}
               onChange={updateFilters}
+              onReset={resetFilters}
             />
-          </section>
-        )}
-      </div>
-
-      {processes.length > 0 && (
-        <div className={styles.modalityContext} title={filters.modality}>
-          <span className={styles.modalityLabel}>Modalidad</span>
-          <span className={styles.modalityName}>{filters.modality}</span>
-        </div>
+          </div>
+          <ActiveFilterChips
+            filters={filters}
+            areas={areasQuery.data ?? []}
+            faculties={facultiesQuery.data ?? []}
+            onChange={updateFilters}
+          />
+        </section>
       )}
 
       {processesQuery.isPending && <DashboardLoadingSkeleton />}

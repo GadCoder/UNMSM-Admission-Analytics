@@ -490,14 +490,14 @@ describe("DashboardPage", () => {
     expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("2", ["3"], { academicArea: "", faculty: "", modality: DEFAULT_ADMISSION_MODALITY });
   });
 
-  it("updates the shared modality from the filter panel", async () => {
+  it("updates the shared modality from its own visible control", async () => {
     const user = userEvent.setup();
     renderPage("/?process=1");
-    expect(screen.queryByLabelText("Modalidad")).not.toBeInTheDocument();
-    await user.click(screen.getByLabelText(/Abrir filtros de carreras/));
+    expect(screen.getByLabelText("Modalidad")).toBeInTheDocument();
     await user.selectOptions(screen.getByLabelText("Modalidad"), "Especial");
     await waitFor(() => expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("1", ["2"], { academicArea: "", faculty: "", modality: "Especial" }));
     expect(api.useProcessHistory).toHaveBeenLastCalledWith({ academicArea: "", faculty: "", modality: "Especial" });
+    await user.click(screen.getByLabelText(/Abrir filtros de carreras/));
     expect(screen.getAllByLabelText("Modalidad")).toHaveLength(1);
     expect(screen.getByLabelText("Área académica")).toBeInTheDocument();
   });

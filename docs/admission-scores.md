@@ -2,12 +2,12 @@
 
 ## Career page layout
 
-1. Career header with process and modality selectors, side by side on desktop (1000px and wider) and stacked on narrower screens.
+1. Career header followed by the same compact, left-aligned process and modality selectors as the process overview. Labels sit above the fields; controls stack at 600px and below.
 2. Exactly six KPI cards: Postulantes, Ingresantes, Porcentaje de ingresantes, Puntaje mínimo de ingreso, Puntaje promedio, Puntaje máximo.
 3. One historical evolution chart with the existing metric selector.
 4. Existing historical results timeline, with minimum, average and maximum scores in its detail area.
 
-Admission scores are integrated into the existing KPIs, historical chart and timeline without an additional section or chart. The process overview retains its six-card structure and absentee KPI. Its average KPI uses the same admitted-applicant definition and asterisk note as the career page. The full-name modality selector lives in the existing Filtros panel alongside area and faculty. The applied modality is always shown in a slim context row above the KPIs, with a burgundy label, dark text and a subtle bottom divider, preserving the full modality name and its original capitalization. Basic education remains the default; alternative modalities count as active filters.
+Admission scores are integrated into the existing KPIs, historical chart and timeline without an additional section or chart. The process overview retains its six-card structure and absentee KPI. Its average KPI uses the same admitted-applicant definition and asterisk note as the career page. Process, modality and Filtros have their own row beneath the page heading, in that order. The modality selector stays visible with a lighter sentence-case display label, using “Educación Básica Regular (EBR) y Alternativa (EBA)” for the default; the full original name remains in its title and accessible description. The API value is unchanged. Selectors have labels above and bounded widths, aligned left rather than stretched across the page. Controls stack on mobile; Filtros contains only area and faculty.
 
 ## Score definitions and API
 
@@ -21,7 +21,7 @@ The average KPI on both pages has an asterisk linked to a small note: “El punt
 
 ## Modality and comparisons
 
-Both pages require a selected modality and default to “EDUCACIÓN BÁSICA REGULAR (EBR) Y EDUCACIÓN BÁSICA ALTERNATIVA (EBA)”. There is no combined/all-modalities choice. Missing or blank selections resolve before the first statistics request, including legacy empty dashboard session preferences. Explicit selections persist across process changes; dashboard filter resets restore basic education, while clearing optional area/faculty filters. Modality is changed in the Filtros panel; filter chips are reserved for optional area and faculty selections.
+Both pages require a selected modality and default to “EDUCACIÓN BÁSICA REGULAR (EBR) Y EDUCACIÓN BÁSICA ALTERNATIVA (EBA)”. There is no combined/all-modalities choice. Missing or blank selections resolve before the first statistics request, including legacy empty dashboard session preferences. Explicit selections persist across process changes; dashboard filter resets restore basic education, while clearing optional area/faculty filters. Modality is changed in its own visible selector; filter chips are reserved for optional area and faculty selections.
 
 All analytics services apply the same server-side default for omitted or blank modality parameters and always filter by one named modality. Explicit names are trimmed and matched exactly; unknown modalities return empty statistics rather than combined results. This changes the process overview/history endpoints' former unfiltered behavior when the parameter was omitted. The latest-process endpoint also uses basic education.
 
@@ -56,4 +56,4 @@ A process change can reuse the full cached history for the same modality, select
 
 - Process-page browser checks at 375px, 1024px and 1440px verify initially filtered requests, the admitted average and asterisk note, six KPIs, mode/process/reload/reset persistence, matching career-link modality, and no horizontal overflow.
 
-The subsequent move of the process modality selector into Filtros has not been retested; the validation results above precede that UI refinement.
+The subsequent dedicated control-row refinement has not had its test suites rerun; the suite results above precede it. Its production build passed, and the final layout was visually reviewed at 375px and 1440px.
