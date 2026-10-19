@@ -475,7 +475,7 @@ def test_minimum_admitted_score_filters_status_career_and_process(client, majors
         (process, nursing, "admitted", "950.0000"),
         (process, nursing, "admitted", None),
         (process, nursing, "absent", "1.0000"),
-        (process, nursing, "disqualified", "2.0000"),
+        (process, nursing, "disqualified", "1600.0000"),
         (process, nursing, "not_admitted", "3.0000"),
         (process, nursing, "postulant", "4.0000"),
         (process, pharmacy, "admitted", "5.0000"),
@@ -487,11 +487,12 @@ def test_minimum_admitted_score_filters_status_career_and_process(client, majors
     payload = client.get(f"/api/v1/analytics/majors/{nursing.id}/?process={process.id}").json()
     current = payload["selected_processes"][0]
     assert current["minimum_admitted_score"] == 900.1234
-    # Preserve the existing population, including any scored absent records.
-    assert current["highest_score"] == "950.0000"
-    assert Decimal(current["average_score"]) < Decimal("900")
+    # The maximum retains all scores; the average includes only valid admitted scores.
+    assert current["highest_score"] == "1600.0000"
+    assert current["average_score"] == "925.0617"
     assert [item["process"]["id"] for item in payload["history"]] == [old.id, empty.id]
     assert [item["minimum_admitted_score"] for item in payload["history"]] == [0.0, None]
+    assert [item["average_score"] for item in payload["history"]] == ["0.0000", None]
 
 
 @pytest.mark.django_db
@@ -529,6 +530,7 @@ def test_minimum_admitted_score_unavailable_is_null(client, majors, default_moda
                                    last_names="DOE", given_names="TEST", status=status, score=score)
     payload = client.get(f"/api/v1/analytics/majors/{nursing.id}/?process={process.id}").json()
     assert payload["selected_processes"][0]["minimum_admitted_score"] is None
+    assert payload["selected_processes"][0]["average_score"] is None
 
 
 @pytest.mark.django_db
@@ -560,8 +562,8 @@ def test_major_detail_defaults_to_basic_education_for_selected_and_history(
     assert response.status_code == 200
     payload = response.json()
     for row, expected_minimum, expected_average in [
-        (payload["selected_processes"][0], 900, "500.0000"),
-        (payload["history"][0], 800, "450.0000"),
+        (payload["selected_processes"][0], 900, "900.0000"),
+        (payload["history"][0], 800, "800.0000"),
     ]:
         assert row["total_results"] == 2
         assert row["admitted_count"] == 1

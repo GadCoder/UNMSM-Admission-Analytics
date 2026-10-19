@@ -30,7 +30,7 @@ const detailProcess = (process: typeof processes[number], total: number): MajorD
   total_results: total,
   admitted_count: 10,
   absent_count: 2,
-  average_score: "70.0000",
+  average_score: "85.0000",
   highest_score: "95.0000",
   minimum_admitted_score: 80.1234,
 });
@@ -203,7 +203,7 @@ describe("MajorDetailPage", () => {
     const kpis = screen.getByLabelText("Indicadores de la carrera");
     expect(within(kpis).getAllByRole("article")).toHaveLength(6);
     expect([...kpis.querySelectorAll("article span")].filter((item) => item.className.includes("kpiLabel")).map((item) => item.textContent)).toEqual([
-      "Postulantes", "Ingresantes", "Porcentaje de ingresantes", "Puntaje mínimo de ingreso", "Puntaje promedio", "Puntaje máximo",
+      "Postulantes", "Ingresantes", "Porcentaje de ingresantes", "Puntaje mínimo de ingreso", "Puntaje promedio*", "Puntaje máximo",
     ]);
     expect(within(kpis).queryByText("Postulantes ausentes")).not.toBeInTheDocument();
     expect(within(kpis).getByText("80.12")).toBeInTheDocument();

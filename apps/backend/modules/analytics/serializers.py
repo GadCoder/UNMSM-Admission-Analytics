@@ -58,7 +58,8 @@ class MajorProcessDetailSerializer(serializers.Serializer):
     admitted_count = serializers.IntegerField()
     absent_count = serializers.IntegerField()
     average_score = serializers.DecimalField(
-        max_digits=8, decimal_places=4, allow_null=True
+        max_digits=8, decimal_places=4, allow_null=True,
+        help_text="Average valid score among admitted applicants in this career, process and modality.",
     )
     minimum_admitted_score = serializers.FloatField(allow_null=True)
     admitted_score_modality_count = serializers.IntegerField()
