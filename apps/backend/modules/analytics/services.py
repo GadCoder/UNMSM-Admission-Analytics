@@ -21,7 +21,7 @@ _EMPTY_TOTALS = {
 }
 
 
-def _aggregate_totals(results):
+def _aggregate_totals(results, *, admitted_average=False):
     # DecimalField enforces numeric precision; null scores are unavailable.
     valid_admitted = Q(
         status=AdmissionResult.Status.ADMITTED,
@@ -33,7 +33,7 @@ def _aggregate_totals(results):
             "id", filter=Q(status=AdmissionResult.Status.ADMITTED)
         ),
         absent_count=Count("id", filter=Q(status=AdmissionResult.Status.ABSENT)),
-        average_score=Avg("score"),
+        average_score=Avg("score", filter=valid_admitted if admitted_average else None),
         highest_score=Max("score"),
         minimum_admitted_score=Min("score", filter=valid_admitted),
         admitted_score_modality=Min("modality__name", filter=valid_admitted),
@@ -184,7 +184,7 @@ def major_detail(major_id, selected_process_ids, *, modality=None):
         process_id__in=process_ids,
         modality__name=modality,
     )
-    aggregates = _aggregate_totals(results)
+    aggregates = _aggregate_totals(results, admitted_average=True)
 
     def build(process):
         return {"process": process, **_EMPTY_TOTALS, **aggregates.get(process.id, {})}

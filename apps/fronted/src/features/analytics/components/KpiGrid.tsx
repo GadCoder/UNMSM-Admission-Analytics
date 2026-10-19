@@ -1,3 +1,5 @@
+import { useId } from "react";
+
 import type { ProcessOverview } from "../api/analytics.types";
 import { formatNumber, formatSignedDifference } from "../utils/formatters";
 import { canCompareMinimumScores } from "./metricHistory";
@@ -24,6 +26,8 @@ function trend(value: number | null, previous: number | null, digits: number, su
 }
 
 export function KpiGrid({ overview, previous, variant = "process" }: KpiGridProps) {
+  const averageNoteId = useId();
+  const averageNote = "El puntaje promedio considera solo a los ingresantes con puntaje válido.";
   const admissionRate = overview.total_results
     ? (overview.admitted_count / overview.total_results) * 100
     : 0;
@@ -45,7 +49,7 @@ export function KpiGrid({ overview, previous, variant = "process" }: KpiGridProp
   const minimumDescription = (overview.admitted_score_modality_count ?? 0) > 1
     ? "Hay ingresantes de distintas modalidades. Selecciona una modalidad para consultar su mínimo."
     : "Menor puntaje obtenido por un ingresante en este proceso.";
-  const average = <Kpi label="Puntaje promedio" value={formatNumber(overview.average_score, 2)} trend={scoreTrend(overview.average_score, previous?.average_score)} description={career ? "Promedio de todos los registros con puntaje, sin filtrar por estado." : undefined} />;
+  const average = <Kpi label="Puntaje promedio" value={formatNumber(overview.average_score, 2)} trend={scoreTrend(overview.average_score, previous?.average_score)} description={career ? averageNote : undefined} footnoteId={career ? averageNoteId : undefined} />;
   const highest = <Kpi label="Puntaje máximo" value={formatNumber(overview.highest_score, 2)} trend={scoreTrend(overview.highest_score, previous?.highest_score)} description={career ? "Máximo de todos los registros con puntaje, sin filtrar por estado." : undefined} />;
 
   return (
@@ -62,6 +66,7 @@ export function KpiGrid({ overview, previous, variant = "process" }: KpiGridProp
           {highest}
         </> : <>{highest}{average}</>}
       </div>
+      {career && <p id={averageNoteId} className={styles.kpiFootnote}><span aria-hidden="true">* </span>{averageNote}</p>}
     </>
   );
 }

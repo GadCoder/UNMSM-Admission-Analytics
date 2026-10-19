@@ -8,11 +8,11 @@ const previous: ProcessOverview = {
   process: { id: 1, year: 2025, sequence: "25-2", name: "" },
   total_results: 100, admitted_count: 10, absent_count: 2,
   minimum_admitted_score: 800, admitted_score_modality_count: 1,
-  admitted_score_modality: "Ordinario", average_score: "750", highest_score: "1000", majors: [],
+  admitted_score_modality: "Ordinario", average_score: "850", highest_score: "1000", majors: [],
 };
 const current: ProcessOverview = { ...previous,
   process: { id: 2, year: 2026, sequence: "26-1", name: "" },
-  minimum_admitted_score: 810.1234, average_score: "740", highest_score: "1010",
+  minimum_admitted_score: 810.1234, average_score: "840", highest_score: "1010",
 };
 afterEach(cleanup);
 
@@ -26,6 +26,7 @@ describe("KpiGrid", () => {
     expect(screen.getAllByRole("article")).toHaveLength(6);
     expect(screen.queryByText("Puntaje mínimo de ingreso")).not.toBeInTheDocument();
     expect(metric("Postulantes ausentes")).toBeInTheDocument();
+    expect(screen.queryByText("El puntaje promedio considera solo a los ingresantes con puntaje válido.")).not.toBeInTheDocument();
     const labels = screen.getAllByRole("article").map((item) => item.querySelector("span")?.textContent);
     expect(labels).toEqual(["Postulantes", "Postulantes ausentes", "Ingresantes", "Porcentaje de ingresantes", "Puntaje máximo", "Puntaje promedio"]);
     expect(within(metric("Puntaje máximo")).getByLabelText("Subió: +10 pts").parentElement?.className).toContain("kpiTrendPositive");
@@ -40,7 +41,11 @@ describe("KpiGrid", () => {
       expect(within(metric(label)).getByLabelText(change).parentElement?.className).toContain("kpiTrendNeutral");
     }
     expect(minimum).toHaveAttribute("title", "Menor puntaje obtenido por un ingresante en este proceso.");
-    expect(metric("Puntaje promedio").title).toMatch(/sin filtrar por estado/);
+    const average = metric("Puntaje promedio");
+    const note = screen.getByText("El puntaje promedio considera solo a los ingresantes con puntaje válido.");
+    expect(average.title).toBe(note.textContent?.replace("* ", ""));
+    expect(average.querySelector("sup")).toHaveTextContent("*");
+    expect(average).toHaveAttribute("aria-describedby", note.id);
   });
 
   it.each([
