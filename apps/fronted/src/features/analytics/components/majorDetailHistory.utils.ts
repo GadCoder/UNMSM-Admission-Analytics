@@ -22,6 +22,13 @@ function describeCountChange(label: string, current: number, previous: number) {
   return `${label} ${current > previous ? "aumentaron" : "disminuyeron"} ${magnitude}`;
 }
 
+function percentageChange(current: number, previous: number | undefined) {
+  if (previous === undefined) return null;
+  if (previous === 0) return current === 0 ? "0%" : null;
+  const change = (current - previous) / previous * 100;
+  return `${change > 0 ? "+" : ""}${formatNumber(change, 1)}%`;
+}
+
 function describeChanges(item: MajorDetailProcess, previous: MajorDetailProcess | undefined) {
   if (!previous) return null;
   const admitted = describeCountChange("Los ingresantes", item.admitted_count, previous.admitted_count);
@@ -58,6 +65,8 @@ export function buildMajorHistoryEntries(items: MajorDetailProcess[]) {
       changeDescription: describeChanges(item, previous),
       applicants: formatNumber(item.total_results),
       admitted: formatNumber(item.admitted_count),
+      applicantChange: percentageChange(item.total_results, previous?.total_results),
+      admittedChange: percentageChange(item.admitted_count, previous?.admitted_count),
       admission: {
         rate: rate === null ? null : formatNumber(rate, 1),
         previousRate: previousRate === null ? null : formatNumber(previousRate, 1),
