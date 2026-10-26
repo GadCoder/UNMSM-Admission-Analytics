@@ -9,13 +9,6 @@
 .processContext { display:grid; grid-template-columns:minmax(8.5rem,11rem) minmax(12rem,16rem); align-items:start; gap:var(--space-6); margin:0 0 var(--space-6); padding:var(--space-4); border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-surface); box-shadow:0 4px 20px rgb(45 34 35 / 4%); }
 .hero .processContext { flex:0 0 auto; margin:0; padding:0; border:0; background:transparent; box-shadow:none; }
 .detailProcessContext { grid-template-columns:minmax(18rem,23rem); }
-.detailProcessContext .primaryProcessControl { display:flex; align-items:center; gap:.65rem; }
-.detailProcessContext .primaryProcessControl label { flex:0 0 auto; min-height:0; white-space:nowrap; }
-.detailProcessContext .primaryProcessControl select { flex:1 1 7.5rem; width:auto; min-width:7.5rem; }
-.primaryProcessControl, .comparisonHeader { display:grid; gap:.45rem; min-width:0; }
-.primaryProcessControl label, .comparisonHeader > span, .filterControlLabel { display:block; min-height:1.5rem; color:#8f7e7f; font-size:.62rem; font-weight:800; letter-spacing:.08em; line-height:1.2; text-transform:uppercase; }
-.primaryProcessControl select { width:100%; min-width:0; min-height:2.65rem; padding:.55rem .7rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-background, #fff); color:var(--color-text); font-size:.8rem; font-weight:700; }
-.control { display:grid; gap:.35rem; min-width:0; padding:.55rem .75rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); box-shadow:0 4px 14px rgb(45 34 35 / 4%); }
 .primaryControl { flex:1 1 18rem; }
 .filtersDisclosure { position:relative; z-index:2; flex:0 0 auto; min-width:0; }
 .filtersDisclosure > summary { display:flex; align-items:center; justify-content:center; gap:.45rem; width:auto; min-height:2.65rem; padding:.55rem .75rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); color:var(--color-primary); cursor:pointer; list-style:none; }
@@ -31,8 +24,6 @@
 .filtersPanel { position:absolute; top:calc(100% + .45rem); right:0; display:grid; grid-template-columns:repeat(3,minmax(12rem,1fr)); gap:var(--space-3); width:min(52rem,calc(100vw - 2rem)); padding:var(--space-3); border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); box-shadow:0 14px 30px rgb(45 34 35 / 12%); }
 .filtersPanel .resetButton { grid-column:1 / -1; }
 .filterActions { display:flex; grid-column:1 / -1; align-items:center; justify-content:flex-end; gap:.5rem; padding-top:.65rem; border-top:1px solid var(--color-border); }
-.control > label { color:#9a898a; font-size:.62rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
-.control select { width:100%; min-width:0; min-height:2.35rem; padding:.55rem .7rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-background, #fff); color:var(--color-text); font-size:.76rem; font-weight:600; outline:0; }
 .comparisonDisclosure { position:relative; z-index:3; min-width:0; }
 .comparisonHeader { grid-template-columns:minmax(0,1fr); align-items:stretch; gap:.45rem; }
 .comparisonButton { box-sizing:border-box; display:flex; align-items:center; justify-content:space-between; gap:.7rem; width:100%; min-width:0; min-height:2.65rem; padding:.55rem .75rem; border:1px solid #c9aaac; border-radius:var(--radius-md); background:var(--color-primary-soft); color:var(--color-primary); cursor:pointer; font-size:.78rem; font-weight:800; list-style:none; white-space:nowrap; }
@@ -88,14 +79,10 @@
 .card h2 { margin:0 0 .3rem; font-size:1.05rem; letter-spacing:-.025em; }
 .tableWrap { overflow-x:auto; }
 .tableControls { display:grid; grid-template-columns:minmax(0,1fr) minmax(14rem,18rem); align-items:end; gap:var(--space-3); margin:0 0 var(--space-4); }
-.tableFilter { display:grid; min-width:0; gap:.35rem; color:#8f7e7f; font-size:.62rem; font-weight:700; letter-spacing:.08em; text-transform:uppercase; }
-.tableFilter input { min-width:0; }
+.tableFilter { min-width:0; }
 
 
-.autocomplete { position:relative; }
-.tableFilter input { min-height:2.35rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-background, #fff); color:var(--color-text); padding:.55rem .7rem; font:inherit; font-size:.74rem; letter-spacing:normal; text-transform:none; }
-.primaryProcessControl select, .control select { appearance:none; -webkit-appearance:none; padding:.55rem 2.15rem .55rem .75rem; background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none' stroke='%23765a5c' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.8'%3E%3Cpath d='m3.5 6 4.5 4 4.5-4'/%3E%3C/svg%3E"); background-position:right .75rem center; background-repeat:no-repeat; background-size:.85rem; }
-.autocomplete input { width:100%; }
+.autocomplete { position:relative; min-width:0; }
 .suggestions { position:absolute; z-index:4; top:calc(100% + .3rem); right:0; left:0; display:grid; max-height:15rem; overflow:auto; margin:0; padding:.3rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); box-shadow:0 12px 24px rgb(45 34 35 / 12%); list-style:none; }
 .suggestions button { display:flex; width:100%; align-items:center; justify-content:space-between; gap:.7rem; padding:.55rem .6rem; border:0; border-radius:.35rem; background:transparent; color:var(--color-text); cursor:pointer; font:inherit; font-size:.74rem; text-align:left; }
 .suggestions button:hover, .suggestions button:focus-visible { background:var(--color-primary-soft); outline:0; }
@@ -361,10 +348,9 @@ tbody tr:hover { background:#fdfafa; }
 .processToolbar .filterControl { justify-self:stretch; }
 .filterControl > div, .filterControl > div > button { width:100%; }
 .modalityControl { order:1; min-width:0; }
-.modalityControl select { min-height:2.75rem; background-color:var(--color-primary-soft); font-weight:500; text-overflow:ellipsis; }
+.modalityControl select { text-overflow:ellipsis; }
 @media (max-width:600px) {
   .page .processToolbar, .page .careerToolbar { grid-template-columns:minmax(0,1fr); }
   .processToolbar > div { width:100%; }
   .processToolbar .modalityControl { display:none; }
-  .modalityControl select { min-height:2.9rem; }
 }

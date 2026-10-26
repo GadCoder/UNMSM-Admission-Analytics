@@ -3,6 +3,7 @@ import { useEffect, useLayoutEffect, useRef, useState } from "react";
 import type { AcademicArea, Faculty, Modality } from "../api/analytics.types";
 import { DEFAULT_ADMISSION_MODALITY, formatAdmissionModalityLabel } from "../utils/admissionModality";
 import { ResponsiveControlPanel } from "./ResponsiveControlPanel";
+import { SelectField } from "./SelectField";
 import styles from "./DashboardFilterControls.module.css";
 
 export type DashboardFilters = { academicArea: string; faculty: string; modality: string };
@@ -132,12 +133,9 @@ export function DashboardFilterControls({ areas, faculties, modalities = [], fil
 function FilterSelect({ idSuffix, label, value, options, includeAll = true, onChange }: { idSuffix: string; label: string; value: string; options: string[][]; includeAll?: boolean; onChange: (value: string) => void }) {
   const id = `dashboard-filter-${idSuffix}`;
   return (
-    <div className={styles.field}>
-      <label className={styles.fieldLabel} htmlFor={id}>{label}</label>
-      <select className={styles.fieldSelect} id={id} value={value} onChange={(event) => onChange(event.target.value)}>
-        {includeAll && <option value="">Todas</option>}
-        {options.map(([optionValue, optionLabel]) => <option key={optionValue} value={optionValue}>{optionLabel}</option>)}
-      </select>
-    </div>
+    <SelectField id={id} label={label} value={value} onChange={(event) => onChange(event.target.value)}>
+      {includeAll && <option value="">Todas</option>}
+      {options.map(([optionValue, optionLabel]) => <option key={optionValue} value={optionValue}>{optionLabel}</option>)}
+    </SelectField>
   );
 }

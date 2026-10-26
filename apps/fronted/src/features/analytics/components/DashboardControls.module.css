@@ -1,5 +1,2 @@
 .processControls { display:contents; }
-.primaryControl { order:0; display:grid; gap:.35rem; width:100%; min-width:0; }
-.primaryLabel { composes: label from "./SelectField.module.css"; }
-.primarySelect { composes: select from "./SelectField.module.css"; min-height:2.75rem; background-color:var(--color-primary-soft); font-weight:600; }
-@media (max-width:600px) { .primarySelect { min-height:2.9rem; } }
+.primaryControl { order:0; width:100%; min-width:0; }
