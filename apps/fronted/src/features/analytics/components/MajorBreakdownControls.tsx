@@ -1,6 +1,7 @@
 import type { MajorOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
 import type { SortDirection, SortKey } from "./majorPerformance.utils";
+import { FormField, TextInput } from "./FormField";
 import { SelectField } from "./SelectField";
 import styles from "../pages/DashboardPage.module.css";
 
@@ -17,28 +18,31 @@ type MajorBreakdownControlsProps = {
 
 export function MajorBreakdownControls({ query, suggestionsOpen, suggestions, sortKey, sortDirection, onQueryChange, onSuggestionsOpenChange, onSortChange }: MajorBreakdownControlsProps) {
   return <div className={styles.tableControls} aria-label="Búsqueda y orden de carreras">
-    <label className={styles.tableFilter}><span>Buscar carrera</span><div className={styles.autocomplete}>
-      <input
-        type="search"
-        aria-label="Buscar carrera"
-        aria-autocomplete="list"
-        aria-controls="major-suggestions"
-        aria-expanded={suggestionsOpen && suggestions.length > 0}
-        placeholder="Busca por nombre"
-        value={query}
-        onFocus={() => onSuggestionsOpenChange(true)}
-        onBlur={() => window.setTimeout(() => onSuggestionsOpenChange(false), 120)}
-        onKeyDown={(event) => { if (event.key === "Escape") onSuggestionsOpenChange(false); }}
-        onChange={(event) => { onQueryChange(event.target.value); onSuggestionsOpenChange(true); }}
-      />
-      {suggestionsOpen && suggestions.length > 0 && <ul id="major-suggestions" className={styles.suggestions} role="listbox" aria-label="Carreras coincidentes">
-        {suggestions.map((major) => <li key={major.major_id} role="option" aria-selected={false}>
-          <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => { onQueryChange(major.major_name); onSuggestionsOpenChange(false); }}>
-            <span>{major.major_name}</span><small>{formatNumber(major.total_results)} postulantes</small>
-          </button>
-        </li>)}
-      </ul>}
-    </div></label>
+    <FormField className={styles.tableFilter} id="major-search" label="Buscar carrera">
+      <div className={styles.autocomplete}>
+        <TextInput
+          id="major-search"
+          type="search"
+          aria-label="Buscar carrera"
+          aria-autocomplete="list"
+          aria-controls="major-suggestions"
+          aria-expanded={suggestionsOpen && suggestions.length > 0}
+          placeholder="Busca por nombre"
+          value={query}
+          onFocus={() => onSuggestionsOpenChange(true)}
+          onBlur={() => window.setTimeout(() => onSuggestionsOpenChange(false), 120)}
+          onKeyDown={(event) => { if (event.key === "Escape") onSuggestionsOpenChange(false); }}
+          onChange={(event) => { onQueryChange(event.target.value); onSuggestionsOpenChange(true); }}
+        />
+        {suggestionsOpen && suggestions.length > 0 && <ul id="major-suggestions" className={styles.suggestions} role="listbox" aria-label="Carreras coincidentes">
+          {suggestions.map((major) => <li key={major.major_id} role="option" aria-selected={false}>
+            <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => { onQueryChange(major.major_name); onSuggestionsOpenChange(false); }}>
+              <span>{major.major_name}</span><small>{formatNumber(major.total_results)} postulantes</small>
+            </button>
+          </li>)}
+        </ul>}
+      </div>
+    </FormField>
     <SelectField label="Ordenar carreras" value={`${sortKey}-${sortDirection}`} onChange={(event) => onSortChange(event.target.value)}>
       <option value="total_results-desc">Más postulantes</option><option value="total_results-asc">Menos postulantes</option>
       <option value="admitted_count-desc">Más admitidos</option><option value="admitted_count-asc">Menos admitidos</option>
