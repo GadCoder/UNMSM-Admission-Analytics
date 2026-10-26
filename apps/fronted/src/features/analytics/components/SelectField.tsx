@@ -8,13 +8,12 @@ type SelectFieldProps = Omit<ComponentPropsWithoutRef<"select">, "children" | "c
   children: ReactNode;
   className?: string;
   wrapperClassName?: string;
-  variant?: "default" | "soft";
 };
 
-export function SelectField({ label, children, id, className = "", wrapperClassName, variant = "default", ...selectProps }: SelectFieldProps) {
+export function SelectField({ label, children, id, className = "", wrapperClassName, ...selectProps }: SelectFieldProps) {
   const generatedId = useId();
   const controlId = id ?? generatedId;
-  const controlClassName = [styles.control, styles.select, variant === "soft" ? styles.soft : "", className].filter(Boolean).join(" ");
+  const controlClassName = [styles.control, styles.select, className].filter(Boolean).join(" ");
 
   return (
     <FormField id={controlId} label={label} className={wrapperClassName}>
