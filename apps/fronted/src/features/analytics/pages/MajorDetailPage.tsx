@@ -87,7 +87,7 @@ export function MajorDetailPage() {
     <section className={`${controlsStyles.toolbar} ${styles.processToolbar} ${styles.careerToolbar}`} aria-label="Contexto del análisis">
       <DashboardControls processes={processes} primaryId={primary} onChange={updateSelection} />
       <div className={styles.modalityControl}>
-        <SelectField label="Modalidad" aria-label="Modalidad" variant="soft" aria-description={modality} title={modality} value={modality} onChange={(event) => {
+        <SelectField label="Modalidad" aria-label="Modalidad" aria-description={modality} title={modality} value={modality} onChange={(event) => {
           const next = new URLSearchParams(params);
           next.set("modality", event.target.value);
           setParams(next);

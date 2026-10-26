@@ -115,7 +115,7 @@ export function DashboardPage() {
             onChange={updateSelection}
           />
           <div className={styles.modalityControl}>
-            <SelectField label="Modalidad" aria-label="Modalidad" variant="soft" value={filters.modality} title={filters.modality}
+            <SelectField label="Modalidad" aria-label="Modalidad" value={filters.modality} title={filters.modality}
               aria-description={filters.modality} onChange={(event) => updateFilters({ ...filters, modality: event.target.value })}>
               {!(modalitiesQuery.data ?? []).some((item) => item.name === filters.modality)
                 && <option value={filters.modality}>{formatAdmissionModalityLabel(filters.modality)}</option>}

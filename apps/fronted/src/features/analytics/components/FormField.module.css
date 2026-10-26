@@ -50,8 +50,6 @@
   text-overflow:ellipsis;
 }
 
-.soft { background-color:var(--color-primary-soft); }
-
 @media (max-width:600px) {
   .control { min-height:2.9rem; }
 }
