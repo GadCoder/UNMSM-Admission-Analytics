@@ -356,7 +356,7 @@ tbody tr:hover { background:#fdfafa; }
 
 .kpiFootnote { margin:calc(-1 * var(--space-3)) 0 var(--space-5); color:var(--color-muted); font-size:.68rem; line-height:1.5; }
 
-.page .processToolbar { grid-template-columns:10rem minmax(0,27rem) 8rem; align-items:end; justify-content:start; }
+.page .processToolbar { grid-template-columns:10rem minmax(12rem,16rem) minmax(0,1fr); align-items:end; justify-content:start; }
 .page .careerToolbar { grid-template-columns:10rem minmax(0,27rem); }
 .processToolbar .filterControl { justify-self:stretch; }
 .filterControl > div, .filterControl > div > button { width:100%; }
@@ -365,5 +365,6 @@ tbody tr:hover { background:#fdfafa; }
 @media (max-width:600px) {
   .page .processToolbar, .page .careerToolbar { grid-template-columns:minmax(0,1fr); }
   .processToolbar > div { width:100%; }
+  .processToolbar .modalityControl { display:none; }
   .modalityControl select { min-height:2.9rem; }
 }
