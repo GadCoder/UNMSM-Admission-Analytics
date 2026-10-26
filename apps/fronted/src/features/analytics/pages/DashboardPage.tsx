@@ -126,6 +126,7 @@ export function DashboardPage() {
             <DashboardFilterControls
               areas={areasQuery.data ?? []}
               faculties={facultiesQuery.data ?? []}
+              modalities={modalitiesQuery.data ?? []}
               filters={filters}
               onChange={updateFilters}
               onReset={resetFilters}
