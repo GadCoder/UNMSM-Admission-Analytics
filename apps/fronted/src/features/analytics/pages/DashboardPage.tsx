@@ -101,12 +101,6 @@ export function DashboardPage() {
 
   return (
     <section className={styles.page}>
-      <div className={`${styles.hero} ${styles.resultsHero}`}>
-        <div>
-          <h1>Resultados de admisión</h1>
-          <p className={styles.intro}>Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.</p>
-        </div>
-      </div>
       {processes.length > 0 && (
         <section className={`${controlsStyles.toolbar} ${styles.processToolbar}`} aria-label="Controles del análisis">
           <DashboardControls
