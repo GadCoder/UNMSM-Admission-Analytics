@@ -630,12 +630,8 @@ function ComparisonResults(props: {
                 <li key={item!.title}>
                   <span>{item!.title}</span>
                   <strong>{leaders(item!)}</strong>
-                  <small>
-                    {formatCareerComparisonMetric(
-                      item!.value,
-                      item!.metric,
-                      item!.ranking.precision,
-                    )}
+                  <small className={styles.summaryValue}>
+                    {renderSummaryMetricValue(item!.value, item!.metric, item!.ranking.precision)}
                   </small>
                   {item!.ranking.scope && <em>{item!.ranking.scope}</em>}
                 </li>
@@ -923,6 +919,39 @@ function summaryItem(
     value,
     names: winners.map(({ name }) => name),
   };
+}
+
+function formatSummaryMetric(
+  value: number | null,
+  metric: CareerComparisonMetricKey,
+  precision: number,
+) {
+  const formatted = formatCareerComparisonMetric(value, metric, precision);
+  if (value === null || !Number.isFinite(value)) return formatted;
+
+  const suffix =
+    metric === "total_results"
+      ? " postulantes"
+      : metric === "minimum_admitted_score"
+        ? " puntos"
+        : "";
+  return `${formatted}${suffix}`;
+}
+
+function renderSummaryMetricValue(
+  value: number | null,
+  metric: CareerComparisonMetricKey,
+  precision: number,
+) {
+  const formatted = formatSummaryMetric(value, metric, precision);
+  if (metric !== "admission_rate" || !formatted.endsWith("%")) return formatted;
+
+  return (
+    <>
+      {formatted.slice(0, -1)}
+      <span className={styles.summaryValueUnit}>%</span>
+    </>
+  );
 }
 
 function findCurrent(detail: MajorDetail, processId: string) {
