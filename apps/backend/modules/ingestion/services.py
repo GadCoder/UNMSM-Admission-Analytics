@@ -10,6 +10,8 @@ from .models import ImportBatch
 from .parser import parse_csv
 from .resolver import resolve_major
 
+RESULT_BATCH_SIZE = 1000
+
 
 def _area_code(directory: Path) -> str:
     name = directory.name.strip().upper()
@@ -164,7 +166,11 @@ def _write_import(
                     import_batch=batch,
                 )
             )
-        AdmissionResult.objects.bulk_create(results, batch_size=1000)
+            if len(results) >= RESULT_BATCH_SIZE:
+                AdmissionResult.objects.bulk_create(results, batch_size=RESULT_BATCH_SIZE)
+                results = []
+        if results:
+            AdmissionResult.objects.bulk_create(results, batch_size=RESULT_BATCH_SIZE)
         batch.status = ImportBatch.Status.COMPLETED
         batch.imported_rows = summary["imported_rows"]
         batch.error_message = "\n".join(errors)

@@ -114,3 +114,35 @@ def test_import_rolls_back_replacement_when_result_insert_fails(tmp_path):
     assert AdmissionResult.objects.count() == 1
     assert AdmissionResult.objects.get().pk == previous.pk
     assert ImportBatch.objects.count() == 1
+
+
+@pytest.mark.django_db
+def test_import_rolls_back_previously_inserted_batches_on_later_failure(tmp_path):
+    major_dir = tmp_path / "2026" / "26-2" / "E" / "DERECHO"
+    major_dir.mkdir(parents=True)
+    csv_path = major_dir / "postulantes.csv"
+    header = "codigo,apellidos,nombres,carrera,puntaje,merito,observacion,modalidad\n"
+    csv_path.write_text(header + "ORIGINAL,DOE,JANE,DERECHO,100,1,,ORDINARIO\n", encoding="utf-8")
+    process_dir = major_dir.parent.parent
+    import_process_directory(process_dir)
+    previous_id = AdmissionResult.objects.get().pk
+    csv_path.write_text(
+        header + "".join(f"A{i},DOE,JANE,DERECHO,110,1,,ORDINARIO\n" for i in range(1001)),
+        encoding="utf-8",
+    )
+    insert = AdmissionResult.objects.bulk_create
+    batch_sizes = []
+
+    def fail_second_batch(objects, **kwargs):
+        batch_sizes.append(len(objects))
+        if len(batch_sizes) == 2:
+            raise RuntimeError("second batch failed")
+        return insert(objects, **kwargs)
+
+    with patch.object(AdmissionResult.objects, "bulk_create", side_effect=fail_second_batch):
+        with pytest.raises(RuntimeError, match="second batch failed"):
+            import_process_directory(process_dir)
+
+    assert batch_sizes == [1000, 1]
+    assert list(AdmissionResult.objects.values_list("pk", flat=True)) == [previous_id]
+    assert ImportBatch.objects.count() == 1
