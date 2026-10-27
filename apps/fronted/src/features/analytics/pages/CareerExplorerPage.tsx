@@ -55,7 +55,18 @@ export function CareerExplorerPage() {
     <p>El proceso seleccionado no está disponible.</p>
     <button type="button" onClick={() => updateContext("process", String(processes[0].id))}>Usar el proceso más reciente</button>
   </div>;
-  if (!modality) return <p role="status" className={styles.notice}>{modalitiesQuery.isPending ? "Cargando modalidades…" : "La modalidad seleccionada no está disponible."}</p>;
+  if (!modality) {
+    if (modalitiesQuery.isPending) return <p role="status" className={styles.notice}>Cargando modalidades…</p>;
+    if (modalitiesQuery.isError) return <div role="alert" className={styles.notice}>
+      <p>No pudimos cargar las modalidades.</p>
+      <button type="button" onClick={() => void modalitiesQuery.refetch()}>Reintentar modalidades</button>
+    </div>;
+    const fallbackModalityId = modalityUrlValue(resolveAdmissionModality(undefined), modalities) ?? (modalities[0] ? String(modalities[0].id) : undefined);
+    return <div role="alert" className={styles.notice}>
+      <p>La modalidad seleccionada no está disponible.</p>
+      {fallbackModalityId && <button type="button" onClick={() => updateContext("modality", fallbackModalityId)}>Usar una modalidad disponible</button>}
+    </div>;
+  }
 
   return <div className={styles.page}>
     {majorId && <div className={styles.detailNavigation}>
@@ -79,6 +90,12 @@ export function CareerExplorerPage() {
         </SelectField>
       </div>}
       onSelectProcess={(id) => updateContext("process", String(id))}
-    /> : <CareerBrowse processes={processes} processId={processId} onSelectProcess={(id) => updateContext("process", id)} modality={modality} returnTo={discoveryHref} />}
+    /> : <CareerBrowse
+      processes={processes}
+      processId={processId}
+      onSelectProcess={(id) => updateContext("process", id)}
+      modality={modality}
+      navigation={{ modalityId: modalityParam || undefined, processReturnTo: processOrigin }}
+    />}
   </div>;
 }

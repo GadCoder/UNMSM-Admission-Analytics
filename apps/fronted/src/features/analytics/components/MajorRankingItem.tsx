@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 
 import type { MajorOverview, ProcessOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
-import { careerDetailHref } from "../utils/admissionModality";
+import { careerDetailHref } from "../utils/careerNavigation";
 import styles from "../pages/DashboardPage.module.css";
 import { ComparisonMetrics, SingleProcessMetrics } from "./MajorRankingComparison";
 import { getComparisonGridStyle } from "./majorRankingList.utils";

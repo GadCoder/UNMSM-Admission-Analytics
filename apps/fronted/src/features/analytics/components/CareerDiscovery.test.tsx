@@ -22,7 +22,7 @@ function Location() { const location = useLocation(); return <output data-testid
 function setup(overrides: Partial<ComponentProps<typeof CareerDiscovery>> = {}) {
   const onQueryChange = vi.fn();
   const onShowAllChange = vi.fn();
-  const props = { overview, processId: "24", modality: "7", returnTo: "/carreras?process=24&modality=7", query: "", onQueryChange, showAll: false, onShowAllChange, ...overrides };
+  const props = { overview, processId: "24", navigation: { modalityId: "7" }, query: "", onQueryChange, showAll: false, onShowAllChange, ...overrides };
   render(<MemoryRouter><Routes><Route path="*" element={<><CareerDiscovery {...props} /><Location /></>} /></Routes></MemoryRouter>);
   return { onQueryChange, onShowAllChange, props };
 }

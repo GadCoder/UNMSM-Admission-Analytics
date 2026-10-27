@@ -3,13 +3,13 @@ import { Link } from "react-router-dom";
 
 import type { MajorOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
-import { careerDetailHref } from "../utils/admissionModality";
+import { careerDetailHref, type CareerNavigationContext } from "../utils/careerNavigation";
 import styles from "../pages/DashboardPage.module.css";
 import { admissionRate } from "./majorPerformance.utils";
 
-type MajorPerformanceCardProps = { major: MajorOverview; rank: number; processId: number; modality?: string; returnTo?: string };
+type MajorPerformanceCardProps = { major: MajorOverview; rank: number; processId: number; navigation?: CareerNavigationContext };
 
-export function MajorPerformanceCard({ major, rank, processId, modality, returnTo }: MajorPerformanceCardProps) {
+export function MajorPerformanceCard({ major, rank, processId, navigation }: MajorPerformanceCardProps) {
   const [isExpanded, setIsExpanded] = useState(false);
   const detailsId = `major-performance-details-${major.major_id}`;
 
@@ -17,7 +17,7 @@ export function MajorPerformanceCard({ major, rank, processId, modality, returnT
     <div className={styles.performanceCardHeader}>
       <span className={styles.performanceCardRank}>{String(rank).padStart(2, "0")}</span>
       <span className={styles.performanceCardMain}>
-        <Link className={styles.majorDetailLink} to={careerDetailHref(major.major_id, processId, modality, returnTo)}>
+        <Link className={styles.majorDetailLink} to={careerDetailHref(major.major_id, processId, navigation)}>
           <strong>{major.major_name}</strong>
         </Link>
         <span>{formatNumber(major.total_results)} postulantes · {formatNumber(major.admitted_count)} admitidos</span>

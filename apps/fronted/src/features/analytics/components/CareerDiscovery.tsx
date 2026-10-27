@@ -1,5 +1,6 @@
 import { useMemo, useRef, type KeyboardEvent } from "react";
 
+import type { CareerNavigationContext } from "../utils/careerNavigation";
 import type { ProcessOverview } from "../api/analytics.types";
 import styles from "./CareerDiscovery.module.css";
 import { CareerResults } from "./CareerResults";
@@ -8,8 +9,7 @@ import { CareerSearch } from "./CareerSearch";
 export type CareerDiscoveryProps = {
   overview?: ProcessOverview;
   processId: string;
-  modality: string;
-  returnTo: string;
+  navigation: CareerNavigationContext;
   query: string;
   onQueryChange: (query: string) => void;
   showAll: boolean;
@@ -20,7 +20,7 @@ export type CareerDiscoveryProps = {
 
 const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es").trim();
 
-export function CareerDiscovery({ overview, processId, modality, returnTo, query, onQueryChange, showAll, onShowAllChange, status = "ready", onRetry }: CareerDiscoveryProps) {
+export function CareerDiscovery({ overview, processId, navigation, query, onQueryChange, showAll, onShowAllChange, status = "ready", onRetry }: CareerDiscoveryProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const resultLinkRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const majors = useMemo(() => [...(overview?.majors ?? [])].sort((a, b) =>
@@ -57,8 +57,7 @@ export function CareerDiscovery({ overview, processId, modality, returnTo, query
       hasQuery={hasQuery}
       query={query}
       processId={processId}
-      modality={modality}
-      returnTo={returnTo}
+      navigation={navigation}
       showAll={showAll}
       resultLinkRefs={resultLinkRefs}
       onShowAllChange={onShowAllChange}

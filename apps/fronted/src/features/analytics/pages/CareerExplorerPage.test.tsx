@@ -42,11 +42,19 @@ function LocationProbe() {
 
 function renderExplorer(entry = "/carreras") {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } });
-  return render(<QueryClientProvider client={client}><MemoryRouter initialEntries={[entry]}>
+  const explorer = () => <QueryClientProvider client={client}><MemoryRouter initialEntries={[entry]}>
     <Routes>
       <Route path="/carreras/:majorId?" element={<CareerExplorerPage />} />
     </Routes><LocationProbe />
-  </MemoryRouter></QueryClientProvider>);
+  </MemoryRouter></QueryClientProvider>;
+  const view = render(explorer());
+  return { ...view, refresh: () => view.rerender(explorer()) };
+}
+
+function expectLocation(pathname: string, params: Record<string, string>) {
+  const url = new URL(screen.getByTestId("location").textContent!, "https://example.test");
+  expect(url.pathname).toBe(pathname);
+  expect(Object.fromEntries(url.searchParams)).toEqual(params);
 }
 
 describe("CareerExplorerPage route integration", () => {
@@ -96,10 +104,25 @@ describe("CareerExplorerPage route integration", () => {
     const user = userEvent.setup();
     renderExplorer("/carreras?process=24&modality=2&academic_area=ING&faculty=SIS&q=sistemas&view=all");
     await user.click(screen.getByRole("link", { name: /Ingeniería de Sistemas/ }));
-    expect(screen.getByTestId("location")).toHaveTextContent("/carreras/42?process=24&modality=2&academic_area=ING&faculty=SIS&q=sistemas&view=all");
+    const context = { process: "24", modality: "2", academic_area: "ING", faculty: "SIS", q: "sistemas", view: "all" };
+    expectLocation("/carreras/42", context);
     await user.click(screen.getByRole("button", { name: "Atrás de prueba" }));
-    await waitFor(() => expect(screen.getByTestId("location")).toHaveTextContent("/carreras?process=24&modality=2&academic_area=ING&faculty=SIS&q=sistemas&view=all"));
+    await waitFor(() => expectLocation("/carreras", context));
     expect(screen.getByLabelText("Busca tu carrera")).toHaveValue("sistemas");
+  });
+
+  it("keeps the current modality separate from the process return context when changing careers", async () => {
+    const user = userEvent.setup();
+    const processReturnTo = "/?process=24&academic_area=ING&modality=1";
+    const params = new URLSearchParams({ process: "24", modality: "1", returnTo: processReturnTo, q: "sistemas", view: "all" });
+    renderExplorer(`/carreras/42?${params}`);
+    await user.selectOptions(screen.getByLabelText("Modalidad"), "2");
+    await user.click(screen.getByRole("link", { name: /Cambiar carrera/ }));
+    expect(screen.getByLabelText("Busca tu carrera")).toHaveValue("sistemas");
+    await user.click(screen.getByRole("link", { name: /Ingeniería de Sistemas/ }));
+    expectLocation("/carreras/42", { process: "24", modality: "2", returnTo: processReturnTo, q: "sistemas", view: "all" });
+    expect(api.useMajorDetail).toHaveBeenLastCalledWith("42", "24", [], "Especial");
+    expect(screen.getByRole("link", { name: "Volver a resultados del proceso" })).toHaveAttribute("href", processReturnTo);
   });
 
   it("changes process from detail without leaving the selected career", async () => {
@@ -118,6 +141,39 @@ describe("CareerExplorerPage route integration", () => {
     vi.mocked(api.usePublishedProcesses).mockReturnValue({ ...ready(undefined), data: undefined, isError: true, isPending: false } as unknown as ReturnType<typeof api.usePublishedProcesses>);
     renderExplorer();
     expect(screen.getByRole("alert")).toHaveTextContent("No pudimos cargar los procesos de admisión.");
+  });
+
+  it.each(["/carreras", "/carreras/42"])("offers retry after a modality request fails on %s", async (pathname) => {
+    const user = userEvent.setup();
+    const refetch = vi.fn();
+    vi.mocked(api.useModalities).mockReturnValue({ ...ready(undefined), isError: true, refetch } as unknown as ReturnType<typeof api.useModalities>);
+    const view = renderExplorer(`${pathname}?process=24&modality=2`);
+    expect(screen.getByRole("alert")).toHaveTextContent("No pudimos cargar las modalidades.");
+    expect(screen.queryByText("La modalidad seleccionada no está disponible.")).not.toBeInTheDocument();
+    expect(api.useMajorDetail).not.toHaveBeenCalled();
+    expect(api.useAnalyticsOverview).not.toHaveBeenCalled();
+    await user.click(screen.getByRole("button", { name: "Reintentar modalidades" }));
+    expect(refetch).toHaveBeenCalledOnce();
+
+    vi.mocked(api.useModalities).mockReturnValue(ready([{ id: 2, name: "Especial" }]) as unknown as ReturnType<typeof api.useModalities>);
+    view.refresh();
+    expect(screen.getByLabelText("Modalidad")).toHaveValue("2");
+  });
+
+  it("allows replacing an invalid modality without editing the URL", async () => {
+    const user = userEvent.setup();
+    renderExplorer("/carreras?process=24&modality=999");
+    expect(screen.getByRole("alert")).toHaveTextContent("La modalidad seleccionada no está disponible.");
+    await user.click(screen.getByRole("button", { name: "Usar una modalidad disponible" }));
+    expectLocation("/carreras", { process: "24", modality: "1" });
+    expect(screen.getByLabelText("Modalidad")).toHaveValue("1");
+  });
+
+  it("shows pending modalities separately from request failures", () => {
+    vi.mocked(api.useModalities).mockReturnValue({ data: undefined, isPending: true, isError: false } as ReturnType<typeof api.useModalities>);
+    renderExplorer("/carreras?process=24&modality=2");
+    expect(screen.getByText("Cargando modalidades…")).toHaveAttribute("role", "status");
+    expect(screen.queryByRole("alert")).not.toBeInTheDocument();
   });
 
   it("shows the selected career no-results state for the requested process and modality", () => {

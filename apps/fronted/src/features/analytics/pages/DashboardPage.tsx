@@ -170,8 +170,7 @@ export function DashboardPage() {
             <div aria-busy={overviewQuery.isFetching}>
               <DashboardContent
                 primary={primary}
-                returnTo={returnTo}
-                modality={filters.modality}
+                navigation={{ modalityId, processReturnTo: returnTo }}
                 selectedProcessId={Number(primaryId)}
                 previous={previous}
                 historyItems={historyQuery.data?.processes ?? []}

@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 
+import type { CareerNavigationContext } from "../utils/careerNavigation";
 import type { ProcessOverview } from "../api/analytics.types";
 import { useDebouncedValue } from "../utils/useDebouncedValue";
 import { MajorBreakdownControls } from "./MajorBreakdownControls";
@@ -13,9 +14,9 @@ import { AnalyticsSurface } from "./AnalyticsSurface";
 
 const PAGE_SIZE = 10;
 
-type MajorBreakdownProps = { overview: ProcessOverview; modality?: string; returnTo?: string };
+type MajorBreakdownProps = { overview: ProcessOverview; navigation?: CareerNavigationContext };
 
-export function MajorBreakdown({ overview, modality, returnTo }: MajorBreakdownProps) {
+export function MajorBreakdown({ overview, navigation }: MajorBreakdownProps) {
   const [query, setQuery] = useState("");
   const [pageSelection, setPageSelection] = useState({ processId: overview.process.id, page: 1 });
   const page = pageSelection.processId === overview.process.id ? pageSelection.page : 1;
@@ -84,12 +85,11 @@ export function MajorBreakdown({ overview, modality, returnTo }: MajorBreakdownP
     />
     <div ref={contentRef} style={isSorting && contentHeight ? { minHeight: `${contentHeight}px` } : undefined}>
       {isSorting ? <MajorBreakdownSortingSkeleton /> : <>
-        <MajorPerformanceCards majors={visibleMajors} processId={overview.process.id} modality={modality} returnTo={returnTo} rankOffset={rankOffset} />
+        <MajorPerformanceCards majors={visibleMajors} processId={overview.process.id} navigation={navigation} rankOffset={rankOffset} />
         <MajorPerformanceTable
           majors={visibleMajors}
           process={overview.process}
-          modality={modality}
-          returnTo={returnTo}
+          navigation={navigation}
           rankOffset={rankOffset}
           sortKey={sortKey}
           sortDirection={sortDirection}

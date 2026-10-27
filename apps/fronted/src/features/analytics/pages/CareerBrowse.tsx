@@ -1,6 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 
 import * as api from "../api/analytics";
+import type { CareerNavigationContext } from "../utils/careerNavigation";
 import type { AdmissionProcess } from "../api/analytics.types";
 import { CareerDiscovery } from "../components/CareerDiscovery";
 import { DashboardControls } from "../components/DashboardControls";
@@ -15,31 +16,27 @@ type CareerBrowseProps = {
   processId: string;
   onSelectProcess: (id: string) => void;
   modality: string;
-  returnTo: string;
+  navigation: CareerNavigationContext;
 };
 
-export function CareerBrowse({ processes, processId, onSelectProcess, modality, returnTo }: CareerBrowseProps) {
+export function CareerBrowse({ processes, processId, onSelectProcess, modality, navigation }: CareerBrowseProps) {
   const [params, setParams] = useSearchParams();
   const areasQuery = api.useAcademicAreas();
   const facultiesQuery = api.useFaculties();
   const modalitiesQuery = api.useModalities();
   const academicArea = params.get("academic_area") ?? "";
   const faculty = params.get("faculty") ?? "";
+  const query = params.get("q") ?? "";
+  const showAll = params.get("view") === "all";
   const areas = areasQuery.data ?? [];
   const faculties = facultiesQuery.data ?? [];
   const overviewQuery = api.useAnalyticsOverview(processId, [], { academicArea, faculty, modality });
   const overview = overviewQuery.data?.processes.find((item) => String(item.process.id) === processId);
 
-  const updateBrowse = (name: string, value: string, replace = false) => {
+  const updateBrowse = (name: "q" | "view", value: string, replace = false) => {
     const next = new URLSearchParams(params);
     if (value) next.set(name, value);
     else next.delete(name);
-    if (name === "academic_area") next.delete("faculty");
-    if (name === "faculty" && value) {
-      const areaId = faculties.find((item) => item.code === value)?.academic_area_id;
-      const area = areas.find((item) => item.id === areaId);
-      if (area) next.set("academic_area", area.code);
-    }
     setParams(next, { replace, preventScrollReset: true });
   };
 
@@ -89,11 +86,10 @@ export function CareerBrowse({ processes, processId, onSelectProcess, modality, 
     <CareerDiscovery
       overview={overview}
       processId={processId}
-      modality={modality}
-      returnTo={returnTo}
-      query={params.get("q") ?? ""}
+      navigation={{ ...navigation, discovery: { academicArea, faculty, query, showAll } }}
+      query={query}
       onQueryChange={(query) => updateBrowse("q", query, true)}
-      showAll={params.get("view") === "all"}
+      showAll={showAll}
       onShowAllChange={(showAll) => updateBrowse("view", showAll ? "all" : "")}
       status={overviewQuery.isPending || (overviewQuery.isFetching && !overview) ? "loading" : overviewQuery.isError ? "error" : "ready"}
       onRetry={() => void overviewQuery.refetch()}

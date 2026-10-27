@@ -24,27 +24,3 @@ export function formatAdmissionModalityLabel(value: string): string {
   const sentence = value.charAt(0).toLocaleUpperCase("es-PE") + value.slice(1).toLocaleLowerCase("es-PE");
   return sentence.replace(/\b(ebr|eba|unmsm|cepre)\b/gi, (acronym) => acronym.toUpperCase());
 }
-
-export function careerDetailHref(majorId: number, processId: number, modality?: string, returnTo?: string): string {
-  const params = new URLSearchParams({ process: String(processId) });
-  const contextModality = (value?: string | null) => value && /^\d+$/.test(value) ? value : undefined;
-  let modalityId = contextModality(modality);
-  if (returnTo?.startsWith("/carreras?")) {
-    const origin = new URLSearchParams(returnTo.slice(returnTo.indexOf("?") + 1));
-    modalityId = contextModality(origin.get("modality")) ?? modalityId;
-    for (const name of ["academic_area", "faculty", "q", "view"]) {
-      const value = origin.get(name);
-      if (value) params.set(name, value);
-    }
-    const processOrigin = origin.get("returnTo");
-    if (processOrigin?.startsWith("/?")) {
-      params.set("returnTo", processOrigin);
-      modalityId ??= contextModality(new URLSearchParams(processOrigin.slice(processOrigin.indexOf("?") + 1)).get("modality"));
-    }
-  } else if (returnTo?.startsWith("/?")) {
-    params.set("returnTo", returnTo);
-    modalityId = contextModality(new URLSearchParams(returnTo.slice(returnTo.indexOf("?") + 1)).get("modality")) ?? modalityId;
-  }
-  if (modalityId) params.set("modality", modalityId);
-  return `/carreras/${majorId}?${params}`;
-}
