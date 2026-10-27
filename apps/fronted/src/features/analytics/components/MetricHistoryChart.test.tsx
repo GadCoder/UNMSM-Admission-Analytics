@@ -81,6 +81,17 @@ describe("MetricHistoryChart", () => {
     expect(screen.getByLabelText("Métrica")).toHaveValue("average_score");
   });
 
+  it("shows only the selected minimum when historical minima are not comparable", () => {
+    const items = [
+      { ...rows[0], minimum_admitted_score: 0, admitted_score_modality_count: 0, admitted_score_modality: null },
+      { ...rows[1], minimum_admitted_score: 70.5, admitted_score_modality_count: 1, admitted_score_modality: "Ordinario" },
+    ];
+    render(<MetricHistoryChart items={items} title="Evolución histórica" defaultMetric="minimum_admitted_score" selectedProcessId={2} />);
+    expect(screen.getAllByRole("button", { name: /:/ })).toHaveLength(1);
+    expect(screen.getByRole("button", { name: /2026-1: 70.5/ })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: /2025-1:/ })).not.toBeInTheDocument();
+  });
+
   it("shows a neutral minimum-score historical pattern for consecutive observations of the same modality", () => {
     const items = rows.map((row, index) => ({ ...row, minimum_admitted_score: index === 0 ? 900 : 850.125, admitted_score_modality_count: 1, admitted_score_modality: "Ordinario" }));
     render(<MetricHistoryChart items={items} title="Evolución histórica" defaultMetric="minimum_admitted_score" selectedProcessId={2} />);

@@ -4,7 +4,6 @@ import type { ReactNode } from "react";
 import type { MajorDetailProcess, ProcessOverview } from "../api/analytics.types";
 import * as api from "../api/analytics";
 import { MajorDetailHistory } from "../components/MajorDetailHistory";
-import { canCompareMinimumScores } from "../components/metricHistory";
 import { MetricHistoryChart } from "../components/MetricHistoryChart";
 import { MajorDetailLoadingSkeleton } from "../components/LoadingSkeletons";
 import { KpiGrid } from "../components/KpiGrid";
@@ -71,7 +70,7 @@ export function MajorDetailContent({ majorId, processId, modality, onSelectProce
       : <p role="status" className={styles.state}>{query.isPlaceholderData ? "Consultando resultados del proceso y la modalidad seleccionados…" : "No hay resultados de esta carrera para el proceso y la modalidad seleccionados."}</p>}
     <MetricHistoryChart items={timeline} title="Evolución histórica de la carrera"
       selectedProcessId={selectedProcess?.process.id}
-      defaultMetric={selectedProcess && timeline.some((item) => item.process.id !== selectedProcess.process.id && canCompareMinimumScores(selectedProcess, item)) ? "minimum_admitted_score" : "total_results"}
+      defaultMetric={selectedProcess?.minimum_admitted_score != null && Number.isFinite(selectedProcess.minimum_admitted_score) ? "minimum_admitted_score" : "total_results"}
     />
     <section className={`${styles.card} ${styles.comparisonCard}`} aria-labelledby="history-heading">
       <header className={styles.comparisonCardHeader}><h2 id="history-heading" className={styles.comparisonSectionTitle}>Resultados históricos</h2></header>

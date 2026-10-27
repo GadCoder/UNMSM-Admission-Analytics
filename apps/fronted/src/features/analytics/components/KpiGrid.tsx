@@ -45,7 +45,7 @@ export function KpiGrid({ overview, previous, variant = "process" }: KpiGridProp
   const minimumAvailable = previous && canCompareMinimumScores(overview, previous);
   const minimumTrend = minimumAvailable
     ? { ...withProcess(trend(overview.minimum_admitted_score!, previous.minimum_admitted_score!, 2, " pts", " pts"))!, neutral: true }
-    : { direction: "unavailable" as const, value: "No disponible", context: "Se necesitan puntajes válidos de la misma modalidad en el proceso anterior.", isPositive: false, neutral: true };
+    : undefined;
   const minimumDescription = (overview.admitted_score_modality_count ?? 0) > 1
     ? "Hay ingresantes de distintas modalidades. Selecciona una modalidad para consultar su mínimo."
     : "Menor puntaje obtenido por un ingresante en este proceso.";

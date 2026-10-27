@@ -4,7 +4,7 @@ import type { ProcessMetrics } from "../api/analytics.types";
 import { formatNumber, formatSignedDifference } from "../utils/formatters";
 import { formatProcessLabel } from "../utils/processLabels";
 import type { MetricOption } from "./metricHistory";
-import { formatMetricValue, getMetricValue } from "./metricHistory";
+import { canCompareMinimumScores, formatMetricValue, getMetricValue } from "./metricHistory";
 import styles from "./MetricHistoryChart.module.css";
 
 type MetricHistoryPlotProps = { items: ProcessMetrics[]; metric: MetricOption; selectedProcessId?: number };
@@ -33,10 +33,14 @@ export function MetricHistoryPlot({ items, metric, selectedProcessId }: MetricHi
     return () => observer.disconnect();
   }, []);
 
+  const selectedMinimum = items.find((item) => item.process.id === selectedProcessId);
   const values = useMemo(() => items.flatMap((item, itemIndex) => {
     const value = getMetricValue(item, metric.key);
+    if (metric.key === "minimum_admitted_score" && selectedMinimum
+      && item.process.id !== selectedMinimum.process.id
+      && !canCompareMinimumScores(selectedMinimum, item)) return [];
     return value === null || !Number.isFinite(value) ? [] : [{ item, value, itemIndex }];
-  }), [items, metric.key]);
+  }), [items, metric.key, selectedMinimum]);
   const minValue = values.length ? Math.min(...values.map(({ value }) => value)) : 0;
   const maxValue = values.length ? Math.max(...values.map(({ value }) => value)) : 1;
   const naturalRange = maxValue - minValue;

@@ -76,7 +76,7 @@ describe("MajorDetailContent", () => {
     expect(screen.getByLabelText("Subió: +20 postulantes")).toBeInTheDocument();
   });
 
-  it("defaults to minimum score only when the same modality is identified across processes", () => {
+  it("defaults to minimum score when the selected process has a valid minimum", () => {
     const identified = (item: MajorDetailProcess): MajorDetailProcess => ({ ...item, admitted_score_modality_count: 1, admitted_score_modality: modality });
     vi.mocked(api.useMajorDetail).mockReturnValue({
       data: { ...detail, selected_processes: [identified(detail.selected_processes[0])], history: [identified(detail.history[0])]},
@@ -86,9 +86,9 @@ describe("MajorDetailContent", () => {
     expect(screen.getByLabelText("Métrica")).toHaveValue("minimum_admitted_score");
   });
 
-  it("falls back to applicant counts when minimum-score modality eligibility is unknown", () => {
+  it("shows the selected minimum even when its modality is unknown", () => {
     renderContent();
-    expect(screen.getByLabelText("Métrica")).toHaveValue("total_results");
+    expect(screen.getByLabelText("Métrica")).toHaveValue("minimum_admitted_score");
   });
 
   it("notifies the parent when a process is selected from history", () => {

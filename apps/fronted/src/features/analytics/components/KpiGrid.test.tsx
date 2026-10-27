@@ -54,16 +54,21 @@ describe("KpiGrid", () => {
     { ...current, admitted_score_modality: null },
     { ...current, admitted_score_modality_count: 2 },
     { ...current, minimum_admitted_score: Number.NaN },
-  ])("marks missing or incomparable minimum changes unavailable", (overview) => {
+  ])("omits missing or incomparable minimum comparisons", (overview) => {
     render(<KpiGrid variant="career" overview={overview} previous={previous} />);
     const minimum = metric("Puntaje mínimo de ingreso");
-    expect(within(minimum).getByText("No disponible")).toBeInTheDocument();
-    expect(within(minimum).getByLabelText("Comparación no disponible: No disponible").parentElement?.className).toContain("kpiTrendNeutral");
+    expect(within(minimum).queryByText("No disponible")).not.toBeInTheDocument();
+    expect(within(minimum).queryByLabelText(/Comparación no disponible/)).not.toBeInTheDocument();
   });
 
   it("does not substitute an older observation when the previous score is missing", () => {
     render(<KpiGrid variant="career" overview={current} previous={{ ...previous, minimum_admitted_score: null }} />);
-    expect(within(metric("Puntaje mínimo de ingreso")).getByText("No disponible")).toBeInTheDocument();
+    expect(within(metric("Puntaje mínimo de ingreso")).queryByText("No disponible")).not.toBeInTheDocument();
+  });
+
+  it("omits the minimum comparison when the career has no prior process", () => {
+    render(<KpiGrid variant="career" overview={current} />);
+    expect(within(metric("Puntaje mínimo de ingreso")).queryByText("No disponible")).not.toBeInTheDocument();
   });
 
   it("preserves actual zero minimum scores", () => {
