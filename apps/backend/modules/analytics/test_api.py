@@ -521,8 +521,14 @@ def test_minimum_admitted_score_does_not_pool_modalities(client, majors, default
     default_row = client.get(url).json()["selected_processes"][0]
     assert default_row["total_results"] == 1
     assert default_row["minimum_admitted_score"] == 1000.0
-    for modality, expected in [("Ordinario", 900.0), ("+Ordinario+", 900.0), ("Especial", 600.0), ("Unknown", None)]:
-        with django_assert_num_queries(3):
+    for modality, expected, query_count in [
+        ("Ordinario", 900.0, 3),
+        # '+' in a query string decodes to spaces, which normalize to the same key.
+        ("+Ordinario+", 900.0, 0),
+        ("Especial", 600.0, 3),
+        ("Unknown", None, 3),
+    ]:
+        with django_assert_num_queries(query_count):
             filtered = client.get(url + "&modality=" + modality).json()["selected_processes"][0]
         assert filtered["minimum_admitted_score"] == expected
     history = client.get("/api/v1/analytics/history/", {"modality": "Ordinario"}).json()["processes"]

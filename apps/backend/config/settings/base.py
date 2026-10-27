@@ -106,6 +106,27 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
+# Configure CACHE_REDIS_URL in production for a cache shared by API workers.
+# The local fallback is process-local and its analytics entries expire in 60s.
+CACHE_REDIS_URL = os.getenv("CACHE_REDIS_URL")
+if CACHE_REDIS_URL:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": CACHE_REDIS_URL,
+            "KEY_PREFIX": "unmsm-admission-analytics",
+            "OPTIONS": {"socket_connect_timeout": 1, "socket_timeout": 1},
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unmsm-admission-analytics",
+            "TIMEOUT": 60,
+        }
+    }
+
 SPECTACULAR_SETTINGS = {
     "TITLE": "UNMSM Admission Analytics API",
     "DESCRIPTION": "Public API for UNMSM admission processes and analytics.",

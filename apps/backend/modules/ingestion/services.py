@@ -4,6 +4,7 @@ from django.db import transaction
 
 from modules.academics.models import AcademicArea, Faculty, Major
 from modules.admission_processes.models import AdmissionModality, AdmissionProcess
+from modules.analytics.cache import invalidate_analytics_cache, suspend_invalidation
 from modules.results.models import AdmissionResult
 
 from .models import ImportBatch
@@ -68,7 +69,10 @@ def _merge_rows(rows: list[dict]) -> list[dict]:
 
 @transaction.atomic
 def import_process_directory(
-    directory: str | Path, *, source_name: str = "Resultados-UNMSM", dry_run: bool = False
+    directory: str | Path,
+    *,
+    source_name: str = "Resultados-UNMSM",
+    dry_run: bool = False,
 ) -> ImportBatch | dict[str, int]:
     directory = Path(directory)
     year, sequence = _process_identity(directory)
@@ -90,64 +94,77 @@ def import_process_directory(
         rejected_rows=summary["rejected_rows"],
     )
     try:
-        process, _ = AdmissionProcess.objects.update_or_create(
-            year=year,
-            sequence=sequence,
-            defaults={"name": f"Admisión {year} — {sequence}", "is_published": True},
-        )
-        AdmissionResult.objects.filter(process=process).delete()
-        area_cache: dict[str, AcademicArea] = {}
-        faculty_cache: dict[str, Faculty] = {}
-        major_cache: dict[str, Major] = {}
-        modality_cache: dict[str, AdmissionModality] = {}
-        for row in rows:
-            area = area_cache.setdefault(
-                row["area_code"],
-                AcademicArea.objects.get_or_create(
-                    code=row["area_code"], defaults={"name": row["area_name"]}
-                )[0],
+        with suspend_invalidation():
+            return _replace_process_results(
+                rows=rows,
+                errors=errors,
+                summary=summary,
+                batch=batch,
+                year=year,
+                sequence=sequence,
             )
-            faculty = faculty_cache.setdefault(
-                row["faculty_code"],
-                Faculty.objects.get_or_create(
-                    code=row["faculty_code"],
-                    academic_area=area,
-                    defaults={"name": row["faculty_name"]},
-                )[0],
-            )
-            major = major_cache.setdefault(
-                row["major_code"],
-                Major.objects.get_or_create(
-                    code=row["major_code"],
-                    defaults={"name": row["major_name"], "faculty": faculty},
-                )[0],
-            )
-            modality = None
-            if row["modality_name"]:
-                modality = modality_cache.setdefault(
-                    row["modality_name"],
-                    AdmissionModality.objects.get_or_create(name=row["modality_name"])[0],
-                )
-            AdmissionResult.objects.create(
-                process=process,
-                major=major,
-                modality=modality,
-                candidate_code=row["candidate_code"],
-                last_names=row["last_names"],
-                given_names=row["given_names"],
-                score=row["score"],
-                merit=row["merit"],
-                status=row["status"],
-                source_file=row["source_file"],
-                import_batch=batch,
-            )
-        batch.status = ImportBatch.Status.COMPLETED
-        batch.imported_rows = summary["imported_rows"]
-        batch.error_message = "\n".join(errors)
-        batch.save(update_fields=["status", "imported_rows", "error_message", "updated_at"])
-        return batch
     except Exception as exc:
         batch.status = ImportBatch.Status.FAILED
         batch.error_message = str(exc)
         batch.save(update_fields=["status", "error_message", "updated_at"])
         raise
+
+
+def _replace_process_results(*, rows, errors, summary, batch, year, sequence):
+    process, _ = AdmissionProcess.objects.update_or_create(
+        year=year,
+        sequence=sequence,
+        defaults={"name": f"Admisión {year} — {sequence}", "is_published": True},
+    )
+    AdmissionResult.objects.filter(process=process).delete()
+    area_cache: dict[str, AcademicArea] = {}
+    faculty_cache: dict[str, Faculty] = {}
+    major_cache: dict[str, Major] = {}
+    modality_cache: dict[str, AdmissionModality] = {}
+    for row in rows:
+        area = area_cache.setdefault(
+            row["area_code"],
+            AcademicArea.objects.get_or_create(
+                code=row["area_code"], defaults={"name": row["area_name"]}
+            )[0],
+        )
+        faculty = faculty_cache.setdefault(
+            row["faculty_code"],
+            Faculty.objects.get_or_create(
+                code=row["faculty_code"],
+                academic_area=area,
+                defaults={"name": row["faculty_name"]},
+            )[0],
+        )
+        major = major_cache.setdefault(
+            row["major_code"],
+            Major.objects.get_or_create(
+                code=row["major_code"],
+                defaults={"name": row["major_name"], "faculty": faculty},
+            )[0],
+        )
+        modality = None
+        if row["modality_name"]:
+            modality = modality_cache.setdefault(
+                row["modality_name"],
+                AdmissionModality.objects.get_or_create(name=row["modality_name"])[0],
+            )
+        AdmissionResult.objects.create(
+            process=process,
+            major=major,
+            modality=modality,
+            candidate_code=row["candidate_code"],
+            last_names=row["last_names"],
+            given_names=row["given_names"],
+            score=row["score"],
+            merit=row["merit"],
+            status=row["status"],
+            source_file=row["source_file"],
+            import_batch=batch,
+        )
+    batch.status = ImportBatch.Status.COMPLETED
+    batch.imported_rows = summary["imported_rows"]
+    batch.error_message = "\n".join(errors)
+    batch.save(update_fields=["status", "imported_rows", "error_message", "updated_at"])
+    transaction.on_commit(invalidate_analytics_cache)
+    return batch

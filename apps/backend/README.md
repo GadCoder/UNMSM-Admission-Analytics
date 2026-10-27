@@ -16,6 +16,12 @@ The project defaults to SQLite when `DATABASE_URL` is unset. To use the local
 PostgreSQL container, copy the repository `.env.example` to `.env` and run the
 commands from the repository root with Docker Compose.
 
+Public analytics responses are cached for 60 seconds. Set `CACHE_REDIS_URL` to
+a Redis URL (for example, `redis://redis:6379/0`) in production to share entries
+and invalidation across API workers. Without it, Django uses a process-local
+cache; each worker remains correct but will warm its own cache. Cache failures
+fall through to the database, with the 60-second TTL bounding stale entries.
+
 ## Commands
 
 ```bash
