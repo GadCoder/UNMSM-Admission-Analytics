@@ -17,6 +17,9 @@ import controlsStyles from "../components/ResultsControls.module.css";
 import styles from "./CareerExplorerPage.module.css";
 
 type CareerBrowseProps = {
+  areasQuery: ReturnType<typeof api.useAcademicAreas>;
+  facultiesQuery: ReturnType<typeof api.useFaculties>;
+  modalitiesQuery: ReturnType<typeof api.useModalities>;
   processes: AdmissionProcess[];
   processId: string;
   onSelectProcess: (id: string) => void;
@@ -25,6 +28,9 @@ type CareerBrowseProps = {
 };
 
 export function CareerBrowse({
+  areasQuery,
+  facultiesQuery,
+  modalitiesQuery,
   processes,
   processId,
   onSelectProcess,
@@ -32,9 +38,6 @@ export function CareerBrowse({
   navigation,
 }: CareerBrowseProps) {
   const [params, setParams] = useSearchParams();
-  const areasQuery = api.useAcademicAreas();
-  const facultiesQuery = api.useFaculties();
-  const modalitiesQuery = api.useModalities();
   const academicArea = params.get("academic_area") ?? "";
   const faculty = params.get("faculty") ?? "";
   const query = params.get("q") ?? "";

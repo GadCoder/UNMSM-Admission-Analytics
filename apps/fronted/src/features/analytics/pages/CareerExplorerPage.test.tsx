@@ -189,6 +189,25 @@ describe("CareerExplorerPage route integration", () => {
     });
   });
 
+  it("starts independent browse catalogs while processes are still loading", () => {
+    vi.mocked(api.usePublishedProcesses).mockReturnValue({
+      ...ready(undefined),
+      data: undefined,
+      isPending: true,
+    } as unknown as ReturnType<typeof api.usePublishedProcesses>);
+    renderExplorer();
+    expect(screen.getByText("Cargando procesos…")).toBeInTheDocument();
+    expect(api.useAcademicAreas).toHaveBeenCalledWith(true);
+    expect(api.useFaculties).toHaveBeenCalledWith(true);
+    expect(api.useAnalyticsOverview).not.toHaveBeenCalled();
+  });
+
+  it("leaves browse-only catalogs disabled on a career detail route", () => {
+    renderExplorer("/carreras/42?process=24&modality=2");
+    expect(api.useAcademicAreas).toHaveBeenCalledWith(false);
+    expect(api.useFaculties).toHaveBeenCalledWith(false);
+  });
+
   it("syncs area and faculty choices to the URL and constrains faculties by area", async () => {
     const user = userEvent.setup();
     renderExplorer();

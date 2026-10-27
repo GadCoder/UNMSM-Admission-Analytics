@@ -23,6 +23,8 @@ export function CareerExplorerPage() {
   const [params, setParams] = useSearchParams();
   const processesQuery = api.usePublishedProcesses();
   const modalitiesQuery = api.useModalities();
+  const areasQuery = api.useAcademicAreas(!majorId);
+  const facultiesQuery = api.useFaculties(!majorId);
   const processes = processesQuery.data ?? [];
   const processId = params.get("process") ?? (processes[0] ? String(processes[0].id) : "");
   const modalities = modalitiesQuery.data ?? [];
@@ -172,6 +174,9 @@ export function CareerExplorerPage() {
         />
       ) : (
         <CareerBrowse
+          areasQuery={areasQuery}
+          facultiesQuery={facultiesQuery}
+          modalitiesQuery={modalitiesQuery}
           processes={processes}
           processId={processId}
           onSelectProcess={(id) => updateContext("process", id)}

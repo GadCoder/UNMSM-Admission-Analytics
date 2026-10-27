@@ -72,17 +72,18 @@ export function CareerComparisonPage() {
   const careerIdsValid =
     catalogReady && url.careerIds.every((id) => catalog.some((item) => item.id === id));
   const mayRequestDetails =
-    !url.tooManyCareers && url.malformedCareerIds.length === 0 && careerIdsValid;
+    !url.tooManyCareers && url.malformedCareerIds.length === 0 && (!catalogReady || careerIdsValid);
   const detailQueries = useQueries({
     queries:
       !mayRequestDetails || !selectedProcess || !modality
         ? []
         : url.careerIds.map((id) => ({
-            queryKey: ["major-detail", String(id), processId, [], modality],
+            ...api.majorHistoryQueryOptions(id, modality, processes),
             queryFn: () => api.getMajorDetail(id, processId, [], modality),
             enabled: Boolean(selectedProcess),
           })),
   });
+  api.useRefreshHistoryOnProcessChange(processId, detailQueries);
   const [search, setSearch] = useState("");
   const [areaId, setAreaId] = useState("");
   const [facultyId, setFacultyId] = useState("");
