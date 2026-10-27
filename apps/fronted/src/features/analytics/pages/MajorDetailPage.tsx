@@ -1,17 +1,13 @@
-import { useEffect } from "react";
-import { Link, useParams, useSearchParams } from "react-router-dom";
+import { useEffect, useRef } from "react";
+import type { ReactNode } from "react";
 
 import type { MajorDetailProcess, ProcessOverview } from "../api/analytics.types";
 import * as api from "../api/analytics";
-import { DashboardControls } from "../components/DashboardControls";
-import { SelectField } from "../components/SelectField";
 import { MajorDetailHistory } from "../components/MajorDetailHistory";
 import { canCompareMinimumScores } from "../components/metricHistory";
 import { MetricHistoryChart } from "../components/MetricHistoryChart";
 import { MajorDetailLoadingSkeleton } from "../components/LoadingSkeletons";
 import { KpiGrid } from "../components/KpiGrid";
-import { formatAdmissionModalityLabel, resolveAdmissionModality } from "../utils/admissionModality";
-import controlsStyles from "../components/ResultsControls.module.css";
 import styles from "./DashboardPage.module.css";
 
 const ROMAN_SEQUENCE_ORDER: Record<string, number> = { I: 1, II: 2, III: 3, IV: 4 };
@@ -34,87 +30,61 @@ function asProcessOverview(item: MajorDetailProcess): ProcessOverview {
   return { ...item, majors: [] };
 }
 
-export function MajorDetailPage() {
-  const { majorId = "" } = useParams();
-  const [params, setParams] = useSearchParams();
-  const modalitiesQuery = api.useModalities();
-  const modality = resolveAdmissionModality(params.get("modality"));
-  const processesQuery = api.usePublishedProcesses();
-  const processes = processesQuery.data ?? [];
-  const latest = processes[0];
-  const primary = params.get("process") ?? (latest ? String(latest.id) : "");
+type MajorDetailContentProps = {
+  majorId: string;
+  processId: string;
+  modality: string;
+  onSelectProcess: (id: number) => void;
+  focusHeading?: boolean;
+  headerControls?: ReactNode;
+};
 
-  const query = api.useMajorDetail(majorId, primary, [], modality);
+export function MajorDetailContent({ majorId, processId, modality, onSelectProcess, focusHeading = false, headerControls }: MajorDetailContentProps) {
+  const query = api.useMajorDetail(majorId, processId, [], modality);
   const detail = query.data;
   const selected = detail?.selected_processes ?? [];
-  const current = [...selected, ...(detail?.history ?? [])].find((item) => String(item.process.id) === primary);
+  const current = [...selected, ...(detail?.history ?? [])].find((item) => String(item.process.id) === processId);
 
-  const updateSelection = (nextPrimary: string) => {
-    const next = new URLSearchParams(params);
-    next.set("process", nextPrimary);
-    next.delete("compare");
-    setParams(next);
-  };
-
-  useEffect(() => {
-    const next = new URLSearchParams(params);
-    next.delete("compare");
-    if (latest && !params.get("process")) next.set("process", String(latest.id));
-    next.set("modality", modality);
-    if (next.toString() !== params.toString()) setParams(next, { replace: true });
-  }, [latest, modality, params, setParams]);
-
-  if (query.isPending) return <section className={styles.page}><MajorDetailLoadingSkeleton /></section>;
-  if (query.isError || !detail || !current) return <section className={styles.page}><p role="alert" className={styles.state}>No pudimos cargar el detalle de esta carrera.</p><Link className={styles.detailBack} to="/">Volver a la vista de proceso</Link></section>;
+  if (!processId) return <section className={styles.page}>
+    {detail && <CareerIdentity name={detail.major.name} faculty={detail.major.faculty} area={detail.major.academic_area} focusHeading={focusHeading} controls={headerControls} />}
+    <p className={styles.state}>Selecciona un proceso y una modalidad para consultar los resultados de esta carrera.</p>
+  </section>;
+  if (query.isPending && !detail) return <section className={styles.page}><MajorDetailLoadingSkeleton /></section>;
+  if (query.isError && !detail) return <section className={styles.page}>
+    <p role="alert" className={styles.state}>No pudimos cargar el detalle de esta carrera.</p>
+    <button type="button" className={styles.detailBack} onClick={() => void query.refetch()}>Reintentar</button>
+  </section>;
+  if (!detail) return <section className={styles.page}><MajorDetailLoadingSkeleton /></section>;
 
   const byProcessId = new Map<number, MajorDetailProcess>();
   for (const item of [...(detail.history ?? []), ...selected]) byProcessId.set(item.process.id, item);
   const timeline = [...byProcessId.values()].sort(compareProcessPeriod);
   const historyTimeline = [...timeline].reverse();
-  const previous = timeline.filter((item) => compareProcessPeriod(item, current) < 0).at(-1);
-  const currentOverview = asProcessOverview(current);
-
+  const selectedProcess = current ?? undefined;
+  const previous = selectedProcess ? timeline.filter((item) => compareProcessPeriod(item, selectedProcess) < 0).at(-1) : undefined;
 
   return <section className={styles.page} aria-label="Detalle de la carrera" aria-busy={query.isFetching}>
     {query.isFetching && <div role="status" className={styles.refreshingState}><span className={styles.spinner} aria-hidden="true" />Actualizando detalle…</div>}
-    <Link className={styles.detailBack} to={`/?process=${current.process.id}`}>← Volver a la vista de proceso</Link>
-    <header className={styles.hero}>
-      <div>
-        <h1>{detail.major.name}</h1>
-        <p className={styles.intro}>{detail.major.faculty} · {detail.major.academic_area}</p>
-      </div>
-    </header>
-    <section className={`${controlsStyles.toolbar} ${styles.processToolbar} ${styles.careerToolbar}`} aria-label="Contexto del análisis">
-      <DashboardControls processes={processes} primaryId={primary} onChange={updateSelection} />
-      <div className={styles.modalityControl}>
-        <SelectField label="Modalidad" aria-label="Modalidad" aria-description={modality} title={modality} value={modality} onChange={(event) => {
-          const next = new URLSearchParams(params);
-          next.set("modality", event.target.value);
-          setParams(next);
-        }}>
-          {!(modalitiesQuery.data ?? []).some((item) => item.name === modality)
-            && <option value={modality}>{formatAdmissionModalityLabel(modality)}</option>}
-          {(modalitiesQuery.data ?? []).map((item) => <option key={item.id} value={item.name} title={item.name}>{formatAdmissionModalityLabel(item.name)}</option>)}
-        </SelectField>
-      </div>
-    </section>
-
-    <KpiGrid variant="career" overview={currentOverview} previous={previous ? asProcessOverview(previous) : undefined} />
+    {query.isError && <p role="alert" className={styles.state}>No pudimos actualizar el detalle de esta carrera. <button type="button" onClick={() => void query.refetch()}>Reintentar</button></p>}
+    <CareerIdentity name={detail.major.name} faculty={detail.major.faculty} area={detail.major.academic_area} focusHeading={focusHeading} controls={headerControls} />
+    {selectedProcess ? <KpiGrid variant="career" overview={asProcessOverview(selectedProcess)} previous={previous ? asProcessOverview(previous) : undefined} />
+      : <p role="status" className={styles.state}>{query.isPlaceholderData ? "Consultando resultados del proceso y la modalidad seleccionados…" : "No hay resultados de esta carrera para el proceso y la modalidad seleccionados."}</p>}
     <MetricHistoryChart items={timeline} title="Evolución histórica de la carrera"
-      selectedProcessId={current.process.id}
-      defaultMetric={timeline.some((item) => item.process.id !== current.process.id && canCompareMinimumScores(current, item)) ? "minimum_admitted_score" : "total_results"}
+      selectedProcessId={selectedProcess?.process.id}
+      defaultMetric={selectedProcess && timeline.some((item) => item.process.id !== selectedProcess.process.id && canCompareMinimumScores(selectedProcess, item)) ? "minimum_admitted_score" : "total_results"}
     />
-
     <section className={`${styles.card} ${styles.comparisonCard}`} aria-labelledby="history-heading">
-      <header className={styles.comparisonCardHeader}>
-        <h2 id="history-heading" className={styles.comparisonSectionTitle}>Resultados históricos</h2>
-      </header>
-      <MajorDetailHistory
-        variant="career"
-        items={historyTimeline}
-        selectedProcessId={current.process.id}
-        onSelectProcess={(processId) => updateSelection(String(processId))}
-      />
+      <header className={styles.comparisonCardHeader}><h2 id="history-heading" className={styles.comparisonSectionTitle}>Resultados históricos</h2></header>
+      <MajorDetailHistory variant="career" items={historyTimeline} selectedProcessId={selectedProcess?.process.id} onSelectProcess={onSelectProcess} />
     </section>
   </section>;
+}
+
+function CareerIdentity({ name, faculty, area, focusHeading, controls }: { name: string; faculty: string; area: string; focusHeading: boolean; controls?: ReactNode }) {
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  useEffect(() => {
+    if (focusHeading) headingRef.current?.focus();
+  }, [focusHeading, name]);
+
+  return <header className={`${styles.hero} ${styles.careerIdentity}`}><div><h1 ref={headingRef} tabIndex={-1}>{name}</h1><p className={styles.intro}>{faculty} · {area}</p></div>{controls}</header>;
 }

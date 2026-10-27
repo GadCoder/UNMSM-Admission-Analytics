@@ -327,16 +327,17 @@ tbody tr:hover { background:#fdfafa; }
 .kpiTrendNeutral > span { color:var(--color-muted); }
 
 .detailProcessContext { gap:var(--space-3); }
+.careerIdentity { align-items:center; }
+.careerIdentity > div { flex:1 1 auto; min-width:0; }
+.hero .careerHeaderControls { display:grid; flex:0 1 42rem; grid-template-columns:repeat(2,minmax(0,1fr)); align-items:end; gap:var(--space-3); width:min(58vw,42rem); min-width:0; margin:0; padding:0; border:0; background:transparent; box-shadow:none; }
+.careerHeaderControls > * { min-width:0; }
 .detailModalityControl > label { display:flex; align-items:center; gap:.65rem; }
 .detailModalityControl > label > span { flex:0 0 auto; }
 .detailModalityControl select { flex:1; min-width:0; text-overflow:ellipsis; }
 
-@media (min-width:1000px) {
-  .hero .detailProcessContext {
-    grid-template-columns:minmax(15rem,.85fr) minmax(17rem,1.15fr);
-    width:min(58vw,42rem);
-    align-items:center;
-  }
+@media (max-width:600px) {
+  .hero.careerIdentity { align-items:center; flex-direction:row; gap:var(--space-3); }
+  .hero .careerHeaderControls { flex:0 1 55%; grid-template-columns:repeat(2,minmax(0,1fr)); width:55%; gap:var(--space-2); }
 }
 
 .kpiFootnote { margin:calc(-1 * var(--space-3)) 0 var(--space-5); color:var(--color-muted); font-size:.68rem; line-height:1.5; }

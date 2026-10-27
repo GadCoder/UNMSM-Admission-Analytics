@@ -106,12 +106,13 @@ describe("DashboardPage", () => {
       "Puntaje promedio*",
     ]);
     expect(screen.getByRole("table")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Encuentra tu carrera" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Vista comparativa" })).not.toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Comparación por procesos" })).not.toBeInTheDocument();
     expect(screen.getByText("50 postulantes · 12 admitidos")).toBeInTheDocument();
     const firstPerformanceCard = screen.getByTestId("major-performance-cards");
     const majorLink = within(firstPerformanceCard).getByRole("link", { name: "Ingeniería" });
-    expect(majorLink).toHaveAttribute("href", `/analytics/careers/1?${new URLSearchParams({ process: "1", modality: DEFAULT_ADMISSION_MODALITY })}`);
+    expect(majorLink).toHaveAttribute("href", `/carreras/1?${new URLSearchParams({ process: "1", returnTo: "/?process=1&modality=1", modality: "1" })}`);
     expect(within(firstPerformanceCard).queryByText("Ver más")).not.toBeInTheDocument();
     const metricsToggle = within(firstPerformanceCard).getByRole("button", { name: "Mostrar indicadores de Ingeniería" });
     expect(metricsToggle).toHaveAttribute("aria-expanded", "false");
@@ -421,7 +422,7 @@ describe("DashboardPage", () => {
     await waitFor(() => expect(screen.queryByRole("status", { name: "Ordenando carreras" })).not.toBeInTheDocument(), { timeout: 1000 });
     const rows = screen.getAllByRole("row");
     expect(rows[1]).toHaveTextContent("Derecho");
-    expect(within(table).getByRole("link", { name: "Derecho" })).toHaveAttribute("href", `/analytics/careers/2?${new URLSearchParams({ process: "1", modality: DEFAULT_ADMISSION_MODALITY })}`);
+    expect(within(table).getByRole("link", { name: "Derecho" })).toHaveAttribute("href", `/carreras/2?${new URLSearchParams({ process: "1", returnTo: "/?process=1&modality=1", modality: "1" })}`);
   });
   it("shows visible feedback while refreshing existing analytics", async () => {
     vi.mocked(api.useAnalyticsOverview).mockReturnValue({
@@ -470,7 +471,7 @@ describe("DashboardPage", () => {
 
   it("preserves an explicit modality across process changes and reloads, and resets to basic education", async () => {
     const user = userEvent.setup();
-    const view = renderPage("/?process=1&modality=Especial");
+    const view = renderPage("/?process=1&modality=2");
     await user.click(screen.getByLabelText(/Abrir filtros de carreras/));
     expect(screen.getByLabelText("Modalidad")).toHaveValue("Especial");
     await user.selectOptions(screen.getByLabelText("Proceso analizado"), "2");
