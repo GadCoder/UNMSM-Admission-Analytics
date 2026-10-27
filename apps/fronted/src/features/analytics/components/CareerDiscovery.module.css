@@ -1,3 +1,16 @@
+.discoveryLayout {
+  display: grid;
+  gap: var(--space-5);
+  min-width: 0;
+}
+.discoveryPanel {
+  min-width: 0;
+  padding: var(--space-5);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  background: var(--color-surface);
+  box-shadow: 0 4px 20px rgb(45 34 35 / 4%);
+}
 .searchWrap {
   position: relative;
 }
@@ -234,6 +247,9 @@
   outline-offset: 2px;
 }
 @media (max-width: 600px) {
+  .discoveryPanel {
+    padding: var(--space-4);
+  }
   .careerList {
     grid-template-columns: minmax(0, 1fr);
     padding: 0.15rem 0 0.65rem;
