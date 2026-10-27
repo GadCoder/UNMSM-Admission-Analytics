@@ -2,12 +2,13 @@ import { useId } from "react";
 
 import type { ProcessOverview } from "../api/analytics.types";
 import { formatNumber, formatSignedDifference } from "../utils/formatters";
-import { canCompareMinimumScores } from "./metricHistory";
-import { Kpi } from "./Kpi";
-import styles from "../pages/DashboardPage.module.css";
 import { formatProcessLabel } from "../utils/processLabels";
 import { AnalyticsSurface } from "./AnalyticsSurface";
+import { canCompareMinimumScores } from "./metricHistory";
+import { Kpi } from "./Kpi";
+import type { KpiTrendProps } from "./KpiTrend";
 import surfaceStyles from "./AnalyticsSurface.module.css";
+import styles from "../pages/DashboardPage.module.css";
 
 type KpiGridProps = {
   overview: ProcessOverview;
@@ -15,166 +16,158 @@ type KpiGridProps = {
   variant?: "process" | "career";
 };
 
-function trend(
-  value: number | null,
-  previous: number | null,
-  digits: number,
-  suffix: string,
-  label: string,
-  invert = false,
-) {
-  if (value === null || previous === null) return undefined;
-  const difference = value - previous;
-  const direction = difference > 0 ? "up" : difference < 0 ? "down" : "flat";
+type Metric = {
+  label: string;
+  value: string;
+  current: number | null;
+  previous: number | null;
+  digits: number;
+  suffix: string;
+  unit: string;
+  invert?: boolean;
+  neutral?: boolean;
+  description?: string;
+  footnoteId?: string;
+};
+
+function getTrend(metric: Metric, processLabel: string): KpiTrendProps | undefined {
+  if (metric.current === null || metric.previous === null) return undefined;
+
+  const difference = metric.current - metric.previous;
   return {
-    direction,
-    value: formatSignedDifference(difference, digits, suffix),
-    context: `vs ${formatNumber(previous, digits)}${label} en el proceso anterior`,
-    isPositive: invert ? difference <= 0 : difference >= 0,
-  } as const;
+    direction: difference > 0 ? "up" : difference < 0 ? "down" : "flat",
+    value: formatSignedDifference(difference, metric.digits, metric.suffix),
+    context: `vs ${formatNumber(metric.previous, metric.digits)}${metric.unit} en ${processLabel}`,
+    isPositive: metric.invert ? difference <= 0 : difference >= 0,
+    neutral: metric.neutral,
+  };
+}
+
+function score(value: string | null | undefined) {
+  if (value == null) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? parsed : null;
 }
 
 export function KpiGrid({ overview, previous, variant = "process" }: KpiGridProps) {
+  const career = variant === "career";
   const averageNoteId = useId();
   const averageNote = "El puntaje promedio considera solo a los ingresantes con puntaje válido.";
+  const previousLabel = previous ? formatProcessLabel(previous.process) : "el proceso anterior";
   const admissionRate = overview.total_results
     ? (overview.admitted_count / overview.total_results) * 100
     : 0;
   const previousRate = previous?.total_results
     ? (previous.admitted_count / previous.total_results) * 100
     : null;
-  const previousLabel = previous ? formatProcessLabel(previous.process) : "";
-  const withProcess = (item: ReturnType<typeof trend>) =>
-    item && { ...item, context: item.context.replace("el proceso anterior", previousLabel) };
-
-  const career = variant === "career";
-  const scoreTrend = (value: string | null, prior: string | null | undefined, neutral = career) => {
-    const item = withProcess(
-      trend(
-        value === null ? null : Number(value),
-        prior == null ? null : Number(prior),
-        2,
-        " pts",
-        " pts",
-      ),
-    );
-    return item && { ...item, neutral };
-  };
   const minimumAvailable = previous && canCompareMinimumScores(overview, previous);
-  const minimumTrend = minimumAvailable
-    ? {
-        ...withProcess(
-          trend(
-            overview.minimum_admitted_score!,
-            previous.minimum_admitted_score!,
-            2,
-            " pts",
-            " pts",
-          ),
-        )!,
-        neutral: true,
-      }
-    : undefined;
+  const minimum = overview.minimum_admitted_score;
   const minimumDescription =
     (overview.admitted_score_modality_count ?? 0) > 1
       ? "Hay ingresantes de distintas modalidades. Selecciona una modalidad para consultar su mínimo."
       : "Menor puntaje obtenido por un ingresante en este proceso.";
-  const average = (
-    <Kpi
-      label="Puntaje promedio"
-      value={formatNumber(overview.average_score, 2)}
-      trend={scoreTrend(overview.average_score, previous?.average_score, true)}
-      description={averageNote}
-      footnoteId={averageNoteId}
-    />
-  );
-  const highest = (
-    <Kpi
-      label="Puntaje máximo"
-      value={formatNumber(overview.highest_score, 2)}
-      trend={scoreTrend(overview.highest_score, previous?.highest_score)}
-      description={career ? "Máximo puntaje válido entre los ingresantes." : undefined}
-    />
-  );
 
-  const kpis = (
+  const metrics: Metric[] = [
+    {
+      label: "Postulantes",
+      value: formatNumber(overview.total_results),
+      current: overview.total_results,
+      previous: previous?.total_results ?? null,
+      digits: 0,
+      suffix: " postulantes",
+      unit: " postulantes",
+    },
+    ...(!career
+      ? [
+          {
+            label: "Postulantes ausentes",
+            value: formatNumber(overview.absent_count),
+            current: overview.absent_count,
+            previous: previous?.absent_count ?? null,
+            digits: 0,
+            suffix: " ausentes",
+            unit: " ausentes",
+            invert: true,
+          },
+        ]
+      : []),
+    {
+      label: "Ingresantes",
+      value: formatNumber(overview.admitted_count),
+      current: overview.admitted_count,
+      previous: previous?.admitted_count ?? null,
+      digits: 0,
+      suffix: " ingresantes",
+      unit: " ingresantes",
+    },
+    {
+      label: "Porcentaje de ingresantes",
+      value: `${formatNumber(admissionRate, 1)}%`,
+      current: admissionRate,
+      previous: previousRate,
+      digits: 1,
+      suffix: " pp",
+      unit: "%",
+    },
+    ...(career
+      ? [
+          {
+            label: "Puntaje mínimo de ingreso",
+            value: formatNumber(minimum != null && Number.isFinite(minimum) ? minimum : null, 2),
+            current: minimum != null && Number.isFinite(minimum) ? minimum : null,
+            previous:
+              minimumAvailable && previous.minimum_admitted_score != null
+                ? previous.minimum_admitted_score
+                : null,
+            digits: 2,
+            suffix: " pts",
+            unit: " pts",
+            neutral: true,
+            description: minimumDescription,
+          },
+        ]
+      : []),
+    {
+      label: "Puntaje promedio",
+      value: formatNumber(overview.average_score, 2),
+      current: score(overview.average_score),
+      previous: score(previous?.average_score),
+      digits: 2,
+      suffix: " pts",
+      unit: " pts",
+      neutral: career,
+      description: averageNote,
+      footnoteId: averageNoteId,
+    },
+    {
+      label: "Puntaje máximo",
+      value: formatNumber(overview.highest_score, 2),
+      current: score(overview.highest_score),
+      previous: score(previous?.highest_score),
+      digits: 2,
+      suffix: " pts",
+      unit: " pts",
+      neutral: career,
+      description: career ? "Máximo puntaje válido entre los ingresantes." : undefined,
+    },
+  ];
+
+  const grid = (
     <div
-      className={`${styles.kpis} ${!career ? styles.processKpiGrid : ""}`}
+      className={`${styles.kpis} ${career ? "" : styles.processKpiGrid}`}
       role="group"
       aria-label={career ? "Indicadores de la carrera" : "Indicadores del proceso"}
     >
-      <Kpi
-        label="Postulantes"
-        value={formatNumber(overview.total_results)}
-        trend={withProcess(
-          trend(
-            overview.total_results,
-            previous?.total_results ?? null,
-            0,
-            " postulantes",
-            " postulantes",
-            false,
-          ),
-        )}
-      />
-      {!career && (
+      {metrics.map((metric) => (
         <Kpi
-          label="Postulantes ausentes"
-          value={formatNumber(overview.absent_count)}
-          trend={withProcess(
-            trend(
-              overview.absent_count,
-              previous?.absent_count ?? null,
-              0,
-              " ausentes",
-              " ausentes",
-              true,
-            ),
-          )}
+          key={metric.label}
+          label={metric.label}
+          value={metric.value}
+          trend={getTrend(metric, previousLabel)}
+          description={metric.description}
+          footnoteId={metric.footnoteId}
         />
-      )}
-      <Kpi
-        label="Ingresantes"
-        value={formatNumber(overview.admitted_count)}
-        trend={withProcess(
-          trend(
-            overview.admitted_count,
-            previous?.admitted_count ?? null,
-            0,
-            " ingresantes",
-            " ingresantes",
-            false,
-          ),
-        )}
-      />
-      <Kpi
-        label="Porcentaje de ingresantes"
-        value={`${formatNumber(admissionRate, 1)}%`}
-        trend={withProcess(trend(admissionRate, previousRate, 1, " pp", "%", false))}
-      />
-      {career ? (
-        <>
-          <Kpi
-            label="Puntaje mínimo de ingreso"
-            value={formatNumber(
-              overview.minimum_admitted_score != null &&
-                Number.isFinite(overview.minimum_admitted_score)
-                ? overview.minimum_admitted_score
-                : null,
-              2,
-            )}
-            trend={minimumTrend}
-            description={minimumDescription}
-          />
-          {average}
-          {highest}
-        </>
-      ) : (
-        <>
-          {highest}
-          {average}
-        </>
-      )}
+      ))}
     </div>
   );
 
@@ -185,27 +178,26 @@ export function KpiGrid({ overview, previous, variant = "process" }: KpiGridProp
     </p>
   );
 
-  if (!career) {
+  if (career)
     return (
-      <AnalyticsSurface className={styles.processKpiSection} aria-labelledby="process-kpi-heading">
-        <header className={styles.processKpiHeader}>
-          <h2 id="process-kpi-heading" className={surfaceStyles.sectionTitle}>
-            Resumen del proceso
-          </h2>
-          {previousLabel && (
-            <p className={styles.kpiComparisonContext}>Variaciones respecto a {previousLabel}</p>
-          )}
-        </header>
-        {kpis}
+      <>
+        {grid}
         {footnote}
-      </AnalyticsSurface>
+      </>
     );
-  }
 
   return (
-    <>
-      {kpis}
+    <AnalyticsSurface className={styles.processKpiSection} aria-labelledby="process-kpi-heading">
+      <header className={styles.processKpiHeader}>
+        <h2 id="process-kpi-heading" className={surfaceStyles.sectionTitle}>
+          Resumen del proceso
+        </h2>
+        {previous && (
+          <p className={styles.kpiComparisonContext}>Variaciones respecto a {previousLabel}</p>
+        )}
+      </header>
+      {grid}
       {footnote}
-    </>
+    </AnalyticsSurface>
   );
 }
