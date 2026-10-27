@@ -11,10 +11,10 @@ const overview: ProcessOverview = {
   process: { id: 24, year: 2026, sequence: "1", name: "2026-1" }, total_results: 1000, admitted_count: 100,
   absent_count: 20, average_score: "70", highest_score: "100",
   majors: [
-    { major_id: 1, major_code: "MED", major_name: "Medicina Humana", total_results: 500, admitted_count: 50, absent_count: 0, average_score: "80" },
-    { major_id: 2, major_code: "DER", major_name: "Derecho", total_results: 300, admitted_count: 30, absent_count: 0, average_score: "70" },
-    { major_id: 3, major_code: "ING", major_name: "Ingeniería de Sistemas", total_results: 200, admitted_count: 20, absent_count: 0, average_score: "60" },
-    { major_id: 4, major_code: "ODO", major_name: "Odontología", total_results: 100, admitted_count: 10, absent_count: 0, average_score: "60" },
+    { major_id: 1, major_code: "MED", major_name: "Medicina Humana", total_results: 500, admitted_count: 50, absent_count: 0, average_score: "80", is_new: false },
+    { major_id: 2, major_code: "DER", major_name: "Derecho", total_results: 300, admitted_count: 30, absent_count: 0, average_score: "70", is_new: false },
+    { major_id: 3, major_code: "ING", major_name: "Ingeniería de Sistemas", total_results: 200, admitted_count: 20, absent_count: 0, average_score: "60", is_new: false },
+    { major_id: 4, major_code: "ODO", major_name: "Odontología", total_results: 100, admitted_count: 10, absent_count: 0, average_score: "60", is_new: false },
   ],
 };
 

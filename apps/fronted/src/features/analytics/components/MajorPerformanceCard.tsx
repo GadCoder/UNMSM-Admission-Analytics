@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import type { MajorOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
 import { careerDetailHref, type CareerNavigationContext } from "../utils/careerNavigation";
+import { NewMajorBadge } from "./NewMajorBadge";
 import styles from "../pages/DashboardPage.module.css";
 import { admissionRate } from "./majorPerformance.utils";
 
@@ -20,6 +21,7 @@ export function MajorPerformanceCard({ major, rank, processId, navigation }: Maj
         <Link className={styles.majorDetailLink} to={careerDetailHref(major.major_id, processId, navigation)}>
           <strong>{major.major_name}</strong>
         </Link>
+        {major.is_new && <NewMajorBadge />}
         <span>{formatNumber(major.total_results)} postulantes · {formatNumber(major.admitted_count)} admitidos</span>
       </span>
       <button

@@ -4,6 +4,7 @@ import { Link } from "react-router-dom";
 import type { MajorOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
 import { careerDetailHref, type CareerNavigationContext } from "../utils/careerNavigation";
+import { NewMajorBadge } from "./NewMajorBadge";
 import styles from "./CareerDiscovery.module.css";
 
 type CareerResultsProps = {
@@ -27,7 +28,7 @@ export function CareerResults({ majors, hasQuery, query, processId, navigation, 
     {hasQuery && <p className={styles.resultCount} role="status" aria-live="polite">{majors.length ? `${majors.length} ${majors.length === 1 ? "carrera encontrada" : "carreras encontradas"}.` : "No encontramos carreras con ese nombre."}</p>}
     {cards.length ? <ul className={styles.careerList} aria-label={hasQuery ? "Carreras coincidentes" : undefined}>{cards.map((major, index) => <li key={major.major_id}>
       <Link ref={hasQuery ? (node) => { resultLinkRefs.current[index] = node; } : undefined} className={styles.careerCard} to={careerDetailHref(major.major_id, Number(processId), navigation)} state={{ fromDiscovery: true }} onKeyDown={hasQuery ? onResultKeyDown : undefined}>
-        <span className={styles.careerName}>{major.major_name}</span>
+        <span className={styles.careerIdentity}><span className={styles.careerName}>{major.major_name}</span>{major.is_new && <NewMajorBadge />}</span>
         <svg className={styles.cardArrow} viewBox="0 0 16 16" aria-hidden="true"><path d="M4 12 12 4M5 4h7v7" /></svg>
         <span className={styles.metrics}>
           <span className={styles.rateMetric}><strong className={styles.rate}>{rate(major.admitted_count, major.total_results)}</strong><span>Tasa de ingreso</span></span>

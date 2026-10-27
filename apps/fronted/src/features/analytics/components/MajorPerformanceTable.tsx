@@ -4,6 +4,7 @@ import type { MajorOverview, ProcessOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
 import { careerDetailHref, type CareerNavigationContext } from "../utils/careerNavigation";
 import { formatProcessLabel } from "../utils/processLabels";
+import { NewMajorBadge } from "./NewMajorBadge";
 import { admissionRate, type SortDirection, type SortKey } from "./majorPerformance.utils";
 import styles from "../pages/DashboardPage.module.css";
 
@@ -35,7 +36,7 @@ export function MajorPerformanceTable({ majors, process, navigation, rankOffset 
       <tbody>
         {majors.map((major, index) => <tr key={major.major_id}>
           <td className={styles.performanceRank}>{String(rankOffset + index + 1).padStart(2, "0")}</td>
-          <th scope="row"><Link className={styles.majorDetailLink} to={careerDetailHref(major.major_id, process.id, navigation)}>{major.major_name}</Link></th>
+          <th scope="row"><Link className={styles.majorDetailLink} to={careerDetailHref(major.major_id, process.id, navigation)}>{major.major_name}</Link>{major.is_new && <NewMajorBadge />}</th>
           <td>{formatNumber(major.total_results)}</td>
           <td>{formatNumber(major.admitted_count)}</td>
           <td>{formatNumber(admissionRate(major), 1)}%</td>

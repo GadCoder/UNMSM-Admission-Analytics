@@ -7,6 +7,7 @@ import { MajorDetailHistory } from "../components/MajorDetailHistory";
 import { MetricHistoryChart } from "../components/MetricHistoryChart";
 import { MajorDetailLoadingSkeleton } from "../components/LoadingSkeletons";
 import { KpiGrid } from "../components/KpiGrid";
+import { NewMajorBadge } from "../components/NewMajorBadge";
 import styles from "./DashboardPage.module.css";
 
 const ROMAN_SEQUENCE_ORDER: Record<string, number> = { I: 1, II: 2, III: 3, IV: 4 };
@@ -45,7 +46,7 @@ export function MajorDetailContent({ majorId, processId, modality, onSelectProce
   const current = [...selected, ...(detail?.history ?? [])].find((item) => String(item.process.id) === processId);
 
   if (!processId) return <section className={styles.page}>
-    {detail && <CareerIdentity name={detail.major.name} faculty={detail.major.faculty} area={detail.major.academic_area} focusHeading={focusHeading} controls={headerControls} />}
+    {detail && <CareerIdentity name={detail.major.name} faculty={detail.major.faculty} area={detail.major.academic_area} isNew={detail.major.is_new} focusHeading={focusHeading} controls={headerControls} />}
     <p className={styles.state}>Selecciona un proceso y una modalidad para consultar los resultados de esta carrera.</p>
   </section>;
   if (query.isPending && !detail) return <section className={styles.page}><MajorDetailLoadingSkeleton /></section>;
@@ -65,7 +66,7 @@ export function MajorDetailContent({ majorId, processId, modality, onSelectProce
   return <section className={styles.page} aria-label="Detalle de la carrera" aria-busy={query.isFetching}>
     {query.isFetching && <div role="status" className={styles.refreshingState}><span className={styles.spinner} aria-hidden="true" />Actualizando detalle…</div>}
     {query.isError && <p role="alert" className={styles.state}>No pudimos actualizar el detalle de esta carrera. <button type="button" onClick={() => void query.refetch()}>Reintentar</button></p>}
-    <CareerIdentity name={detail.major.name} faculty={detail.major.faculty} area={detail.major.academic_area} focusHeading={focusHeading} controls={headerControls} />
+    <CareerIdentity name={detail.major.name} faculty={detail.major.faculty} area={detail.major.academic_area} isNew={detail.major.is_new} focusHeading={focusHeading} controls={headerControls} />
     {selectedProcess ? <KpiGrid variant="career" overview={asProcessOverview(selectedProcess)} previous={previous ? asProcessOverview(previous) : undefined} />
       : <p role="status" className={styles.state}>{query.isPlaceholderData ? "Consultando resultados del proceso y la modalidad seleccionados…" : "No hay resultados de esta carrera para el proceso y la modalidad seleccionados."}</p>}
     <MetricHistoryChart items={timeline} title="Evolución histórica de la carrera"
@@ -79,11 +80,11 @@ export function MajorDetailContent({ majorId, processId, modality, onSelectProce
   </section>;
 }
 
-function CareerIdentity({ name, faculty, area, focusHeading, controls }: { name: string; faculty: string; area: string; focusHeading: boolean; controls?: ReactNode }) {
+function CareerIdentity({ name, faculty, area, isNew, focusHeading, controls }: { name: string; faculty: string; area: string; isNew: boolean; focusHeading: boolean; controls?: ReactNode }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
     if (focusHeading) headingRef.current?.focus();
   }, [focusHeading, name]);
 
-  return <header className={`${styles.hero} ${styles.careerIdentity}`}><div><h1 ref={headingRef} tabIndex={-1}>{name}</h1><p className={styles.intro}>{faculty} · {area}</p></div>{controls}</header>;
+  return <header className={`${styles.hero} ${styles.careerIdentity}`}><div><h1 ref={headingRef} tabIndex={-1}>{name}{isNew && <NewMajorBadge />}</h1><p className={styles.intro}>{faculty} · {area}</p></div>{controls}</header>;
 }

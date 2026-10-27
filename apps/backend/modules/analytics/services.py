@@ -74,6 +74,18 @@ def _aggregate_majors(results):
     return majors_by_process
 
 
+def _new_major_ids():
+    """Return majors with results in exactly one published process."""
+    counts = (
+        AdmissionResult.objects.filter(process__is_published=True)
+        .values("major_id")
+        .annotate(process_count=Count("process_id", distinct=True))
+        .filter(process_count=1)
+        .values_list("major_id", flat=True)
+    )
+    return set(counts)
+
+
 def _build_overviews(processes, totals_by_process, majors_by_process):
     return [
         {
@@ -105,11 +117,16 @@ def _aggregate_overviews(processes, *, academic_area=None, faculty=None, modalit
         faculty=faculty,
         modality=modality,
     )
-    return _build_overviews(
+    overviews = _build_overviews(
         processes,
         _aggregate_totals(results),
         _aggregate_majors(results),
     )
+    new_major_ids = _new_major_ids()
+    for overview in overviews:
+        for major in overview["majors"]:
+            major["is_new"] = major["major_id"] in new_major_ids
+    return overviews
 
 
 def latest_process_overview():
@@ -166,7 +183,13 @@ def process_history(*, academic_area=None, faculty=None, modality=None):
 
 
 def major_detail(major_id, selected_process_ids, *, modality=None):
-    major = Major.objects.select_related("faculty__academic_area").get(
+    major = Major.objects.select_related("faculty__academic_area").annotate(
+        published_process_count=Count(
+            "results__process_id",
+            filter=Q(results__process__is_published=True),
+            distinct=True,
+        )
+    ).get(
         id=major_id, is_active=True
     )
     processes = list(
@@ -200,6 +223,7 @@ def major_detail(major_id, selected_process_ids, *, modality=None):
             "name": major.name,
             "faculty": major.faculty.name,
             "academic_area": major.faculty.academic_area.name,
+            "is_new": major.published_process_count == 1,
         },
         "selected_processes": selected,
         "history": history,
