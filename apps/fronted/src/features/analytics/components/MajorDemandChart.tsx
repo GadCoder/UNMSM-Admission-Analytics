@@ -1,5 +1,4 @@
-import type { MajorOverview, ProcessOverview } from "../api/analytics.types";
-import { formatProcessLabel } from "../utils/processLabels";
+import type { MajorOverview } from "../api/analytics.types";
 import styles from "../pages/DashboardPage.module.css";
 import { AnalyticsSurface } from "./AnalyticsSurface";
 import { MajorDemandMatrix } from "./MajorDemandMatrix";
@@ -7,23 +6,17 @@ import { createDemandChartModel, describeDemandInsight } from "./majorDemandRank
 
 type MajorDemandChartProps = {
   majors: MajorOverview[];
-  process: ProcessOverview["process"];
 };
 
-export function MajorDemandChart({ majors, process }: MajorDemandChartProps) {
-  const processLabel = formatProcessLabel(process);
+export function MajorDemandChart({ majors }: MajorDemandChartProps) {
   const model = createDemandChartModel(majors);
-  const selectionLabel = majors.length === 1
-    ? "La carrera con más postulantes"
-    : `Las ${majors.length} carreras con más postulantes`;
 
   return (
     <AnalyticsSurface className={styles.demandChart} aria-labelledby="demand-map-heading">
       <div className={styles.demandChartHeader}>
-        <h2 id="demand-map-heading">Mapa de demanda y admisión</h2>
-        <p>
-          {majors.length ? `${selectionLabel} en ${processLabel}, según los filtros aplicados.` : "No hay carreras disponibles con los filtros aplicados."}
-        </p>
+        <h2 id="demand-map-heading">¿Qué carreras tienen mayor competencia?</h2>
+        <p>Las 6 carreras con más postulantes, según los filtros aplicados.</p>
+        <p>Cada punto representa una carrera. Más a la derecha = más postulantes; más abajo = menor tasa de ingreso.</p>
       </div>
       {majors.length > 0 && <>
         <div className={styles.demandMapInsight}>
