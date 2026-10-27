@@ -23,7 +23,7 @@
   padding: 0.55rem 0.9rem;
   border: 1px solid var(--color-primary);
   border-radius: var(--radius-md);
-  color: var(--color-primary-dark);
+  color: var(--color-text);
   font-size: 0.82rem;
   font-weight: 700;
   text-decoration: none;
@@ -229,6 +229,7 @@
 .summaryGrid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
+  align-items: stretch;
   gap: var(--space-3);
   margin: 0;
   padding: 0;
@@ -236,8 +237,9 @@
 }
 .summaryGrid li {
   display: grid;
-  align-content: start;
-  gap: 0.38rem;
+  grid-template-rows: minmax(2.1em, auto) minmax(2.4em, 1fr) auto auto;
+  align-content: stretch;
+  gap: 0.25rem;
   min-width: 0;
   padding: var(--space-4);
   border: 1px solid var(--color-border);
@@ -245,11 +247,15 @@
   background: #fdfbfb;
 }
 .summaryGrid span {
+  min-height: 2.1em;
   color: var(--color-muted);
   font-size: 0.72rem;
   font-weight: 700;
+  line-height: 1.25;
 }
 .summaryGrid strong {
+  align-self: start;
+  min-height: 2.4em;
   overflow-wrap: anywhere;
   color: var(--color-primary-dark);
   font-size: 0.92rem;
@@ -260,6 +266,23 @@
   color: var(--color-muted);
   font-size: 0.75rem;
   font-style: normal;
+}
+.summaryGrid .summaryValue {
+  display: block;
+  justify-self: start;
+  width: auto;
+  margin-top: 0.15rem;
+  color: var(--color-text);
+  font-size: 0.84rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.25;
+}
+.summaryValueUnit {
+  margin-left: 0.12em;
+  color: var(--color-muted);
+  font-size: 0.8em;
+  font-weight: 600;
 }
 .disclaimer {
   margin: 0;
@@ -641,14 +664,14 @@
     grid-template-columns: minmax(0, 1fr);
   }
   .summaryGrid li {
-    grid-template-columns: minmax(0, 1fr) auto;
+    grid-template-columns: minmax(0, 1fr);
   }
   .summaryGrid span,
   .summaryGrid em {
     grid-column: 1/-1;
   }
   .summaryGrid small {
-    text-align: right;
+    text-align: left;
   }
   .scoreTable thead {
     position: absolute;
