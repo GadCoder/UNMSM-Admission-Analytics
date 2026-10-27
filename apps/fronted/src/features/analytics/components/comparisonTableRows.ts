@@ -25,7 +25,10 @@ export function buildComparisonMetricRows(
     },
     {
       label: "Porcentaje de ausentes",
-      values: overviews.map((overview) => `${formatNumber(percentage(overview.absent_count, overview.total_results), 1)}%`),
+      values: overviews.map(
+        (overview) =>
+          `${formatNumber(percentage(overview.absent_count, overview.total_results), 1)}%`,
+      ),
       comparison: metricValues.absentRate,
     },
     {
@@ -35,23 +38,33 @@ export function buildComparisonMetricRows(
     },
     {
       label: "Porcentaje de ingresantes",
-      values: overviews.map((overview) => `${formatNumber(percentage(overview.admitted_count, overview.total_results), 1)}%`),
+      values: overviews.map(
+        (overview) =>
+          `${formatNumber(percentage(overview.admitted_count, overview.total_results), 1)}%`,
+      ),
       comparison: metricValues.admissionRate,
     },
     {
       label: "Puntaje máximo",
-      values: overviews.map((overview) => overview.highest_score === null ? "—" : formatNumber(Number(overview.highest_score), 2)),
+      values: overviews.map((overview) =>
+        overview.highest_score === null ? "—" : formatNumber(Number(overview.highest_score), 2),
+      ),
       comparison: metricValues.highest,
     },
     {
       label: "Puntaje promedio",
-      values: overviews.map((overview) => overview.average_score === null ? "—" : formatNumber(Number(overview.average_score), 2)),
+      values: overviews.map((overview) =>
+        overview.average_score === null ? "—" : formatNumber(Number(overview.average_score), 2),
+      ),
       comparison: metricValues.average,
     },
   ];
 }
 
-export function comparisonExtremum(row: ComparisonMetricRow, index: number): "maximum" | "minimum" | undefined {
+export function comparisonExtremum(
+  row: ComparisonMetricRow,
+  index: number,
+): "maximum" | "minimum" | undefined {
   const value = row.comparison[index];
   const values = row.comparison.filter((item): item is number => item !== null);
   if (value === null || values.length < 2) return undefined;

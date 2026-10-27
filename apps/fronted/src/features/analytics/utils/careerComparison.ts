@@ -42,54 +42,92 @@ export function hasSingleKnownScoreModality(item: CareerComparisonRecord): boole
 }
 
 /** Score aggregates describe admitted students and are only comparable with known matching populations. */
-export function canCompareAdmittedScores(left: CareerComparisonRecord, right: CareerComparisonRecord): boolean {
-  return hasSingleKnownScoreModality(left) && hasSingleKnownScoreModality(right)
-    && left.admitted_score_modality === right.admitted_score_modality;
+export function canCompareAdmittedScores(
+  left: CareerComparisonRecord,
+  right: CareerComparisonRecord,
+): boolean {
+  return (
+    hasSingleKnownScoreModality(left) &&
+    hasSingleKnownScoreModality(right) &&
+    left.admitted_score_modality === right.admitted_score_modality
+  );
 }
 
 /** Preserve the existing minimum-score rule: compare only finite minima from one known modality. */
-export function canCompareMinimumScores(left: CareerComparisonRecord, right: CareerComparisonRecord): boolean {
-  return finite(left.minimum_admitted_score) !== null && finite(right.minimum_admitted_score) !== null
-    && canCompareAdmittedScores(left, right);
+export function canCompareMinimumScores(
+  left: CareerComparisonRecord,
+  right: CareerComparisonRecord,
+): boolean {
+  return (
+    finite(left.minimum_admitted_score) !== null &&
+    finite(right.minimum_admitted_score) !== null &&
+    canCompareAdmittedScores(left, right)
+  );
 }
 
-function getScore(item: CareerComparisonRecord, key: "minimum_admitted_score" | "average_score" | "highest_score") {
+function getScore(
+  item: CareerComparisonRecord,
+  key: "minimum_admitted_score" | "average_score" | "highest_score",
+) {
   if (!hasSingleKnownScoreModality(item)) return null;
   return finite(item[key]);
 }
 
-const hasRecordedResults = (item: CareerComparisonRecord) => Number.isFinite(item.total_results) && item.total_results > 0;
+const hasRecordedResults = (item: CareerComparisonRecord) =>
+  Number.isFinite(item.total_results) && item.total_results > 0;
 
-const metricReaders: Record<CareerComparisonMetricKey, (item: CareerComparisonRecord | null | undefined) => number | null> = {
-  admission_rate: (item) => item && item.total_results > 0 ? finite(item.admitted_count / item.total_results * 100) : null,
-  total_results: (item) => item && hasRecordedResults(item) ? finite(item.total_results) : null,
-  admitted_count: (item) => item && hasRecordedResults(item) ? finite(item.admitted_count) : null,
-  absent_count: (item) => item && hasRecordedResults(item) ? finite(item.absent_count) : null,
-  applicants_per_admitted: (item) => item && item.admitted_count > 0 ? finite(item.total_results / item.admitted_count) : null,
-  minimum_admitted_score: (item) => item ? getScore(item, "minimum_admitted_score") : null,
-  average_score: (item) => item ? getScore(item, "average_score") : null,
-  highest_score: (item) => item ? getScore(item, "highest_score") : null,
+const metricReaders: Record<
+  CareerComparisonMetricKey,
+  (item: CareerComparisonRecord | null | undefined) => number | null
+> = {
+  admission_rate: (item) =>
+    item && item.total_results > 0
+      ? finite((item.admitted_count / item.total_results) * 100)
+      : null,
+  total_results: (item) => (item && hasRecordedResults(item) ? finite(item.total_results) : null),
+  admitted_count: (item) => (item && hasRecordedResults(item) ? finite(item.admitted_count) : null),
+  absent_count: (item) => (item && hasRecordedResults(item) ? finite(item.absent_count) : null),
+  applicants_per_admitted: (item) =>
+    item && item.admitted_count > 0 ? finite(item.total_results / item.admitted_count) : null,
+  minimum_admitted_score: (item) => (item ? getScore(item, "minimum_admitted_score") : null),
+  average_score: (item) => (item ? getScore(item, "average_score") : null),
+  highest_score: (item) => (item ? getScore(item, "highest_score") : null),
 };
 
-export function getCareerComparisonMetricValue(item: CareerComparisonRecord | null | undefined, metric: CareerComparisonMetricKey): number | null {
+export function getCareerComparisonMetricValue(
+  item: CareerComparisonRecord | null | undefined,
+  metric: CareerComparisonMetricKey,
+): number | null {
   return metricReaders[metric](item);
 }
 
-export function formatCareerComparisonMetric(value: number | null, metric: CareerComparisonMetricKey, precision?: number): string {
+export function formatCareerComparisonMetric(
+  value: number | null,
+  metric: CareerComparisonMetricKey,
+  precision?: number,
+): string {
   if (value === null || !Number.isFinite(value)) return "—";
   const option = CAREER_COMPARISON_METRICS.find((item) => item.key === metric);
   return `${formatNumber(value, precision ?? option?.digits ?? 0)}${option?.suffix ?? ""}`;
 }
 
 export type CareerMetricValue = { id: number; name: string; value: number | null };
-export type MetricRanking = { eligible: CareerMetricValue[]; minimum: CareerMetricValue[]; maximum: CareerMetricValue[]; scope: string | null; tied: boolean; precision: number };
+export type MetricRanking = {
+  eligible: CareerMetricValue[];
+  minimum: CareerMetricValue[];
+  maximum: CareerMetricValue[];
+  scope: string | null;
+  tied: boolean;
+  precision: number;
+};
 
 /** Build rank inputs and reject admitted-score comparisons across different known populations. */
 export function getComparableCareerMetricValues(
   records: Array<{ id: number; name: string; record?: CareerComparisonRecord | null }>,
   metric: CareerComparisonMetricKey,
 ): CareerMetricValue[] {
-  const scoreMetric = metric === "minimum_admitted_score" || metric === "average_score" || metric === "highest_score";
+  const scoreMetric =
+    metric === "minimum_admitted_score" || metric === "average_score" || metric === "highest_score";
   const eligible = records.flatMap(({ id, name, record }) => {
     const value = getCareerComparisonMetricValue(record, metric);
     return value === null || !Number.isFinite(value) ? [] : [{ id, name, record: record!, value }];
@@ -101,21 +139,46 @@ export function getComparableCareerMetricValues(
 }
 
 /** Rank raw finite values and avoid unique-winner claims when display precision hides a tie. */
-export function rankCareerMetric(values: CareerMetricValue[], metric: CareerComparisonMetricKey, selectedCount = values.length): MetricRanking {
+export function rankCareerMetric(
+  values: CareerMetricValue[],
+  metric: CareerComparisonMetricKey,
+  selectedCount = values.length,
+): MetricRanking {
   const eligible = values.filter((item) => item.value !== null && Number.isFinite(item.value));
-  if (eligible.length < 2) return { eligible, minimum: [], maximum: [], scope: null, tied: false, precision: CAREER_COMPARISON_METRICS.find((item) => item.key === metric)!.digits };
+  if (eligible.length < 2)
+    return {
+      eligible,
+      minimum: [],
+      maximum: [],
+      scope: null,
+      tied: false,
+      precision: CAREER_COMPARISON_METRICS.find((item) => item.key === metric)!.digits,
+    };
   let digits = CAREER_COMPARISON_METRICS.find((item) => item.key === metric)!.digits;
   const min = Math.min(...eligible.map(({ value }) => value!));
   const max = Math.max(...eligible.map(({ value }) => value!));
   const extremeIsHiddenByRounding = (extreme: number) => {
-    const matching = eligible.filter(({ value }) => Number(value!.toFixed(digits)) === Number(extreme.toFixed(digits)));
+    const matching = eligible.filter(
+      ({ value }) => Number(value!.toFixed(digits)) === Number(extreme.toFixed(digits)),
+    );
     return matching.some(({ value }) => value !== extreme);
   };
-  while (digits < 8 && (extremeIsHiddenByRounding(min) || extremeIsHiddenByRounding(max))) digits += 1;
+  while (digits < 8 && (extremeIsHiddenByRounding(min) || extremeIsHiddenByRounding(max)))
+    digits += 1;
   const minimum = eligible.filter(({ value }) => value === min);
   const maximum = eligible.filter(({ value }) => value === max);
-  const scope = eligible.length === selectedCount ? null : `Entre las carreras con datos (${eligible.length} de ${selectedCount})`;
-  return { eligible, minimum, maximum, scope, tied: minimum.length > 1 && maximum.length > 1 && min === max, precision: digits };
+  const scope =
+    eligible.length === selectedCount
+      ? null
+      : `Entre las carreras con datos (${eligible.length} de ${selectedCount})`;
+  return {
+    eligible,
+    minimum,
+    maximum,
+    scope,
+    tied: minimum.length > 1 && maximum.length > 1 && min === max,
+    precision: digits,
+  };
 }
 
 function romanValue(raw: string): number | null {
@@ -132,17 +195,29 @@ function romanValue(raw: string): number | null {
 }
 
 function sequenceValue(sequence: string): number {
-  const token = sequence.trim().split(/[-\s]+/).at(-1) ?? "";
+  const token =
+    sequence
+      .trim()
+      .split(/[-\s]+/)
+      .at(-1) ?? "";
   const numeric = Number(token);
   if (token && Number.isFinite(numeric)) return numeric;
   return romanValue(token) ?? Number.MAX_SAFE_INTEGER;
 }
 
 export function compareAdmissionProcesses(left: AdmissionProcess, right: AdmissionProcess): number {
-  return left.year - right.year || sequenceValue(left.sequence) - sequenceValue(right.sequence) || left.id - right.id;
+  return (
+    left.year - right.year ||
+    sequenceValue(left.sequence) - sequenceValue(right.sequence) ||
+    left.id - right.id
+  );
 }
 
-export function mergeCareerHistory<T extends CareerComparisonRecord>(selected: T[], history: T[], selectedProcessId?: number): T[] {
+export function mergeCareerHistory<T extends CareerComparisonRecord>(
+  selected: T[],
+  history: T[],
+  selectedProcessId?: number,
+): T[] {
   const byId = new Map<number, T>();
   const combined = [...history, ...selected];
   const cutoff = combined.find((item) => item.process.id === selectedProcessId)?.process;
@@ -153,13 +228,23 @@ export function mergeCareerHistory<T extends CareerComparisonRecord>(selected: T
   return [...byId.values()].sort((a, b) => compareAdmissionProcesses(a.process, b.process));
 }
 
-export type CareerComparisonSeries = { id: number | string; label: string; items: CareerComparisonRecord[] };
-export type AlignedCareerHistory = { processes: AdmissionProcess[]; series: Array<{ id: number | string; label: string; values: Array<number | null> }> };
+export type CareerComparisonSeries = {
+  id: number | string;
+  label: string;
+  items: CareerComparisonRecord[];
+};
+export type AlignedCareerHistory = {
+  processes: AdmissionProcess[];
+  series: Array<{ id: number | string; label: string; values: Array<number | null> }>;
+};
 
 const SERIES_COLORS = ["#8f5658", "#2e8b57", "#c58a2b", "#c54b4b", "#6f4043", "#6e5e5f"];
 
 /** Assign a never-reused session slot so removing or reordering careers keeps their identity. */
-export function assignCareerSeriesSlots(slotMap: Map<number | string, number>, ids: Array<number | string>): Map<number | string, number> {
+export function assignCareerSeriesSlots(
+  slotMap: Map<number | string, number>,
+  ids: Array<number | string>,
+): Map<number | string, number> {
   const nextMap = new Map(slotMap);
   let nextSlot = slotMap.size ? Math.max(...slotMap.values()) + 1 : 0;
   for (const id of ids) {
@@ -169,7 +254,9 @@ export function assignCareerSeriesSlots(slotMap: Map<number | string, number>, i
 }
 
 /** Keep identity assignments through adds, removals, and URL order changes during this mount. */
-export function useCareerSeriesSlots(ids: Array<number | string>): ReadonlyMap<number | string, number> {
+export function useCareerSeriesSlots(
+  ids: Array<number | string>,
+): ReadonlyMap<number | string, number> {
   const [slots, setSlots] = useState(() => new Map<number | string, number>());
   const reconciled = assignCareerSeriesSlots(slots, ids);
   if (reconciled !== slots) setSlots(reconciled);
@@ -180,55 +267,115 @@ export function getCareerSeriesStyle(slot: number) {
   const markerIndex = slot % 4;
   const color = SERIES_COLORS[slot % SERIES_COLORS.length];
   const bits = slot.toString(2);
-  const dash = slot === 0 ? "" : [...bits].flatMap((bit, index) => [bit === "1" ? "8" : "3", index === bits.length - 1 ? String(2 + bits.length) : "2"]).join(" ");
+  const dash =
+    slot === 0
+      ? ""
+      : [...bits]
+          .flatMap((bit, index) => [
+            bit === "1" ? "8" : "3",
+            index === bits.length - 1 ? String(2 + bits.length) : "2",
+          ])
+          .join(" ");
   return { color, markerIndex, dash };
 }
 
 export function getSharedHistoryCoverage(aligned: AlignedCareerHistory) {
-  const sharedProcessCount = aligned.processes.filter((_, index) => aligned.series.length > 0 && aligned.series.every((series) => series.values[index] !== null)).length;
-  return { sharedProcessCount, hasMinimumCoverage: aligned.series.length >= 2 && sharedProcessCount >= 2 };
+  const sharedProcessCount = aligned.processes.filter(
+    (_, index) =>
+      aligned.series.length > 0 && aligned.series.every((series) => series.values[index] !== null),
+  ).length;
+  return {
+    sharedProcessCount,
+    hasMinimumCoverage: aligned.series.length >= 2 && sharedProcessCount >= 2,
+  };
 }
 
-export function alignCareerHistory(series: CareerComparisonSeries[], processes: AdmissionProcess[], metric: CareerComparisonMetricKey, selectedProcessId?: number): AlignedCareerHistory {
+export function alignCareerHistory(
+  series: CareerComparisonSeries[],
+  processes: AdmissionProcess[],
+  metric: CareerComparisonMetricKey,
+  selectedProcessId?: number,
+): AlignedCareerHistory {
   const ordered = processes.toSorted(compareAdmissionProcesses);
-  const usesAdmittedScores = metric === "minimum_admitted_score" || metric === "average_score" || metric === "highest_score";
-  const knownModalities = new Set(series.flatMap(({ items }) => items.filter(hasSingleKnownScoreModality).map((item) => item.admitted_score_modality!)));
-  const selectedRows = selectedProcessId === undefined ? [] : series.map(({ items }) => items.find((item) => item.process.id === selectedProcessId));
-  const selectedKnownModalities = new Set(selectedRows.filter((item): item is CareerComparisonRecord => Boolean(item && hasSingleKnownScoreModality(item))).map((item) => item.admitted_score_modality!));
-  const selectedModality = !usesAdmittedScores ? null
-    : selectedRows.length > 0 && selectedRows.every((item): item is CareerComparisonRecord => Boolean(item && hasSingleKnownScoreModality(item))) && selectedKnownModalities.size === 1
+  const usesAdmittedScores =
+    metric === "minimum_admitted_score" || metric === "average_score" || metric === "highest_score";
+  const knownModalities = new Set(
+    series.flatMap(({ items }) =>
+      items.filter(hasSingleKnownScoreModality).map((item) => item.admitted_score_modality!),
+    ),
+  );
+  const selectedRows =
+    selectedProcessId === undefined
+      ? []
+      : series.map(({ items }) => items.find((item) => item.process.id === selectedProcessId));
+  const selectedKnownModalities = new Set(
+    selectedRows
+      .filter((item): item is CareerComparisonRecord =>
+        Boolean(item && hasSingleKnownScoreModality(item)),
+      )
+      .map((item) => item.admitted_score_modality!),
+  );
+  const selectedModality = !usesAdmittedScores
+    ? null
+    : selectedRows.length > 0 &&
+        selectedRows.every((item): item is CareerComparisonRecord =>
+          Boolean(item && hasSingleKnownScoreModality(item)),
+        ) &&
+        selectedKnownModalities.size === 1
       ? [...selectedKnownModalities][0]
-      : knownModalities.size === 1 ? [...knownModalities][0] : null;
+      : knownModalities.size === 1
+        ? [...knownModalities][0]
+        : null;
   return {
     processes: ordered,
     series: series.map(({ id, label, items }) => {
       const byId = new Map(items.map((item) => [item.process.id, item]));
-      return { id, label, values: ordered.map((process) => {
-        const item = byId.get(process.id);
-        if (usesAdmittedScores && (!selectedModality || !item || item.admitted_score_modality !== selectedModality)) return null;
-        return getCareerComparisonMetricValue(item, metric);
-      }) };
+      return {
+        id,
+        label,
+        values: ordered.map((process) => {
+          const item = byId.get(process.id);
+          if (
+            usesAdmittedScores &&
+            (!selectedModality || !item || item.admitted_score_modality !== selectedModality)
+          )
+            return null;
+          return getCareerComparisonMetricValue(item, metric);
+        }),
+      };
     }),
   };
 }
 
-export type SharedHistoryInsight = { careerIds: Array<number | string>; careerNames: string[]; uniqueMinimumCount: number; sharedProcessCount: number; period: string } | null;
+export type SharedHistoryInsight = {
+  careerIds: Array<number | string>;
+  careerNames: string[];
+  uniqueMinimumCount: number;
+  sharedProcessCount: number;
+  period: string;
+} | null;
 
 /** Find unique per-process minima only when every selected series has data across at least two shared processes. */
-export function getSharedHistoryMinimumInsight(aligned: AlignedCareerHistory): SharedHistoryInsight {
+export function getSharedHistoryMinimumInsight(
+  aligned: AlignedCareerHistory,
+): SharedHistoryInsight {
   const coverage = getSharedHistoryCoverage(aligned);
   if (!coverage.hasMinimumCoverage) return null;
-  const sharedIndexes = aligned.processes.map((_, index) => index).filter((index) => aligned.series.every((series) => series.values[index] !== null));
+  const sharedIndexes = aligned.processes
+    .map((_, index) => index)
+    .filter((index) => aligned.series.every((series) => series.values[index] !== null));
   const wins = aligned.series.map(() => 0);
   for (const index of sharedIndexes) {
     const values = aligned.series.map((series) => series.values[index]!);
     const minimum = Math.min(...values);
-    const winners = values.flatMap((value, seriesIndex) => value === minimum ? [seriesIndex] : []);
+    const winners = values.flatMap((value, seriesIndex) =>
+      value === minimum ? [seriesIndex] : [],
+    );
     if (winners.length === 1) wins[winners[0]] += 1;
   }
   const maxWins = Math.max(...wins);
   if (maxWins === 0) return null;
-  const winners = wins.flatMap((count, index) => count === maxWins ? [index] : []);
+  const winners = wins.flatMap((count, index) => (count === maxWins ? [index] : []));
   const period = `${processPeriodLabel(aligned.processes[sharedIndexes[0]])}–${processPeriodLabel(aligned.processes[sharedIndexes.at(-1)!])}`;
   return {
     careerIds: winners.map((index) => aligned.series[index].id),
@@ -240,6 +387,8 @@ export function getSharedHistoryMinimumInsight(aligned: AlignedCareerHistory): S
 }
 
 function processPeriodLabel(process: AdmissionProcess) {
-  const sequence = process.sequence.includes("-") ? process.sequence.slice(process.sequence.lastIndexOf("-") + 1) : process.sequence;
+  const sequence = process.sequence.includes("-")
+    ? process.sequence.slice(process.sequence.lastIndexOf("-") + 1)
+    : process.sequence;
   return `${process.year}-${sequence}`;
 }

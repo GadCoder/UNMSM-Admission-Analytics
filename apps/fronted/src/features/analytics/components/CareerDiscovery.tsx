@@ -20,19 +20,44 @@ export type CareerDiscoveryProps = {
   filters?: ReactNode;
 };
 
-const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es").trim();
+const normalize = (value: string) =>
+  value
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLocaleLowerCase("es")
+    .trim();
 
-export function CareerDiscovery({ overview, processId, navigation, query, onQueryChange, showAll, onShowAllChange, status = "ready", onRetry, filters }: CareerDiscoveryProps) {
+export function CareerDiscovery({
+  overview,
+  processId,
+  navigation,
+  query,
+  onQueryChange,
+  showAll,
+  onShowAllChange,
+  status = "ready",
+  onRetry,
+  filters,
+}: CareerDiscoveryProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const resultLinkRefs = useRef<Array<HTMLAnchorElement | null>>([]);
-  const majors = useMemo(() => [...(overview?.majors ?? [])].sort((a, b) =>
-    b.total_results - a.total_results || a.major_name.localeCompare(b.major_name, "es") || a.major_id - b.major_id,
-  ), [overview?.majors]);
+  const majors = useMemo(
+    () =>
+      [...(overview?.majors ?? [])].sort(
+        (a, b) =>
+          b.total_results - a.total_results ||
+          a.major_name.localeCompare(b.major_name, "es") ||
+          a.major_id - b.major_id,
+      ),
+    [overview?.majors],
+  );
   const terms = normalize(query).split(/\s+/).filter(Boolean);
-  const matches = terms.length ? majors.filter((major) => {
-    const name = normalize(major.major_name);
-    return terms.every((term) => name.includes(term));
-  }) : [];
+  const matches = terms.length
+    ? majors.filter((major) => {
+        const name = normalize(major.major_name);
+        return terms.every((term) => name.includes(term));
+      })
+    : [];
   const hasQuery = terms.length > 0;
 
   const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
@@ -49,18 +74,34 @@ export function CareerDiscovery({ overview, processId, navigation, query, onQuer
     }
   };
 
-  return <PageBanner eyebrow="Explora tus opciones" title="Encuentra tu carrera" titleId="career-discovery-title" filters={filters}>
-    <CareerSearch query={query} status={status} inputRef={searchInputRef} onQueryChange={onQueryChange} onKeyDown={handleSearchKeyDown} onRetry={onRetry} />
-    {status === "ready" && <CareerResults
-      majors={hasQuery ? matches : majors}
-      hasQuery={hasQuery}
-      query={query}
-      processId={processId}
-      navigation={navigation}
-      showAll={showAll}
-      resultLinkRefs={resultLinkRefs}
-      onShowAllChange={onShowAllChange}
-      onResultKeyDown={handleResultKeyDown}
-    />}
-  </PageBanner>;
+  return (
+    <PageBanner
+      eyebrow="Explora tus opciones"
+      title="Encuentra tu carrera"
+      titleId="career-discovery-title"
+      filters={filters}
+    >
+      <CareerSearch
+        query={query}
+        status={status}
+        inputRef={searchInputRef}
+        onQueryChange={onQueryChange}
+        onKeyDown={handleSearchKeyDown}
+        onRetry={onRetry}
+      />
+      {status === "ready" && (
+        <CareerResults
+          majors={hasQuery ? matches : majors}
+          hasQuery={hasQuery}
+          query={query}
+          processId={processId}
+          navigation={navigation}
+          showAll={showAll}
+          resultLinkRefs={resultLinkRefs}
+          onShowAllChange={onShowAllChange}
+          onResultKeyDown={handleResultKeyDown}
+        />
+      )}
+    </PageBanner>
+  );
 }

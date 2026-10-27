@@ -1,21 +1,99 @@
-.page { min-width:0; padding:var(--space-3) 0; }
-.careerToolbar { grid-template-columns:10rem minmax(12rem,16rem) minmax(0,1fr); align-items:end; }
-.careerToolbar .filterControl, .careerToolbar .filterControl > div, .careerToolbar .filterControl > div > button { width:100%; }
-.modalityControl { min-width:0; }
-.modalityControl select { text-overflow:ellipsis; }
-.detailNavigation { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-3) var(--space-5); margin-bottom:var(--space-5); }
-.detailNavigation a { color:var(--color-primary); font-size:.8rem; text-underline-offset:.2em; }
-.detailNavigation .changeCareer { display:inline-flex; align-items:center; min-height:2.5rem; padding:.4rem .65rem; border-radius:var(--radius-sm); font-size:.78rem; font-weight:750; text-decoration:none; }
-.detailNavigation .changeCareer:hover { background:var(--color-primary-soft); color:var(--color-primary-dark); }
-.detailNavigation .changeCareer:focus-visible { outline:2px solid var(--color-primary); outline-offset:2px; }
-.notice button, .filterError button { min-height:2.75rem; padding:.45rem .7rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-surface); color:var(--color-primary); cursor:pointer; font:inherit; font-size:.78rem; }
-.notice button:hover, .filterError button:hover { border-color:var(--color-primary); }
-.filterError { margin:.8rem 0 0; color:var(--color-muted); font-size:.8rem; }
-.notice { display:flex; align-items:center; flex-wrap:wrap; gap:.6rem; margin:0 0 var(--space-5); color:var(--color-muted); font-size:.85rem; }
-.notice p { margin:0; }
-@media (max-width:600px) {
-  .careerToolbar { grid-template-columns:minmax(0,1fr) auto; gap:var(--space-3); }
-  .careerToolbar .modalityControl { display:none; }
-  .careerToolbar .filterControl { justify-self:end; width:auto; }
-  .careerToolbar .filterControl > div, .careerToolbar .filterControl > div > button { width:auto; }
+.page {
+  min-width: 0;
+  padding: var(--space-3) 0;
+}
+.careerToolbar {
+  grid-template-columns: 10rem minmax(12rem, 16rem) minmax(0, 1fr);
+  align-items: end;
+}
+.careerToolbar .filterControl,
+.careerToolbar .filterControl > div,
+.careerToolbar .filterControl > div > button {
+  width: 100%;
+}
+.modalityControl {
+  min-width: 0;
+}
+.modalityControl select {
+  text-overflow: ellipsis;
+}
+.detailNavigation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-3) var(--space-5);
+  margin-bottom: var(--space-5);
+}
+.detailNavigation a {
+  color: var(--color-primary);
+  font-size: 0.8rem;
+  text-underline-offset: 0.2em;
+}
+.detailNavigation .changeCareer {
+  display: inline-flex;
+  align-items: center;
+  min-height: 2.5rem;
+  padding: 0.4rem 0.65rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  font-weight: 750;
+  text-decoration: none;
+}
+.detailNavigation .changeCareer:hover {
+  background: var(--color-primary-soft);
+  color: var(--color-primary-dark);
+}
+.detailNavigation .changeCareer:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.notice button,
+.filterError button {
+  min-height: 2.75rem;
+  padding: 0.45rem 0.7rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-surface);
+  color: var(--color-primary);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.78rem;
+}
+.notice button:hover,
+.filterError button:hover {
+  border-color: var(--color-primary);
+}
+.filterError {
+  margin: 0.8rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.8rem;
+}
+.notice {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0 0 var(--space-5);
+  color: var(--color-muted);
+  font-size: 0.85rem;
+}
+.notice p {
+  margin: 0;
+}
+@media (max-width: 600px) {
+  .careerToolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: var(--space-3);
+  }
+  .careerToolbar .modalityControl {
+    display: none;
+  }
+  .careerToolbar .filterControl {
+    justify-self: end;
+    width: auto;
+  }
+  .careerToolbar .filterControl > div,
+  .careerToolbar .filterControl > div > button {
+    width: auto;
+  }
 }

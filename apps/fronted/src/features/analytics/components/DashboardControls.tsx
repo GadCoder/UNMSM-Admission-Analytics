@@ -13,9 +13,22 @@ export type DashboardControlsProps = {
 };
 
 export function DashboardControls({ processes, primaryId, onChange }: DashboardControlsProps) {
-  return <div className={styles.processControls} role="group" aria-label="Selección del proceso">
-    <SelectField wrapperClassName={styles.primaryControl} label="Proceso" id="primary-process" aria-label="Proceso analizado" value={primaryId} onChange={(event) => onChange(event.target.value)}>
-      {processes.map((process) => <option key={process.id} value={process.id}>{formatProcessLabel(process)}</option>)}
-    </SelectField>
-  </div>;
+  return (
+    <div className={styles.processControls} role="group" aria-label="Selección del proceso">
+      <SelectField
+        wrapperClassName={styles.primaryControl}
+        label="Proceso"
+        id="primary-process"
+        aria-label="Proceso analizado"
+        value={primaryId}
+        onChange={(event) => onChange(event.target.value)}
+      >
+        {processes.map((process) => (
+          <option key={process.id} value={process.id}>
+            {formatProcessLabel(process)}
+          </option>
+        ))}
+      </SelectField>
+    </div>
+  );
 }

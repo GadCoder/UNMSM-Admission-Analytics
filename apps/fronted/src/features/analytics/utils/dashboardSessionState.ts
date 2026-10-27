@@ -15,7 +15,11 @@ export function readDashboardView(): DashboardView {
     if (!saved) return emptyDashboardView;
     const parsed = JSON.parse(saved) as Partial<DashboardView>;
     return {
-      filters: { ...emptyDashboardView.filters, ...(parsed.filters ?? {}), modality: resolveAdmissionModality(parsed.filters?.modality) },
+      filters: {
+        ...emptyDashboardView.filters,
+        ...(parsed.filters ?? {}),
+        modality: resolveAdmissionModality(parsed.filters?.modality),
+      },
     };
   } catch {
     return emptyDashboardView;

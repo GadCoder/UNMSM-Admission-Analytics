@@ -28,8 +28,13 @@ export function parseCareerComparisonUrl(search: string): CareerComparisonUrlSta
     }
   }
   const allowedMetrics = new Set([
-    "admission_rate", "total_results", "admitted_count", "applicants_per_admitted",
-    "minimum_admitted_score", "average_score", "highest_score",
+    "admission_rate",
+    "total_results",
+    "admitted_count",
+    "applicants_per_admitted",
+    "minimum_admitted_score",
+    "average_score",
+    "highest_score",
   ]);
   const metric = params.get("metric") ?? "admission_rate";
   return {
@@ -41,7 +46,12 @@ export function parseCareerComparisonUrl(search: string): CareerComparisonUrlSta
   };
 }
 
-export function buildCareerComparisonHref(state: { careerIds: number[]; processId?: string; modalityId?: string; metric?: string }) {
+export function buildCareerComparisonHref(state: {
+  careerIds: number[];
+  processId?: string;
+  modalityId?: string;
+  metric?: string;
+}) {
   const params = new URLSearchParams();
   if (state.careerIds.length) params.set("careers", state.careerIds.join(","));
   if (state.processId) params.set("process", state.processId);

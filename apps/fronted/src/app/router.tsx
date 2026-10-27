@@ -10,7 +10,12 @@ import { NotFoundPage, RouteErrorPage } from "./RouteErrorPage";
 export const router = createBrowserRouter([
   {
     path: "/",
-    element: <><App /><ScrollRestoration /></>,
+    element: (
+      <>
+        <App />
+        <ScrollRestoration />
+      </>
+    ),
     errorElement: <RouteErrorPage />,
     children: [
       { index: true, element: <DashboardPage /> },

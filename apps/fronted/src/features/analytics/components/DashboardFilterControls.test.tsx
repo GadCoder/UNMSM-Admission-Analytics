@@ -4,13 +4,28 @@ import { DEFAULT_ADMISSION_MODALITY } from "../utils/admissionModality";
 import { DashboardFilterControls, type DashboardFilters } from "./DashboardFilterControls";
 
 vi.mock("./ResponsiveControlPanel", () => ({
-  ResponsiveControlPanel: ({ open, onClose, title, children, footer }: { open: boolean; onClose: () => void; title: string; children: React.ReactNode; footer?: React.ReactNode }) => open ? (
-    <section aria-label={title}>
-      <button type="button" onClick={onClose}>Cerrar panel</button>
-      {children}
-      {footer}
-    </section>
-  ) : null,
+  ResponsiveControlPanel: ({
+    open,
+    onClose,
+    title,
+    children,
+    footer,
+  }: {
+    open: boolean;
+    onClose: () => void;
+    title: string;
+    children: React.ReactNode;
+    footer?: React.ReactNode;
+  }) =>
+    open ? (
+      <section aria-label={title}>
+        <button type="button" onClick={onClose}>
+          Cerrar panel
+        </button>
+        {children}
+        {footer}
+      </section>
+    ) : null,
 }));
 
 const areas = [
@@ -21,7 +36,11 @@ const faculties = [
   { id: 1, code: "FA", name: "Facultad A", academic_area_id: 1 },
   { id: 2, code: "FB", name: "Facultad B", academic_area_id: 2 },
 ];
-const blank: DashboardFilters = { academicArea: "", faculty: "", modality: DEFAULT_ADMISSION_MODALITY };
+const blank: DashboardFilters = {
+  academicArea: "",
+  faculty: "",
+  modality: DEFAULT_ADMISSION_MODALITY,
+};
 const props = (overrides: Partial<React.ComponentProps<typeof DashboardFilterControls>> = {}) => ({
   areas,
   faculties,
@@ -33,7 +52,10 @@ const props = (overrides: Partial<React.ComponentProps<typeof DashboardFilterCon
 
 describe("DashboardFilterControls", () => {
   beforeEach(() => vi.useFakeTimers());
-  afterEach(() => { cleanup(); vi.useRealTimers(); });
+  afterEach(() => {
+    cleanup();
+    vi.useRealTimers();
+  });
 
   it("keeps the edited draft when the panel closes and reopens before debounce", () => {
     const onChange = vi.fn();

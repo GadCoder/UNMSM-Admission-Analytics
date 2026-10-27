@@ -16,40 +16,83 @@ type MajorBreakdownControlsProps = {
   onSortChange: (value: string) => void;
 };
 
-export function MajorBreakdownControls({ query, suggestionsOpen, suggestions, sortKey, sortDirection, onQueryChange, onSuggestionsOpenChange, onSortChange }: MajorBreakdownControlsProps) {
-  return <div className={styles.tableControls} aria-label="Búsqueda y orden de carreras">
-    <FormField className={styles.tableFilter} id="major-search" label="Buscar carrera">
-      <div className={styles.autocomplete}>
-        <TextInput
-          id="major-search"
-          type="search"
-          aria-label="Buscar carrera"
-          aria-autocomplete="list"
-          aria-controls="major-suggestions"
-          aria-expanded={suggestionsOpen && suggestions.length > 0}
-          placeholder="Busca por nombre"
-          value={query}
-          onFocus={() => onSuggestionsOpenChange(true)}
-          onBlur={() => window.setTimeout(() => onSuggestionsOpenChange(false), 120)}
-          onKeyDown={(event) => { if (event.key === "Escape") onSuggestionsOpenChange(false); }}
-          onChange={(event) => { onQueryChange(event.target.value); onSuggestionsOpenChange(true); }}
-        />
-        {suggestionsOpen && suggestions.length > 0 && <ul id="major-suggestions" className={styles.suggestions} role="listbox" aria-label="Carreras coincidentes">
-          {suggestions.map((major) => <li key={major.major_id} role="option" aria-selected={false}>
-            <button type="button" onMouseDown={(event) => event.preventDefault()} onClick={() => { onQueryChange(major.major_name); onSuggestionsOpenChange(false); }}>
-              <span>{major.major_name}</span><small>{formatNumber(major.total_results)} postulantes</small>
-            </button>
-          </li>)}
-        </ul>}
-      </div>
-    </FormField>
-    <SelectField label="Ordenar carreras" value={`${sortKey}-${sortDirection}`} onChange={(event) => onSortChange(event.target.value)}>
-      <option value="total_results-desc">Más postulantes</option><option value="total_results-asc">Menos postulantes</option>
-      <option value="admitted_count-desc">Más admitidos</option><option value="admitted_count-asc">Menos admitidos</option>
-      <option value="admission_rate-desc">Mayor tasa de admisión</option><option value="admission_rate-asc">Menor tasa de admisión</option>
-      <option value="absent_count-desc">Más ausentes</option><option value="absent_count-asc">Menos ausentes</option>
-      <option value="average_score-desc">Mayor promedio</option><option value="average_score-asc">Menor promedio</option>
-      <option value="major_name-asc">Nombre de carrera (A-Z)</option><option value="major_name-desc">Nombre de carrera (Z-A)</option>
-    </SelectField>
-  </div>;
+export function MajorBreakdownControls({
+  query,
+  suggestionsOpen,
+  suggestions,
+  sortKey,
+  sortDirection,
+  onQueryChange,
+  onSuggestionsOpenChange,
+  onSortChange,
+}: MajorBreakdownControlsProps) {
+  return (
+    <div className={styles.tableControls} aria-label="Búsqueda y orden de carreras">
+      <FormField className={styles.tableFilter} id="major-search" label="Buscar carrera">
+        <div className={styles.autocomplete}>
+          <TextInput
+            id="major-search"
+            type="search"
+            aria-label="Buscar carrera"
+            aria-autocomplete="list"
+            aria-controls="major-suggestions"
+            aria-expanded={suggestionsOpen && suggestions.length > 0}
+            placeholder="Busca por nombre"
+            value={query}
+            onFocus={() => onSuggestionsOpenChange(true)}
+            onBlur={() => window.setTimeout(() => onSuggestionsOpenChange(false), 120)}
+            onKeyDown={(event) => {
+              if (event.key === "Escape") onSuggestionsOpenChange(false);
+            }}
+            onChange={(event) => {
+              onQueryChange(event.target.value);
+              onSuggestionsOpenChange(true);
+            }}
+          />
+          {suggestionsOpen && suggestions.length > 0 && (
+            <ul
+              id="major-suggestions"
+              className={styles.suggestions}
+              role="listbox"
+              aria-label="Carreras coincidentes"
+            >
+              {suggestions.map((major) => (
+                <li key={major.major_id} role="option" aria-selected={false}>
+                  <button
+                    type="button"
+                    onMouseDown={(event) => event.preventDefault()}
+                    onClick={() => {
+                      onQueryChange(major.major_name);
+                      onSuggestionsOpenChange(false);
+                    }}
+                  >
+                    <span>{major.major_name}</span>
+                    <small>{formatNumber(major.total_results)} postulantes</small>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </FormField>
+      <SelectField
+        label="Ordenar carreras"
+        value={`${sortKey}-${sortDirection}`}
+        onChange={(event) => onSortChange(event.target.value)}
+      >
+        <option value="total_results-desc">Más postulantes</option>
+        <option value="total_results-asc">Menos postulantes</option>
+        <option value="admitted_count-desc">Más admitidos</option>
+        <option value="admitted_count-asc">Menos admitidos</option>
+        <option value="admission_rate-desc">Mayor tasa de admisión</option>
+        <option value="admission_rate-asc">Menor tasa de admisión</option>
+        <option value="absent_count-desc">Más ausentes</option>
+        <option value="absent_count-asc">Menos ausentes</option>
+        <option value="average_score-desc">Mayor promedio</option>
+        <option value="average_score-asc">Menor promedio</option>
+        <option value="major_name-asc">Nombre de carrera (A-Z)</option>
+        <option value="major_name-desc">Nombre de carrera (Z-A)</option>
+      </SelectField>
+    </div>
+  );
 }

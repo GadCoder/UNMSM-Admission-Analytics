@@ -11,8 +11,18 @@ type ActiveFilterChipsProps = {
 
 export function ActiveFilterChips({ filters, areas, faculties, onChange }: ActiveFilterChipsProps) {
   const selections = [
-    { key: "academicArea" as const, field: "Área académica", value: filters.academicArea, label: areas.find((area) => area.code === filters.academicArea)?.name ?? filters.academicArea },
-    { key: "faculty" as const, field: "Facultad", value: filters.faculty, label: faculties.find((faculty) => faculty.code === filters.faculty)?.name ?? filters.faculty },
+    {
+      key: "academicArea" as const,
+      field: "Área académica",
+      value: filters.academicArea,
+      label: areas.find((area) => area.code === filters.academicArea)?.name ?? filters.academicArea,
+    },
+    {
+      key: "faculty" as const,
+      field: "Facultad",
+      value: filters.faculty,
+      label: faculties.find((faculty) => faculty.code === filters.faculty)?.name ?? filters.faculty,
+    },
   ].filter((selection) => selection.value);
 
   if (!selections.length) return null;
@@ -21,8 +31,21 @@ export function ActiveFilterChips({ filters, areas, faculties, onChange }: Activ
     <ul className={styles.chips} aria-label="Filtros activos">
       {selections.map(({ key, field, label }) => (
         <li key={key}>
-          <button type="button" className={styles.chip} aria-label={`Quitar filtro ${field}: ${label}`} title={`${field}: ${label}`} onClick={() => onChange({ ...filters, [key]: "", ...(key === "academicArea" ? { faculty: "" } : {}) })}>
-            <span>{label}</span><span aria-hidden="true">×</span>
+          <button
+            type="button"
+            className={styles.chip}
+            aria-label={`Quitar filtro ${field}: ${label}`}
+            title={`${field}: ${label}`}
+            onClick={() =>
+              onChange({
+                ...filters,
+                [key]: "",
+                ...(key === "academicArea" ? { faculty: "" } : {}),
+              })
+            }
+          >
+            <span>{label}</span>
+            <span aria-hidden="true">×</span>
           </button>
         </li>
       ))}

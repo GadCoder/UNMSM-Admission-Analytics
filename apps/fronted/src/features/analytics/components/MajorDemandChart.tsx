@@ -15,17 +15,24 @@ export function MajorDemandChart({ majors }: MajorDemandChartProps) {
   return (
     <AnalyticsSurface className={styles.demandChart} aria-labelledby="demand-map-heading">
       <div className={styles.demandChartHeader}>
-        <h2 id="demand-map-heading" className={surfaceStyles.sectionTitle}>¿Qué carreras tienen mayor competencia?</h2>
+        <h2 id="demand-map-heading" className={surfaceStyles.sectionTitle}>
+          ¿Qué carreras tienen mayor competencia?
+        </h2>
         <p>Las 6 carreras con más postulantes, según los filtros aplicados.</p>
-        <p>Cada punto representa una carrera. Más a la derecha = más postulantes; más abajo = menor tasa de ingreso.</p>
+        <p>
+          Cada punto representa una carrera. Más a la derecha = más postulantes; más abajo = menor
+          tasa de ingreso.
+        </p>
       </div>
-      {majors.length > 0 && <>
-        <div className={styles.demandMapInsight}>
-          <strong>Dato destacado</strong>
-          <p>{describeDemandInsight(model.points)}</p>
-        </div>
-        <MajorDemandMatrix {...model} />
-      </>}
+      {majors.length > 0 && (
+        <>
+          <div className={styles.demandMapInsight}>
+            <strong>Dato destacado</strong>
+            <p>{describeDemandInsight(model.points)}</p>
+          </div>
+          <MajorDemandMatrix {...model} />
+        </>
+      )}
     </AnalyticsSurface>
   );
 }

@@ -10,20 +10,20 @@
 
 ### Color
 
-| Token | Value | Use |
-| --- | --- | --- |
-| `--color-background` | `#faf8f7` | Warm application background |
-| `--color-surface` | `#ffffff` | Cards, header, and elevated surfaces |
-| `--color-text` | `#2d2223` | Primary text and figures |
-| `--color-muted` | `#6e5e5f` | Metadata, descriptions, and labels |
-| `--color-border` | `#e8dfe0` | Dividers and subtle borders |
-| `--color-primary` | `#8f5658` | Primary action, active state, and accent |
-| `--color-primary-dark` | `#6f4043` | Hover state and brand contrast |
-| `--color-primary-soft` | `#f4eded` | Supporting and comparison backgrounds |
-| `--color-primary-pale` | `#eadcdd` | Subtle states and ordinal numbers |
-| `--color-success` | `#2e8b57` | Positive change and admission |
-| `--color-warning` | `#c58a2b` | Moderate alerts and waitlist states |
-| `--color-danger` | `#c54b4b` | Errors, rejection, or negative change |
+| Token                  | Value     | Use                                      |
+| ---------------------- | --------- | ---------------------------------------- |
+| `--color-background`   | `#faf8f7` | Warm application background              |
+| `--color-surface`      | `#ffffff` | Cards, header, and elevated surfaces     |
+| `--color-text`         | `#2d2223` | Primary text and figures                 |
+| `--color-muted`        | `#6e5e5f` | Metadata, descriptions, and labels       |
+| `--color-border`       | `#e8dfe0` | Dividers and subtle borders              |
+| `--color-primary`      | `#8f5658` | Primary action, active state, and accent |
+| `--color-primary-dark` | `#6f4043` | Hover state and brand contrast           |
+| `--color-primary-soft` | `#f4eded` | Supporting and comparison backgrounds    |
+| `--color-primary-pale` | `#eadcdd` | Subtle states and ordinal numbers        |
+| `--color-success`      | `#2e8b57` | Positive change and admission            |
+| `--color-warning`      | `#c58a2b` | Moderate alerts and waitlist states      |
+| `--color-danger`       | `#c54b4b` | Errors, rejection, or negative change    |
 
 Do not introduce arbitrary colors for decoration. Charts should primarily use the primary color and its soft tones, reserving semantic colors for actual meaning.
 

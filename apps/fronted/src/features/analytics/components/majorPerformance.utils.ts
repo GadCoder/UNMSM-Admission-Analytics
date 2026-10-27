@@ -1,6 +1,12 @@
 import type { MajorOverview } from "../api/analytics.types";
 
-export type SortKey = "total_results" | "admitted_count" | "admission_rate" | "absent_count" | "average_score" | "major_name";
+export type SortKey =
+  | "total_results"
+  | "admitted_count"
+  | "admission_rate"
+  | "absent_count"
+  | "average_score"
+  | "major_name";
 export type SortDirection = "asc" | "desc";
 
 export function admissionRate(major: MajorOverview) {
@@ -14,7 +20,11 @@ export function sortMajorValue(major: MajorOverview, sortKey: SortKey) {
   return major[sortKey];
 }
 
-export function sortMajors(majors: MajorOverview[], sortKey: SortKey, sortDirection: SortDirection) {
+export function sortMajors(
+  majors: MajorOverview[],
+  sortKey: SortKey,
+  sortDirection: SortDirection,
+) {
   return [...majors].sort((left, right) => {
     const leftValue = sortMajorValue(left, sortKey);
     const rightValue = sortMajorValue(right, sortKey);

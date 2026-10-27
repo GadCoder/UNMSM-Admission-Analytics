@@ -7,9 +7,9 @@ import {
   useId,
   useRef,
   useState,
-} from 'react';
-import { createPortal } from 'react-dom';
-import styles from './ResponsiveControlPanel.module.css';
+} from "react";
+import { createPortal } from "react-dom";
+import styles from "./ResponsiveControlPanel.module.css";
 
 export interface ResponsiveControlPanelProps {
   open: boolean;
@@ -18,23 +18,27 @@ export interface ResponsiveControlPanelProps {
   triggerRef: RefObject<HTMLButtonElement | null>;
   children: ReactNode;
   footer?: ReactNode;
-  size?: 'compact' | 'wide';
+  size?: "compact" | "wide";
 }
 
-const OPEN_EVENT = 'analytics-control-panel-open';
-const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+const OPEN_EVENT = "analytics-control-panel-open";
+const FOCUSABLE =
+  'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
 
 function useMobilePresentation() {
-  const [mobile, setMobile] = useState(() =>
-    typeof window !== 'undefined' && typeof window.matchMedia === 'function' && window.matchMedia('(max-width: 600px)').matches,
+  const [mobile, setMobile] = useState(
+    () =>
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(max-width: 600px)").matches,
   );
   useEffect(() => {
-    if (typeof window.matchMedia !== 'function') return;
-    const query = window.matchMedia('(max-width: 600px)');
+    if (typeof window.matchMedia !== "function") return;
+    const query = window.matchMedia("(max-width: 600px)");
     const update = () => setMobile(query.matches);
     update();
-    query.addEventListener?.('change', update);
-    return () => query.removeEventListener?.('change', update);
+    query.addEventListener?.("change", update);
+    return () => query.removeEventListener?.("change", update);
   }, []);
   return mobile;
 }
@@ -46,7 +50,7 @@ export function ResponsiveControlPanel({
   triggerRef,
   children,
   footer,
-  size = 'wide',
+  size = "wide",
 }: ResponsiveControlPanelProps) {
   const mobile = useMobilePresentation();
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -86,17 +90,17 @@ export function ResponsiveControlPanel({
         dialog.showModal();
       } catch {
         // jsdom and older browsers do not implement showModal.
-        dialog.setAttribute('open', '');
+        dialog.setAttribute("open", "");
       }
     }
     const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
+    document.body.style.overflow = "hidden";
     const focusTarget = dialog?.querySelector<HTMLElement>(FOCUSABLE);
     (focusTarget ?? dialog)?.focus();
     return () => {
       document.body.style.overflow = previousOverflow;
-      if (dialog?.open && typeof dialog.close === 'function') dialog.close();
-      else dialog?.removeAttribute('open');
+      if (dialog?.open && typeof dialog.close === "function") dialog.close();
+      else dialog?.removeAttribute("open");
     };
   }, [mobile, open]);
 
@@ -104,19 +108,19 @@ export function ResponsiveControlPanel({
     const panel = panelRef.current;
     if (!open || mobile || !panel) return;
     const position = () => {
-      panel.style.transform = '';
+      panel.style.transform = "";
       const rect = panel.getBoundingClientRect();
       const dx = Math.max(8 - rect.left, Math.min(0, window.innerWidth - 8 - rect.right));
       const dy = Math.max(8 - rect.top, Math.min(0, window.innerHeight - 8 - rect.bottom));
       panel.style.transform = `translate(${dx}px, ${dy}px)`;
     };
     position();
-    window.addEventListener('resize', position);
-    window.addEventListener('scroll', position, true);
+    window.addEventListener("resize", position);
+    window.addEventListener("scroll", position, true);
     return () => {
-      window.removeEventListener('resize', position);
-      window.removeEventListener('scroll', position, true);
-      panel.style.transform = '';
+      window.removeEventListener("resize", position);
+      window.removeEventListener("scroll", position, true);
+      panel.style.transform = "";
     };
   }, [open, mobile]);
 
@@ -126,24 +130,28 @@ export function ResponsiveControlPanel({
     first?.focus();
     const onPointerDown = (event: PointerEvent) => {
       const node = panelRef.current;
-      if (node && !node.contains(event.target as Node) && !triggerRef.current?.contains(event.target as Node)) {
+      if (
+        node &&
+        !node.contains(event.target as Node) &&
+        !triggerRef.current?.contains(event.target as Node)
+      ) {
         suppressRestoreRef.current = true;
         closeRef.current();
       }
     };
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === 'Escape') {
+      if (event.key === "Escape") {
         event.preventDefault();
         suppressRestoreRef.current = true;
         closeRef.current();
         restoreFocus();
       }
     };
-    document.addEventListener('pointerdown', onPointerDown);
-    document.addEventListener('keydown', onKeyDown);
+    document.addEventListener("pointerdown", onPointerDown);
+    document.addEventListener("keydown", onKeyDown);
     return () => {
-      document.removeEventListener('pointerdown', onPointerDown);
-      document.removeEventListener('keydown', onKeyDown);
+      document.removeEventListener("pointerdown", onPointerDown);
+      document.removeEventListener("keydown", onKeyDown);
     };
   }, [open, mobile, restoreFocus, triggerRef]);
 
@@ -170,27 +178,47 @@ export function ResponsiveControlPanel({
     return createPortal(
       <dialog
         ref={dialogRef}
-        className={`${styles.sheet} ${size === 'compact' ? styles.compact : ''}`}
+        className={`${styles.sheet} ${size === "compact" ? styles.compact : ""}`}
         aria-labelledby={titleId}
         aria-modal="true"
-        onCancel={(event) => { event.preventDefault(); close(); }}
-        onClick={(event) => { if (event.target === dialogRef.current) close(); }}
+        onCancel={(event) => {
+          event.preventDefault();
+          close();
+        }}
+        onClick={(event) => {
+          if (event.target === dialogRef.current) close();
+        }}
         onKeyDown={(event) => {
-          if (event.key === 'Escape') { event.preventDefault(); close(); return; }
-          if (event.key !== 'Tab') return;
+          if (event.key === "Escape") {
+            event.preventDefault();
+            close();
+            return;
+          }
+          if (event.key !== "Tab") return;
           const dialog = dialogRef.current;
           const items = dialog?.querySelectorAll<HTMLElement>(FOCUSABLE);
-          if (!items?.length) { event.preventDefault(); dialog?.focus(); return; }
+          if (!items?.length) {
+            event.preventDefault();
+            dialog?.focus();
+            return;
+          }
           const first = items[0];
           const last = items[items.length - 1];
-          if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last.focus(); }
-          else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first.focus(); }
+          if (event.shiftKey && document.activeElement === first) {
+            event.preventDefault();
+            last.focus();
+          } else if (!event.shiftKey && document.activeElement === last) {
+            event.preventDefault();
+            first.focus();
+          }
         }}
       >
         <div className={styles.sheetContent}>
           <header className={styles.header}>
             <h2 id={titleId}>{title}</h2>
-            <button className={styles.close} type="button" aria-label="Cerrar" onClick={close}>×</button>
+            <button className={styles.close} type="button" aria-label="Cerrar" onClick={close}>
+              ×
+            </button>
           </header>
           <div className={styles.body}>{children}</div>
           {footer != null && <div className={styles.footer}>{footer}</div>}
@@ -201,10 +229,18 @@ export function ResponsiveControlPanel({
   }
 
   return (
-    <div ref={panelRef} className={`${styles.popover} ${size === 'compact' ? styles.compact : ''}`} role="dialog" aria-modal="false" aria-label={title}>
+    <div
+      ref={panelRef}
+      className={`${styles.popover} ${size === "compact" ? styles.compact : ""}`}
+      role="dialog"
+      aria-modal="false"
+      aria-label={title}
+    >
       <header className={styles.desktopHeader}>
         <h2 id={titleId}>{title}</h2>
-        <button className={styles.close} type="button" aria-label="Cerrar" onClick={close}>×</button>
+        <button className={styles.close} type="button" aria-label="Cerrar" onClick={close}>
+          ×
+        </button>
       </header>
       <div className={styles.body}>{children}</div>
       {footer != null && <div className={styles.footer}>{footer}</div>}

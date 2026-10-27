@@ -1,2 +1,8 @@
-.processControls { display:contents; }
-.primaryControl { order:0; width:100%; min-width:0; }
+.processControls {
+  display: contents;
+}
+.primaryControl {
+  order: 0;
+  width: 100%;
+  min-width: 0;
+}

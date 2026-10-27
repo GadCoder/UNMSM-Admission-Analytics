@@ -11,12 +11,21 @@ describe("career comparison URL state", () => {
   });
 
   it("recovers unsupported metrics to admission rate", () => {
-    expect(parseCareerComparisonUrl("?metric=unknown")).toMatchObject({ metric: "admission_rate", invalidMetric: true });
+    expect(parseCareerComparisonUrl("?metric=unknown")).toMatchObject({
+      metric: "admission_rate",
+      invalidMetric: true,
+    });
     expect(parseCareerComparisonUrl("").invalidMetric).toBe(false);
   });
 
   it("builds a shareable URL while omitting defaults", () => {
-    expect(buildCareerComparisonHref({ careerIds: [12, 34], processId: "9", modalityId: "1", metric: "admission_rate" }))
-      .toBe("/comparar-carreras?careers=12%2C34&process=9&modality=1");
+    expect(
+      buildCareerComparisonHref({
+        careerIds: [12, 34],
+        processId: "9",
+        modalityId: "1",
+        metric: "admission_rate",
+      }),
+    ).toBe("/comparar-carreras?careers=12%2C34&process=9&modality=1");
   });
 });

@@ -1,17 +1,40 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { apiFetch } from "../../../shared/api/client";
-import type { AcademicArea, AdmissionProcess, ComparativeOverview, Faculty, MajorCatalogItem, MajorDetail, Modality, ProcessHistory } from "./analytics.types";
+import type {
+  AcademicArea,
+  AdmissionProcess,
+  ComparativeOverview,
+  Faculty,
+  MajorCatalogItem,
+  MajorDetail,
+  Modality,
+  ProcessHistory,
+} from "./analytics.types";
 
 export type AnalyticsFilters = { academicArea?: string; faculty?: string; modality?: string };
 
-export function getPublishedProcesses(): Promise<AdmissionProcess[]> { return apiFetch<AdmissionProcess[]>("/api/v1/processes/"); }
-export function getAcademicAreas(): Promise<AcademicArea[]> { return apiFetch<AcademicArea[]>("/api/v1/academic-areas/"); }
-export function getFaculties(): Promise<Faculty[]> { return apiFetch<Faculty[]>("/api/v1/faculties/"); }
-export function getModalities(): Promise<Modality[]> { return apiFetch<Modality[]>("/api/v1/modalities/"); }
-export function getMajorCatalog(): Promise<MajorCatalogItem[]> { return apiFetch<MajorCatalogItem[]>("/api/v1/majors/"); }
+export function getPublishedProcesses(): Promise<AdmissionProcess[]> {
+  return apiFetch<AdmissionProcess[]>("/api/v1/processes/");
+}
+export function getAcademicAreas(): Promise<AcademicArea[]> {
+  return apiFetch<AcademicArea[]>("/api/v1/academic-areas/");
+}
+export function getFaculties(): Promise<Faculty[]> {
+  return apiFetch<Faculty[]>("/api/v1/faculties/");
+}
+export function getModalities(): Promise<Modality[]> {
+  return apiFetch<Modality[]>("/api/v1/modalities/");
+}
+export function getMajorCatalog(): Promise<MajorCatalogItem[]> {
+  return apiFetch<MajorCatalogItem[]>("/api/v1/majors/");
+}
 
-export function getAnalyticsOverview(primary: string | number, comparisons: Array<string | number> = [], filters: AnalyticsFilters = {}): Promise<ComparativeOverview> {
+export function getAnalyticsOverview(
+  primary: string | number,
+  comparisons: Array<string | number> = [],
+  filters: AnalyticsFilters = {},
+): Promise<ComparativeOverview> {
   const params = new URLSearchParams({ process: String(primary) });
   if (comparisons.length) params.set("compare", comparisons.slice(0, 3).map(String).join(","));
   if (filters.academicArea) params.set("academic_area", filters.academicArea);
@@ -37,37 +60,65 @@ export function useProcessHistory(filters: AnalyticsFilters = {}) {
   });
 }
 
-export function usePublishedProcesses() { return useQuery({ queryKey: ["published-processes"], queryFn: getPublishedProcesses }); }
+export function usePublishedProcesses() {
+  return useQuery({ queryKey: ["published-processes"], queryFn: getPublishedProcesses });
+}
 
-export function getMajorDetail(majorId: string | number, primary: string | number, comparisons: Array<string | number> = [], modality?: string): Promise<MajorDetail> {
+export function getMajorDetail(
+  majorId: string | number,
+  primary: string | number,
+  comparisons: Array<string | number> = [],
+  modality?: string,
+): Promise<MajorDetail> {
   const params = new URLSearchParams({ process: String(primary) });
   if (comparisons.length) params.set("compare", comparisons.slice(0, 3).map(String).join(","));
   if (modality) params.set("modality", modality);
   return apiFetch<MajorDetail>(`/api/v1/analytics/majors/${majorId}/?${params.toString()}`);
 }
 
-export function useMajorDetail(majorId: string, primary: string, comparisons: string[], modality?: string) {
+export function useMajorDetail(
+  majorId: string,
+  primary: string,
+  comparisons: string[],
+  modality?: string,
+) {
   return useQuery({
     queryKey: ["major-detail", majorId, primary, comparisons, modality],
     queryFn: () => getMajorDetail(majorId, primary, comparisons, modality),
     enabled: Boolean(majorId && primary),
-    placeholderData: (previousData, previousQuery) => previousQuery?.queryKey[1] === majorId && previousQuery.queryKey[4] === modality ? previousData : undefined,
+    placeholderData: (previousData, previousQuery) =>
+      previousQuery?.queryKey[1] === majorId && previousQuery.queryKey[4] === modality
+        ? previousData
+        : undefined,
   });
 }
 
-export function useAcademicAreas() { return useQuery({ queryKey: ["academic-areas"], queryFn: getAcademicAreas, staleTime: 300000 }); }
-export function useFaculties() { return useQuery({ queryKey: ["faculties"], queryFn: getFaculties, staleTime: 300000 }); }
-export function useModalities() { return useQuery({ queryKey: ["modalities"], queryFn: getModalities, staleTime: 300000 }); }
-export function useMajorCatalog() { return useQuery({ queryKey: ["major-catalog"], queryFn: getMajorCatalog, staleTime: 300000 }); }
+export function useAcademicAreas() {
+  return useQuery({ queryKey: ["academic-areas"], queryFn: getAcademicAreas, staleTime: 300000 });
+}
+export function useFaculties() {
+  return useQuery({ queryKey: ["faculties"], queryFn: getFaculties, staleTime: 300000 });
+}
+export function useModalities() {
+  return useQuery({ queryKey: ["modalities"], queryFn: getModalities, staleTime: 300000 });
+}
+export function useMajorCatalog() {
+  return useQuery({ queryKey: ["major-catalog"], queryFn: getMajorCatalog, staleTime: 300000 });
+}
 
-export function useAnalyticsOverview(primary: string, comparisons: string[], filters: AnalyticsFilters = {}) {
+export function useAnalyticsOverview(
+  primary: string,
+  comparisons: string[],
+  filters: AnalyticsFilters = {},
+) {
   return useQuery({
     queryKey: ["analytics-overview", primary, comparisons, filters],
     queryFn: () => getAnalyticsOverview(primary, comparisons, filters),
     enabled: Boolean(primary),
     placeholderData: (previousData, previousQuery) =>
-      JSON.stringify(previousQuery?.queryKey[3]) === JSON.stringify(filters)
-      && previousData?.processes.some((item) => String(item.process.id) === String(primary))
-        ? previousData : undefined,
+      JSON.stringify(previousQuery?.queryKey[3]) === JSON.stringify(filters) &&
+      previousData?.processes.some((item) => String(item.process.id) === String(primary))
+        ? previousData
+        : undefined,
   });
 }

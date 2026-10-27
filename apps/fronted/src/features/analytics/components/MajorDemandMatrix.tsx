@@ -38,11 +38,23 @@ export function MajorDemandMatrix({
       />
       <div className={styles.demandMapLegendDesktop}>
         <h3>Carreras representadas</h3>
-        <DemandMapLegend points={points} activeMajorId={activeMajorId} selectedMajorId={tooltip.selectedPoint?.major.major_id ?? null} onSelectMajor={selectMajor} onHoverMajor={setHoveredMajorId} />
+        <DemandMapLegend
+          points={points}
+          activeMajorId={activeMajorId}
+          selectedMajorId={tooltip.selectedPoint?.major.major_id ?? null}
+          onSelectMajor={selectMajor}
+          onHoverMajor={setHoveredMajorId}
+        />
       </div>
       <div className={styles.demandMapLegendMobile}>
         <h3>Carreras representadas</h3>
-        <DemandMapLegend points={points} activeMajorId={activeMajorId} selectedMajorId={tooltip.selectedPoint?.major.major_id ?? null} onSelectMajor={selectMajor} onHoverMajor={setHoveredMajorId} />
+        <DemandMapLegend
+          points={points}
+          activeMajorId={activeMajorId}
+          selectedMajorId={tooltip.selectedPoint?.major.major_id ?? null}
+          onSelectMajor={selectMajor}
+          onHoverMajor={setHoveredMajorId}
+        />
       </div>
     </div>
   );

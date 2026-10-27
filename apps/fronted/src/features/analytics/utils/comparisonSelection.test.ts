@@ -11,7 +11,11 @@ const processes = [
 
 describe("normalizeComparisons", () => {
   it("deduplicates before limiting, excludes the primary, and follows chronological API order", () => {
-    expect(normalizeComparisons("9", ["3", "9", "3", "7", "5", "1"], processes)).toEqual(["7", "5", "3"]);
+    expect(normalizeComparisons("9", ["3", "9", "3", "7", "5", "1"], processes)).toEqual([
+      "7",
+      "5",
+      "3",
+    ]);
   });
   it("retains unknown IDs for existing API validation instead of silently changing the selection", () => {
     expect(normalizeComparisons("9", ["999", "7"], processes)).toEqual(["7", "999"]);

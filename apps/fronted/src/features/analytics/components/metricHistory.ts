@@ -31,12 +31,11 @@ const metricReaders: Record<MetricKey, (item: ProcessMetrics) => number | null> 
   minimum_admitted_score: (item) => item.minimum_admitted_score ?? null,
   total_results: (item) => item.total_results,
   admitted_count: (item) => item.admitted_count,
-  admission_rate: (item) => item.total_results > 0
-    ? (item.admitted_count / item.total_results) * 100
-    : null,
+  admission_rate: (item) =>
+    item.total_results > 0 ? (item.admitted_count / item.total_results) * 100 : null,
   absent_count: (item) => item.absent_count,
-  average_score: (item) => item.average_score === null ? null : Number(item.average_score),
-  highest_score: (item) => item.highest_score === null ? null : Number(item.highest_score),
+  average_score: (item) => (item.average_score === null ? null : Number(item.average_score)),
+  highest_score: (item) => (item.highest_score === null ? null : Number(item.highest_score)),
 };
 
 export function getMetricValue(item: ProcessMetrics, metric: MetricKey): number | null {
@@ -49,10 +48,12 @@ export function formatMetricValue(value: number, metric: MetricOption): string {
 
 /** Compare only finite minima from a single, explicitly identified modality. */
 export function canCompareMinimumScores(left: ProcessMetrics, right: ProcessMetrics): boolean {
-  const valid = (item: ProcessMetrics) => item.minimum_admitted_score != null
-    && Number.isFinite(item.minimum_admitted_score)
-    && item.admitted_score_modality_count === 1
-    && Boolean(item.admitted_score_modality?.trim());
-  return valid(left) && valid(right)
-    && left.admitted_score_modality === right.admitted_score_modality;
+  const valid = (item: ProcessMetrics) =>
+    item.minimum_admitted_score != null &&
+    Number.isFinite(item.minimum_admitted_score) &&
+    item.admitted_score_modality_count === 1 &&
+    Boolean(item.admitted_score_modality?.trim());
+  return (
+    valid(left) && valid(right) && left.admitted_score_modality === right.admitted_score_modality
+  );
 }

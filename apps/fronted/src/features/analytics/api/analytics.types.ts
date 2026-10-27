@@ -43,7 +43,14 @@ export type ProcessHistoryItem = ProcessMetrics;
 export type ProcessHistory = { processes: ProcessHistoryItem[] };
 
 export type MajorDetail = {
-  major: { id: number; code: string; name: string; faculty: string; academic_area: string; is_new: boolean };
+  major: {
+    id: number;
+    code: string;
+    name: string;
+    faculty: string;
+    academic_area: string;
+    is_new: boolean;
+  };
   selected_processes: MajorDetailProcess[];
   history: MajorDetailProcess[];
 };

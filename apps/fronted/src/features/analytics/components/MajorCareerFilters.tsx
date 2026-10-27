@@ -9,9 +9,7 @@ type MajorCareerFiltersProps = {
 export function MajorCareerFilters({ controls }: MajorCareerFiltersProps) {
   return (
     <div className={styles.majorFilters} role="group" aria-label="Filtros de carreras">
-      <div className={styles.majorFiltersHeader}>
-        {controls}
-      </div>
+      <div className={styles.majorFiltersHeader}>{controls}</div>
     </div>
   );
 }

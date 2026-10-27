@@ -3,7 +3,11 @@ import { formatNumber } from "../utils/formatters";
 import { formatProcessLabel } from "../utils/processLabels";
 import { percentage } from "./comparisonMetrics";
 
-export type ComparisonInsight = { metric: string; direction: "up" | "down" | "neutral"; text: string };
+export type ComparisonInsight = {
+  metric: string;
+  direction: "up" | "down" | "neutral";
+  text: string;
+};
 
 function sequenceOrder(sequence: string) {
   const normalized = sequence.trim().toUpperCase();
@@ -14,7 +18,10 @@ function sequenceOrder(sequence: string) {
 }
 
 function chronological(a: ProcessOverview, b: ProcessOverview) {
-  return a.process.year - b.process.year || sequenceOrder(a.process.sequence) - sequenceOrder(b.process.sequence);
+  return (
+    a.process.year - b.process.year ||
+    sequenceOrder(a.process.sequence) - sequenceOrder(b.process.sequence)
+  );
 }
 
 function latestPair(overviews: ProcessOverview[]) {
@@ -36,7 +43,10 @@ export function buildComparisonInsights(overviews: ProcessOverview[]): Compariso
   const [previous, current] = pair;
   const previousLabel = formatProcessLabel(previous.process);
   const currentLabel = formatProcessLabel(current.process);
-  const applicantsChange = percentage(current.total_results - previous.total_results, previous.total_results);
+  const applicantsChange = percentage(
+    current.total_results - previous.total_results,
+    previous.total_results,
+  );
   const admissionRate = rate(current, "admitted_count");
   const previousAdmissionRate = rate(previous, "admitted_count");
   const absentRate = rate(current, "absent_count");
@@ -50,15 +60,26 @@ export function buildComparisonInsights(overviews: ProcessOverview[]): Compariso
     },
     {
       metric: "Tasa de ingreso",
-      direction: admissionRate > previousAdmissionRate ? "up" : admissionRate < previousAdmissionRate ? "down" : "neutral",
+      direction:
+        admissionRate > previousAdmissionRate
+          ? "up"
+          : admissionRate < previousAdmissionRate
+            ? "down"
+            : "neutral",
       text: `${currentLabel} alcanzó ${formatRate(admissionRate)}%, frente al ${formatRate(previousAdmissionRate)}% de ${previousLabel}.`,
     },
     {
       metric: "Ausentismo",
-      direction: absentRate > previousAbsentRate ? "up" : absentRate < previousAbsentRate ? "down" : "neutral",
-      text: absentRate === previousAbsentRate
-        ? `La tasa se mantuvo en ${formatRate(absentRate)}% entre ${previousLabel} y ${currentLabel}.`
-        : `La tasa ${absentRate < previousAbsentRate ? "cayó" : "subió"} de ${formatRate(previousAbsentRate)}% en ${previousLabel} a ${formatRate(absentRate)}% en ${currentLabel}.`,
+      direction:
+        absentRate > previousAbsentRate
+          ? "up"
+          : absentRate < previousAbsentRate
+            ? "down"
+            : "neutral",
+      text:
+        absentRate === previousAbsentRate
+          ? `La tasa se mantuvo en ${formatRate(absentRate)}% entre ${previousLabel} y ${currentLabel}.`
+          : `La tasa ${absentRate < previousAbsentRate ? "cayó" : "subió"} de ${formatRate(previousAbsentRate)}% en ${previousLabel} a ${formatRate(absentRate)}% en ${currentLabel}.`,
     },
   ];
 }

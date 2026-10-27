@@ -5,16 +5,10 @@ export type RankingMetrics = {
   admissionRate: number;
 };
 
-export function calculateMetrics(
-  major: MajorOverview,
-  totalApplicants: number,
-): RankingMetrics {
+export function calculateMetrics(major: MajorOverview, totalApplicants: number): RankingMetrics {
   return {
     share: totalApplicants > 0 ? (major.total_results / totalApplicants) * 100 : 0,
-    admissionRate:
-      major.total_results > 0
-        ? (major.admitted_count / major.total_results) * 100
-        : 0,
+    admissionRate: major.total_results > 0 ? (major.admitted_count / major.total_results) * 100 : 0,
   };
 }
 
@@ -39,7 +33,8 @@ function niceAxisMaximum(value: number) {
   const rawStep = target / 4;
   const magnitude = 10 ** Math.floor(Math.log10(rawStep));
   const normalizedStep = rawStep / magnitude;
-  const stepSize = [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((step) => step >= normalizedStep) ?? 10;
+  const stepSize =
+    [1, 1.25, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10].find((step) => step >= normalizedStep) ?? 10;
   return Number((stepSize * magnitude * 4).toPrecision(12));
 }
 
@@ -61,16 +56,15 @@ export function describeDemandInsight(points: DemandChartPoint[]) {
 
   if (points.length === 1) return `${demand}.`;
   const lowestRate = `${lowestAdmission.admissionRate.toLocaleString("es-PE", { maximumFractionDigits: 1 })}%`;
-  const admission = lowestAdmission.major.major_id === highestDemand.major.major_id
-    ? `y el menor porcentaje de ingreso (${lowestRate})`
-    : `y ${lowestAdmission.major.major_name} presenta el menor porcentaje de ingreso (${lowestRate})`;
+  const admission =
+    lowestAdmission.major.major_id === highestDemand.major.major_id
+      ? `y el menor porcentaje de ingreso (${lowestRate})`
+      : `y ${lowestAdmission.major.major_name} presenta el menor porcentaje de ingreso (${lowestRate})`;
   return `${demand} ${admission} entre ${context}.`;
 }
 
 export function getTopMajors(majors: MajorOverview[]): MajorOverview[] {
-  return [...majors]
-    .sort((left, right) => right.total_results - left.total_results)
-    .slice(0, 6);
+  return [...majors].sort((left, right) => right.total_results - left.total_results).slice(0, 6);
 }
 
 function plotPosition(value: number, min: number, max: number) {
@@ -80,9 +74,9 @@ function plotPosition(value: number, min: number, max: number) {
 
 export function createDemandChartModel(majors: MajorOverview[]): DemandChartModel {
   const applicantValues = majors.map((major) => major.total_results);
-  const admissionRates = majors.map((major) => major.total_results > 0
-    ? (major.admitted_count / major.total_results) * 100
-    : 0);
+  const admissionRates = majors.map((major) =>
+    major.total_results > 0 ? (major.admitted_count / major.total_results) * 100 : 0,
+  );
   const applicantRange = {
     min: Math.min(...applicantValues, 0),
     max: niceAxisMaximum(Math.max(...applicantValues, 1)),
