@@ -361,49 +361,50 @@ describe("CareerComparisonPage", () => {
     expect(api.getMajorDetail).not.toHaveBeenCalled();
   });
 
-  it("keeps late responses from the previous process out of the active comparison", async () => {
-    const waiting = new Map<string, Array<(value: MajorDetail) => void>>();
+  it("uses pending full-history responses for the newly selected process without refetching", async () => {
+    const waiting = new Map<number, (value: MajorDetail) => void>();
     vi.mocked(api.getMajorDetail).mockImplementation(
-      (id, processId) =>
-        new Promise((resolve) => {
-          const key = String(processId);
-          const resolves = waiting.get(key) ?? [];
-          resolves.push(resolve as (value: MajorDetail) => void);
-          waiting.set(key, resolves);
-          if (key === "1") {
-            const index = resolves.length - 1;
-            setTimeout(
-              () =>
-                resolves[index]({
-                  ...detail(Number(id)),
-                  selected_processes: [
-                    row(processes[1], Number(id) === 11 ? 100 : 200, Number(id) === 11 ? 1 : 20),
-                  ],
-                  history: [],
-                }),
-              0,
-            );
-          }
-        }),
+      (id) => new Promise((resolve) => waiting.set(Number(id), resolve)),
     );
     renderPage();
-    await waitForRequests(waiting, "2", 2);
+    await waitFor(() => expect(waiting.size).toBe(2));
     fireEvent.change(screen.getByLabelText("Proceso analizado"), { target: { value: "1" } });
-    await waitForRequests(waiting, "1", 2);
-    const oldValues = waiting.get("2")!;
-    oldValues[0]({
-      ...detail(11),
-      selected_processes: [row(processes[0], 1000, 900)],
-      history: [],
-    });
-    oldValues[1]({
-      ...detail(22),
-      selected_processes: [row(processes[0], 1000, 900)],
-      history: [],
-    });
+    expect(api.getMajorDetail).toHaveBeenCalledTimes(2);
+    for (const id of [11, 22]) {
+      waiting.get(id)!({
+        ...detail(id),
+        selected_processes: [row(processes[0], 1000, 900)],
+        history: [row(processes[1], id === 11 ? 100 : 200, id === 11 ? 1 : 20)],
+      });
+    }
     const summary = await screen.findByRole("region", { name: "Resumen rápido" });
     expect(await within(summary).findByText("1%", { selector: "small" })).toBeInTheDocument();
     expect(within(summary).queryByText("90%", { selector: "small" })).not.toBeInTheDocument();
+    expect(api.getMajorDetail).toHaveBeenCalledTimes(2);
+  });
+
+  it("starts career histories while the independent career catalog is still loading", async () => {
+    vi.mocked(api.useMajorCatalog).mockReturnValue({
+      data: undefined,
+      isPending: true,
+      isError: false,
+    } as never);
+    renderPage();
+    expect(screen.getByText("Cargando catálogo de carreras…")).toBeInTheDocument();
+    await waitFor(() => expect(api.getMajorDetail).toHaveBeenCalledTimes(2));
+  });
+
+  it("does not request careers that a loaded catalog identifies as unavailable", () => {
+    vi.mocked(api.useMajorCatalog).mockReturnValue({
+      data: majors.filter((major) => major.id !== 22),
+      isPending: false,
+      isError: false,
+    } as never);
+    renderPage();
+    expect(
+      screen.getByRole("heading", { name: "Hay carreras que ya no están disponibles" }),
+    ).toBeInTheDocument();
+    expect(api.getMajorDetail).not.toHaveBeenCalled();
   });
 
   it("keeps late responses from the previous modality out of the active comparison", async () => {

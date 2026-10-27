@@ -1,6 +1,8 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, type UseQueryResult } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
 
 import { apiFetch } from "../../../shared/api/client";
+import { resolveAdmissionModality } from "../utils/admissionModality";
 import type {
   AcademicArea,
   AdmissionProcess,
@@ -82,22 +84,78 @@ export function useMajorDetail(
   comparisons: string[],
   modality?: string,
 ) {
-  return useQuery({
-    queryKey: ["major-detail", majorId, primary, comparisons, modality],
-    queryFn: () => getMajorDetail(majorId, primary, comparisons, modality),
-    enabled: Boolean(majorId && primary),
-    placeholderData: (previousData, previousQuery) =>
-      previousQuery?.queryKey[1] === majorId && previousQuery.queryKey[4] === modality
-        ? previousData
-        : undefined,
+  const processes = usePublishedProcesses().data ?? [];
+  const resolvedModality = resolveAdmissionModality(modality);
+  const query = useQuery({
+    ...majorHistoryQueryOptions(majorId, resolvedModality, processes),
+    queryFn: () => getMajorDetail(majorId, primary, [], resolvedModality),
+    enabled: Boolean(majorId && processes.some((process) => String(process.id) === primary)),
+    select: (detail) => {
+      const selectedIds = [...new Set([primary, ...comparisons])];
+      const byProcess = new Map(
+        [...detail.history, ...detail.selected_processes].map((row) => [
+          String(row.process.id),
+          row,
+        ]),
+      );
+      return {
+        ...detail,
+        selected_processes: selectedIds.flatMap((id) => byProcess.get(id) ?? []),
+        history: processes.flatMap((process) => {
+          const id = String(process.id);
+          return selectedIds.includes(id) ? [] : (byProcess.get(id) ?? []);
+        }),
+      };
+    },
   });
+  useRefreshHistoryOnProcessChange(primary, [query]);
+  return query;
 }
 
-export function useAcademicAreas() {
-  return useQuery({ queryKey: ["academic-areas"], queryFn: getAcademicAreas, staleTime: 300000 });
+export function useRefreshHistoryOnProcessChange(
+  primary: string,
+  queries: UseQueryResult<MajorDetail>[],
+) {
+  const previous = useRef(primary);
+  useEffect(() => {
+    if (previous.current === primary) return;
+    previous.current = primary;
+    // Reuse fresh history, but preserve revalidation when changing periods
+    // after the normal freshness window has elapsed.
+    for (const query of queries) {
+      if (query.isStale && !query.isFetching) void query.refetch();
+    }
+  }, [primary, queries]);
 }
-export function useFaculties() {
-  return useQuery({ queryKey: ["faculties"], queryFn: getFaculties, staleTime: 300000 });
+
+export function majorHistoryQueryOptions(
+  majorId: string | number,
+  modality: string | undefined,
+  processes: AdmissionProcess[],
+) {
+  return {
+    // The response includes all periods. Refresh when the published set changes,
+    // rather than downloading the same history for each selected period.
+    queryKey: [
+      "major-history",
+      String(majorId),
+      resolveAdmissionModality(modality),
+      processes.map((process) => process.id).sort((a, b) => a - b),
+    ],
+    staleTime: 60_000,
+  };
+}
+
+export function useAcademicAreas(enabled = true) {
+  return useQuery({
+    queryKey: ["academic-areas"],
+    queryFn: getAcademicAreas,
+    staleTime: 300000,
+    enabled,
+  });
+}
+export function useFaculties(enabled = true) {
+  return useQuery({ queryKey: ["faculties"], queryFn: getFaculties, staleTime: 300000, enabled });
 }
 export function useModalities() {
   return useQuery({ queryKey: ["modalities"], queryFn: getModalities, staleTime: 300000 });
