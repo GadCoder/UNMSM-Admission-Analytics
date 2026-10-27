@@ -6,6 +6,7 @@ import { formatNumber } from "../utils/formatters";
 import { formatProcessLabel } from "../utils/processLabels";
 import { MetricHistoryPlot } from "./MetricHistoryPlot";
 import { AnalyticsSurface } from "./AnalyticsSurface";
+import surfaceStyles from "./AnalyticsSurface.module.css";
 import { SelectField } from "./SelectField";
 import styles from "./MetricHistoryChart.module.css";
 
@@ -178,7 +179,7 @@ export function MetricHistoryChart({ items, title, status = "ready", defaultMetr
       <div className={styles.metricHistoryContent}>
         <header className={styles.metricHistoryHeader}>
           <div className={styles.metricHistoryHeading}>
-            <h2>{title}</h2>
+            <h2 className={surfaceStyles.sectionTitle}>{title}</h2>
             <p>{metric.label} por proceso de admisión</p>
           </div>
           <SelectField label="Métrica" aria-label="Métrica" value={selectedMetric} onChange={(event) => setSelectedMetric(event.target.value as MetricKey)}>

@@ -1,5 +1,6 @@
 import type { ProcessHistoryItem } from "../api/analytics.types";
 import styles from "../pages/DashboardPage.module.css";
+import surfaceStyles from "./AnalyticsSurface.module.css";
 import { MajorDetailHistory } from "./MajorDetailHistory";
 
 type ProcessHistoryProps = {
@@ -29,7 +30,7 @@ export function ProcessHistory({ items, selectedProcessId, status = "ready", onS
   return (
     <section className={`${styles.card} ${styles.comparisonCard}`} aria-labelledby="process-history-heading" aria-busy={status === "loading"}>
       <header className={styles.comparisonCardHeader}>
-        <h2 id="process-history-heading" className={styles.comparisonSectionTitle}>Resultados históricos</h2>
+        <h2 id="process-history-heading" className={surfaceStyles.sectionTitle}>Resultados históricos</h2>
       </header>
       {status === "loading" ? <p role="status" className={styles.historyState}>Cargando resultados históricos…</p>
         : status === "error" ? <p role="alert" className={styles.historyState}>No pudimos cargar los resultados históricos.</p>

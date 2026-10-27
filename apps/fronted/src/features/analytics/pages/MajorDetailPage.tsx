@@ -8,6 +8,7 @@ import { MetricHistoryChart } from "../components/MetricHistoryChart";
 import { MajorDetailLoadingSkeleton } from "../components/LoadingSkeletons";
 import { KpiGrid } from "../components/KpiGrid";
 import { NewMajorBadge } from "../components/NewMajorBadge";
+import surfaceStyles from "../components/AnalyticsSurface.module.css";
 import styles from "./DashboardPage.module.css";
 
 const ROMAN_SEQUENCE_ORDER: Record<string, number> = { I: 1, II: 2, III: 3, IV: 4 };
@@ -74,7 +75,7 @@ export function MajorDetailContent({ majorId, processId, modality, onSelectProce
       defaultMetric={selectedProcess?.minimum_admitted_score != null && Number.isFinite(selectedProcess.minimum_admitted_score) ? "minimum_admitted_score" : "total_results"}
     />
     <section className={`${styles.card} ${styles.comparisonCard}`} aria-labelledby="history-heading">
-      <header className={styles.comparisonCardHeader}><h2 id="history-heading" className={styles.comparisonSectionTitle}>Resultados históricos</h2></header>
+      <header className={styles.comparisonCardHeader}><h2 id="history-heading" className={surfaceStyles.sectionTitle}>Resultados históricos</h2></header>
       <MajorDetailHistory variant="career" items={historyTimeline} selectedProcessId={selectedProcess?.process.id} onSelectProcess={onSelectProcess} />
     </section>
   </section>;

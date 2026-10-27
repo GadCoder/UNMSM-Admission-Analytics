@@ -7,6 +7,7 @@ import { MajorBreakdownControls } from "./MajorBreakdownControls";
 import { MajorBreakdownSortingSkeleton } from "./LoadingSkeletons";
 import { MajorPerformanceCards } from "./MajorPerformanceCards";
 import { MajorPerformanceTable } from "./MajorPerformanceTable";
+import surfaceStyles from "./AnalyticsSurface.module.css";
 import { sortMajors } from "./majorPerformance.utils";
 import type { SortDirection, SortKey } from "./majorPerformance.utils";
 import styles from "../pages/DashboardPage.module.css";
@@ -71,7 +72,7 @@ export function MajorBreakdown({ overview, navigation }: MajorBreakdownProps) {
 
   return <AnalyticsSurface className={styles.majorBreakdownSurface} aria-labelledby="major-breakdown-heading">
     <div className={styles.sectionHeading}>
-      <h2 id="major-breakdown-heading">Desempeño por carrera</h2>
+      <h2 id="major-breakdown-heading" className={surfaceStyles.sectionTitle}>Desempeño por carrera</h2>
     </div>
     <MajorBreakdownControls
       query={query}

@@ -1,6 +1,7 @@
 import type { MajorOverview } from "../api/analytics.types";
 import styles from "../pages/DashboardPage.module.css";
 import { AnalyticsSurface } from "./AnalyticsSurface";
+import surfaceStyles from "./AnalyticsSurface.module.css";
 import { MajorDemandMatrix } from "./MajorDemandMatrix";
 import { createDemandChartModel, describeDemandInsight } from "./majorDemandRanking.utils";
 
@@ -14,7 +15,7 @@ export function MajorDemandChart({ majors }: MajorDemandChartProps) {
   return (
     <AnalyticsSurface className={styles.demandChart} aria-labelledby="demand-map-heading">
       <div className={styles.demandChartHeader}>
-        <h2 id="demand-map-heading">¿Qué carreras tienen mayor competencia?</h2>
+        <h2 id="demand-map-heading" className={surfaceStyles.sectionTitle}>¿Qué carreras tienen mayor competencia?</h2>
         <p>Las 6 carreras con más postulantes, según los filtros aplicados.</p>
         <p>Cada punto representa una carrera. Más a la derecha = más postulantes; más abajo = menor tasa de ingreso.</p>
       </div>
