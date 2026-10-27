@@ -41,7 +41,7 @@ export function MajorDemandRanking({
           <h3 className={styles.majorPanelHeading}>Ranking de postulantes</h3>
           <MajorRankingList majors={majors} overviews={overviews} />
         </div>
-        <MajorDemandChart majors={majors} process={overview.process} />
+        <MajorDemandChart majors={majors} />
       </div>
     </section>
   );

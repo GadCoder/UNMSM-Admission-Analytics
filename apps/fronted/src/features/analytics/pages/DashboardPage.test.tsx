@@ -124,7 +124,7 @@ describe("DashboardPage", () => {
     const controlsSurface = screen.getByRole("region", { name: "Controles del análisis" });
     expect(controlsSurface).not.toHaveClass(surfaceStyles.surface);
     const careerFilters = within(controlsSurface).getByRole("group", { name: "Filtros de carreras" });
-    const demandMap = screen.getByRole("region", { name: "Mapa de demanda y admisión" });
+    const demandMap = screen.getByRole("region", { name: "¿Qué carreras tienen mayor competencia?" });
     const performance = screen.getByRole("region", { name: "Desempeño por carrera" });
     expect(demandMap).toHaveClass(surfaceStyles.surface);
     expect(performance).toHaveClass(surfaceStyles.surface);
