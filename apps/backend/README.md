@@ -45,13 +45,25 @@ duplicate/rejected rows instead of silently creating inconsistent records.
 
 ## Analytics caching
 
-Public analytics responses are cached for 60 seconds. Set `CACHE_REDIS_URL` to
-a Redis URL (for example, `redis://redis:6379/0`) in production to share entries
+Public analytics responses are cached for 60 seconds. Set `CACHE_VALKEY_URL` to
+a Valkey endpoint (for example, `redis://valkey:6379/0`) in production to share entries
 and invalidation across API workers. Without it, Django uses a process-local
 cache; each worker warms its own entries and changes from other workers or
-management commands may remain stale for up to 60 seconds. Use shared Redis
+management commands may remain stale for up to 60 seconds. Use shared Valkey
 for invalidation across processes. Cache failures fall through to the database;
 if invalidation fails, existing entries may remain stale until their TTL expires.
+
+Docker Compose includes Valkey 8 with a health check, a 256 MiB cache limit,
+and `allkeys-lru` eviction. It has no published host port or persistent storage;
+cache misses are rebuilt from the database. Start it with `docker compose up -d valkey`
+from the repository root. The Compose backend uses this service by default.
+For a backend running on the host, use an accessible Valkey endpoint instead of
+the Compose-only `valkey` hostname. Use `rediss://` for a TLS-enabled endpoint.
+
+The `redis://` URL scheme, Django's `RedisCache` backend, and the `redis-py`
+client are retained for protocol compatibility; the cache server is Valkey.
+See [Valkey client compatibility](https://valkey.io/clients/) and
+[Django's supported cache client](https://docs.djangoproject.com/en/6.1/topics/cache/).
 
 Imports invalidate once after the replacement transaction commits. Model saves
 and deletes also invalidate after commit, including publication changes in admin.

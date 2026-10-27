@@ -125,14 +125,15 @@ REST_FRAMEWORK = {
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
 
-# Configure CACHE_REDIS_URL in production for a cache shared by API workers.
+# Configure CACHE_VALKEY_URL in production for a cache shared by API workers.
 # The local fallback is process-local and its analytics entries expire in 60s.
-CACHE_REDIS_URL = os.getenv("CACHE_REDIS_URL")
-if CACHE_REDIS_URL:
+CACHE_VALKEY_URL = os.getenv("CACHE_VALKEY_URL")
+if CACHE_VALKEY_URL:
     CACHES = {
         "default": {
+            # Valkey supports this backend's Redis wire protocol and redis-py client.
             "BACKEND": "django.core.cache.backends.redis.RedisCache",
-            "LOCATION": CACHE_REDIS_URL,
+            "LOCATION": CACHE_VALKEY_URL,
             "KEY_PREFIX": "unmsm-admission-analytics",
             "OPTIONS": {"socket_connect_timeout": 1, "socket_timeout": 1},
         }
