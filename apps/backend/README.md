@@ -16,6 +16,15 @@ The project defaults to SQLite when `DATABASE_URL` is unset. To use the local
 PostgreSQL container, copy the repository `.env.example` to `.env` and run the
 commands from the repository root with Docker Compose.
 
+PostgreSQL connections are reused for 60 seconds by default. Set
+`DATABASE_CONN_MAX_AGE=0` to disable reuse, or choose another non-negative
+number of seconds. Django checks reused connections before each request. Size
+the database connection limit for the maximum number of concurrently running
+workers across all replicas (currently three Gunicorn workers per replica),
+with room for migrations, management commands, and other services. If the
+application moves to ASGI, set this value to `0`; Django recommends disabling
+persistent connections in async mode.
+
 ## Commands
 
 ```bash
