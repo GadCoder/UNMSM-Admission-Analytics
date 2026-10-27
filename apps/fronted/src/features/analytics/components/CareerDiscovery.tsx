@@ -3,7 +3,6 @@ import { useMemo, useRef, type KeyboardEvent, type ReactNode } from "react";
 import type { CareerNavigationContext } from "../utils/careerNavigation";
 import type { ProcessOverview } from "../api/analytics.types";
 import { PageBanner } from "./PageBanner";
-import styles from "./CareerDiscovery.module.css";
 import { CareerResults } from "./CareerResults";
 import { CareerSearch } from "./CareerSearch";
 

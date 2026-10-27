@@ -36,7 +36,7 @@ project.
 The backend and fronted application have separate setup instructions.
 
 For the frontend, see [`apps/fronted/README.md`](apps/fronted/README.md). From that
-directory, run `npm install` and `npm run dev`.
+directory, run `corepack pnpm install` and `corepack pnpm run dev`.
 
 ## Validation
 
@@ -44,9 +44,9 @@ Frontend checks:
 
 ```bash
 cd apps/fronted
-npm test
-npm run lint
-npm run build
+corepack pnpm test
+corepack pnpm run lint
+corepack pnpm run build
 ```
 
 Backend checks:
