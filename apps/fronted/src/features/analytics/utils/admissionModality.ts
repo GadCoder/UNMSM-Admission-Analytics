@@ -31,7 +31,7 @@ export function careerDetailHref(majorId: number, processId: number, modality?: 
   let modalityId = contextModality(modality);
   if (returnTo?.startsWith("/carreras?")) {
     const origin = new URLSearchParams(returnTo.slice(returnTo.indexOf("?") + 1));
-    modalityId = contextModality(origin.get("modality"));
+    modalityId = contextModality(origin.get("modality")) ?? modalityId;
     for (const name of ["academic_area", "faculty", "q", "view"]) {
       const value = origin.get(name);
       if (value) params.set(name, value);
@@ -43,7 +43,7 @@ export function careerDetailHref(majorId: number, processId: number, modality?: 
     }
   } else if (returnTo?.startsWith("/?")) {
     params.set("returnTo", returnTo);
-    modalityId = contextModality(new URLSearchParams(returnTo.slice(returnTo.indexOf("?") + 1)).get("modality"));
+    modalityId = contextModality(new URLSearchParams(returnTo.slice(returnTo.indexOf("?") + 1)).get("modality")) ?? modalityId;
   }
   if (modalityId) params.set("modality", modalityId);
   return `/carreras/${majorId}?${params}`;
