@@ -43,6 +43,36 @@ The importer supports the historical Spanish CSV schema and the newer combined
 name schema. It replaces existing results for the selected process and reports
 duplicate/rejected rows instead of silently creating inconsistent records.
 
+## Analytics caching
+
+Public analytics responses are cached for 60 seconds. Set `CACHE_VALKEY_URL` to
+a Valkey endpoint (for example, `redis://valkey:6379/0`) in production to share entries
+and invalidation across API workers. Without it, Django uses a process-local
+cache; each worker warms its own entries and changes from other workers or
+management commands may remain stale for up to 60 seconds. Use shared Valkey
+for invalidation across processes. Cache failures fall through to the database;
+if invalidation fails, existing entries may remain stale until their TTL expires.
+
+Docker Compose includes Valkey 8 with a health check, a 256 MiB cache limit,
+and `allkeys-lru` eviction. It has no published host port or persistent storage;
+cache misses are rebuilt from the database. Start it with `docker compose up -d valkey`
+from the repository root. The Compose backend uses this service by default.
+For a backend running on the host, use an accessible Valkey endpoint instead of
+the Compose-only `valkey` hostname. Use `rediss://` for a TLS-enabled endpoint.
+
+The `redis://` URL scheme, Django's `RedisCache` backend, and the `redis-py`
+client are retained for protocol compatibility; the cache server is Valkey.
+See [Valkey client compatibility](https://valkey.io/clients/) and
+[Django's supported cache client](https://docs.djangoproject.com/en/6.1/topics/cache/).
+
+Imports invalidate once after the replacement transaction commits. Model saves
+and deletes also invalidate after commit, including publication changes in admin.
+Future writers using `QuerySet.update()`, `bulk_update()`, or `bulk_create()` must
+explicitly schedule `invalidate_analytics_cache` with `transaction.on_commit()`;
+those operations do not emit model save signals.
+
+## API resources
+
 The API health check is available at `/health/`. Interactive API documentation is
 available at `/api/docs/` (Swagger UI) and `/api/redoc/` (ReDoc); the raw OpenAPI
 schema is available at `/api/schema/`. The versioned API root is available at

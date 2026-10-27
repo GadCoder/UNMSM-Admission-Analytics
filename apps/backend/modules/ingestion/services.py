@@ -4,6 +4,7 @@ from django.db import transaction
 
 from modules.academics.models import AcademicArea, Faculty, Major
 from modules.admission_processes.models import AdmissionModality, AdmissionProcess
+from modules.analytics.cache import invalidate_analytics_cache, suspend_invalidation
 from modules.results.models import AdmissionResult
 
 from .models import ImportBatch
@@ -107,75 +108,77 @@ def _write_import(
         rejected_rows=summary["rejected_rows"],
     )
     try:
-        process, _ = AdmissionProcess.objects.update_or_create(
-            year=year,
-            sequence=sequence,
-            defaults={"name": f"Admisión {year} — {sequence}", "is_published": True},
-        )
-        AdmissionResult.objects.filter(process=process).delete()
-        area_cache: dict[str, AcademicArea] = {}
-        faculty_cache: dict[str, Faculty] = {}
-        major_cache: dict[str, Major] = {}
-        modality_cache: dict[str, AdmissionModality] = {}
-        results: list[AdmissionResult] = []
-        for row in rows:
-            area_code = row["area_code"]
-            if area_code not in area_cache:
-                area_cache[area_code] = AcademicArea.objects.get_or_create(
-                    code=row["area_code"], defaults={"name": row["area_name"]}
-                )[0]
-            area = area_cache[area_code]
-
-            faculty_code = row["faculty_code"]
-            if faculty_code not in faculty_cache:
-                faculty_cache[faculty_code] = Faculty.objects.get_or_create(
-                    code=row["faculty_code"],
-                    academic_area=area,
-                    defaults={"name": row["faculty_name"]},
-                )[0]
-            faculty = faculty_cache[faculty_code]
-
-            major_code = row["major_code"]
-            if major_code not in major_cache:
-                major_cache[major_code] = Major.objects.get_or_create(
-                    code=row["major_code"],
-                    defaults={"name": row["major_name"], "faculty": faculty},
-                )[0]
-            major = major_cache[major_code]
-
-            modality = None
-            modality_name = row["modality_name"]
-            if modality_name:
-                if modality_name not in modality_cache:
-                    modality_cache[modality_name] = AdmissionModality.objects.get_or_create(
-                        name=modality_name
-                    )[0]
-                modality = modality_cache[modality_name]
-            results.append(
-                AdmissionResult(
-                    process=process,
-                    major=major,
-                    modality=modality,
-                    candidate_code=row["candidate_code"],
-                    last_names=row["last_names"],
-                    given_names=row["given_names"],
-                    score=row["score"],
-                    merit=row["merit"],
-                    status=row["status"],
-                    source_file=row["source_file"],
-                    import_batch=batch,
-                )
+        with suspend_invalidation():
+            process, _ = AdmissionProcess.objects.update_or_create(
+                year=year,
+                sequence=sequence,
+                defaults={"name": f"Admisión {year} — {sequence}", "is_published": True},
             )
-            if len(results) >= RESULT_BATCH_SIZE:
+            AdmissionResult.objects.filter(process=process).delete()
+            area_cache: dict[str, AcademicArea] = {}
+            faculty_cache: dict[str, Faculty] = {}
+            major_cache: dict[str, Major] = {}
+            modality_cache: dict[str, AdmissionModality] = {}
+            results: list[AdmissionResult] = []
+            for row in rows:
+                area_code = row["area_code"]
+                if area_code not in area_cache:
+                    area_cache[area_code] = AcademicArea.objects.get_or_create(
+                        code=row["area_code"], defaults={"name": row["area_name"]}
+                    )[0]
+                area = area_cache[area_code]
+
+                faculty_code = row["faculty_code"]
+                if faculty_code not in faculty_cache:
+                    faculty_cache[faculty_code] = Faculty.objects.get_or_create(
+                        code=row["faculty_code"],
+                        academic_area=area,
+                        defaults={"name": row["faculty_name"]},
+                    )[0]
+                faculty = faculty_cache[faculty_code]
+
+                major_code = row["major_code"]
+                if major_code not in major_cache:
+                    major_cache[major_code] = Major.objects.get_or_create(
+                        code=row["major_code"],
+                        defaults={"name": row["major_name"], "faculty": faculty},
+                    )[0]
+                major = major_cache[major_code]
+
+                modality = None
+                modality_name = row["modality_name"]
+                if modality_name:
+                    if modality_name not in modality_cache:
+                        modality_cache[modality_name] = AdmissionModality.objects.get_or_create(
+                            name=modality_name
+                        )[0]
+                    modality = modality_cache[modality_name]
+                results.append(
+                    AdmissionResult(
+                        process=process,
+                        major=major,
+                        modality=modality,
+                        candidate_code=row["candidate_code"],
+                        last_names=row["last_names"],
+                        given_names=row["given_names"],
+                        score=row["score"],
+                        merit=row["merit"],
+                        status=row["status"],
+                        source_file=row["source_file"],
+                        import_batch=batch,
+                    )
+                )
+                if len(results) >= RESULT_BATCH_SIZE:
+                    AdmissionResult.objects.bulk_create(results, batch_size=RESULT_BATCH_SIZE)
+                    results = []
+            if results:
                 AdmissionResult.objects.bulk_create(results, batch_size=RESULT_BATCH_SIZE)
-                results = []
-        if results:
-            AdmissionResult.objects.bulk_create(results, batch_size=RESULT_BATCH_SIZE)
-        batch.status = ImportBatch.Status.COMPLETED
-        batch.imported_rows = summary["imported_rows"]
-        batch.error_message = "\n".join(errors)
-        batch.save(update_fields=["status", "imported_rows", "error_message", "updated_at"])
-        return batch
+            batch.status = ImportBatch.Status.COMPLETED
+            batch.imported_rows = summary["imported_rows"]
+            batch.error_message = "\n".join(errors)
+            batch.save(update_fields=["status", "imported_rows", "error_message", "updated_at"])
+            transaction.on_commit(invalidate_analytics_cache)
+            return batch
     except Exception as exc:
         batch.status = ImportBatch.Status.FAILED
         batch.error_message = str(exc)
