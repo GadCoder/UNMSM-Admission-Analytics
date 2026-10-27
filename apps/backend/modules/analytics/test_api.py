@@ -5,7 +5,11 @@ from rest_framework.test import APIClient
 
 from modules.academics.models import AcademicArea, Faculty, Major
 from modules.admission_processes.models import AdmissionModality, AdmissionProcess
-from modules.analytics.services import DEFAULT_ADMISSION_MODALITY, _aggregate_totals
+from modules.analytics.services import (
+    DEFAULT_ADMISSION_MODALITY,
+    _aggregate_totals,
+    _new_major_ids,
+)
 from modules.results.models import AdmissionResult
 
 
@@ -136,6 +140,11 @@ def test_new_major_detection_uses_all_published_processes_and_modalities(client,
         pharmacy.id: True,  # Unpublished processes do not count.
         inactive.id: True,  # Global new-major detection includes inactive careers.
     }
+    assert pharmacy.id in _new_major_ids()
+
+    unpublished.is_published = True
+    unpublished.save(update_fields=["is_published"])
+    assert pharmacy.id not in _new_major_ids()
 
 
 @pytest.mark.django_db
