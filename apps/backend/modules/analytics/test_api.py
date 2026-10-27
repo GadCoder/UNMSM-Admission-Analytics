@@ -87,6 +87,7 @@ def test_latest_overview_aggregates_newest_published_process(client, majors, def
                 "admitted_count": 1,
                 "absent_count": 1,
                 "average_score": "1000.0000",
+                "is_new": False,
             },
             {
                 "major_id": pharmacy.id,
@@ -96,6 +97,7 @@ def test_latest_overview_aggregates_newest_published_process(client, majors, def
                 "admitted_count": 0,
                 "absent_count": 0,
                 "average_score": None,
+                "is_new": True,
             },
         ],
     }
@@ -139,10 +141,10 @@ def test_comparative_overview_returns_requested_processes_and_major_summaries(cl
                 "majors": [
                     {"major_id": nursing.id, "major_code": "013", "major_name": "Enfermería",
                      "total_results": 1, "admitted_count": 1, "absent_count": 0,
-                     "average_score": "900.0000"},
+                     "average_score": "900.0000", "is_new": False},
                     {"major_id": pharmacy.id, "major_code": "014", "major_name": "Farmacia",
                      "total_results": 1, "admitted_count": 0, "absent_count": 1,
-                     "average_score": None},
+                     "average_score": None, "is_new": True},
                 ],
             },
             {
@@ -152,7 +154,7 @@ def test_comparative_overview_returns_requested_processes_and_major_summaries(cl
                 "minimum_admitted_score": None, "admitted_score_modality_count": 0, "admitted_score_modality": None,
                 "majors": [{"major_id": nursing.id, "major_code": "013", "major_name": "Enfermería",
                              "total_results": 1, "admitted_count": 0, "absent_count": 0,
-                             "average_score": None}],
+                             "average_score": None, "is_new": False}],
             },
         ]
     }
@@ -256,6 +258,7 @@ def test_major_detail_returns_selected_processes_and_published_history(client, m
         "name": "Enfermería",
         "faculty": "Facultad",
         "academic_area": "Ciencias",
+        "is_new": False,
     }
     assert [item["process"]["id"] for item in payload["selected_processes"]] == [
         selected.id

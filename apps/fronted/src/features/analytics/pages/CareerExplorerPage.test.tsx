@@ -23,13 +23,13 @@ const faculties = [{ id: 10, code: "MED", name: "Medicina", academic_area_id: 1 
 const overview = { processes: [{
   process: processes[0], total_results: 1000, admitted_count: 100, absent_count: 20, average_score: "70", highest_score: "100",
   majors: [
-    { major_id: 42, major_code: "SIS", major_name: "Ingeniería de Sistemas", total_results: 500, admitted_count: 50, absent_count: 0, average_score: "80" },
-    { major_id: 43, major_code: "DER", major_name: "Derecho", total_results: 300, admitted_count: 30, absent_count: 0, average_score: "70" },
-    { major_id: 44, major_code: "MED", major_name: "Medicina Humana", total_results: 200, admitted_count: 20, absent_count: 0, average_score: "60" },
-    { major_id: 45, major_code: "ODO", major_name: "Odontología", total_results: 100, admitted_count: 10, absent_count: 0, average_score: "60" },
+    { major_id: 42, major_code: "SIS", major_name: "Ingeniería de Sistemas", total_results: 500, admitted_count: 50, absent_count: 0, average_score: "80", is_new: false },
+    { major_id: 43, major_code: "DER", major_name: "Derecho", total_results: 300, admitted_count: 30, absent_count: 0, average_score: "70", is_new: false },
+    { major_id: 44, major_code: "MED", major_name: "Medicina Humana", total_results: 200, admitted_count: 20, absent_count: 0, average_score: "60", is_new: false },
+    { major_id: 45, major_code: "ODO", major_name: "Odontología", total_results: 100, admitted_count: 10, absent_count: 0, average_score: "60", is_new: false },
   ],
 }] };
-const detail = { major: { id: 42, code: "SIS", name: "Ingeniería de Sistemas", faculty: "Facultad de Ingeniería", academic_area: "Ingenierías" }, selected_processes: [], history: [] };
+const detail = { major: { id: 42, code: "SIS", name: "Ingeniería de Sistemas", faculty: "Facultad de Ingeniería", academic_area: "Ingenierías", is_new: false }, selected_processes: [], history: [] };
 const ready = (data: unknown) => ({ data, isPending: false, isFetching: false, isError: false, isSuccess: true, refetch: vi.fn() });
 
 function LocationProbe() {

@@ -22,7 +22,7 @@ const detailProcess = (process: typeof processes[number], total: number): MajorD
   average_score: "85.0000", highest_score: "95.0000", minimum_admitted_score: 80.1234,
 });
 const detail: MajorDetail = {
-  major: { id: 42, code: "015", name: "Ingeniería de Sistemas", faculty: "Facultad", academic_area: "Ingenierías" },
+  major: { id: 42, code: "015", name: "Ingeniería de Sistemas", faculty: "Facultad", academic_area: "Ingenierías", is_new: false },
   selected_processes: [detailProcess(processes[0], 100)], history: [detailProcess(processes[1], 80)],
 };
 

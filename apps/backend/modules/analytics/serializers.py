@@ -14,6 +14,7 @@ class MajorOverviewSerializer(serializers.Serializer):
         max_digits=8, decimal_places=4, allow_null=True,
         help_text="Average valid score among admitted applicants in this career within the applied filters.",
     )
+    is_new = serializers.BooleanField(help_text="Whether this major has results in exactly one published process.")
 
 
 class ProcessOverviewSerializer(serializers.Serializer):

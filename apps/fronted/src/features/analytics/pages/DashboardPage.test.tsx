@@ -33,8 +33,8 @@ const faculties = [
   { id: 1, code: "MED", name: "Medicina", academic_area_id: 1 },
   { id: 2, code: "SIS", name: "Ingeniería de Sistemas", academic_area_id: 2 },
 ];
-const overview = { processes: [{ process: processes[0], total_results: 100, admitted_count: 20, absent_count: 10, average_score: "65.5", highest_score: "98.0", majors: [{ major_id: 1, major_code: "ING", major_name: "Ingeniería", total_results: 50, admitted_count: 12, absent_count: 5, average_score: "70" }] }] };
-const comparisonOverview = { processes: [overview.processes[0], { process: processes[1], total_results: 80, admitted_count: 16, absent_count: 8, average_score: "62.5", highest_score: "95.0", majors: [{ major_id: 1, major_code: "ING", major_name: "Ingeniería", total_results: 40, admitted_count: 10, absent_count: 4, average_score: "68" }] }] };
+const overview = { processes: [{ process: processes[0], total_results: 100, admitted_count: 20, absent_count: 10, average_score: "65.5", highest_score: "98.0", majors: [{ major_id: 1, major_code: "ING", major_name: "Ingeniería", total_results: 50, admitted_count: 12, absent_count: 5, average_score: "70", is_new: false }] }] };
+const comparisonOverview = { processes: [overview.processes[0], { process: processes[1], total_results: 80, admitted_count: 16, absent_count: 8, average_score: "62.5", highest_score: "95.0", majors: [{ major_id: 1, major_code: "ING", major_name: "Ingeniería", total_results: 40, admitted_count: 10, absent_count: 4, average_score: "68", is_new: false }] }] };
 const processHistory = { processes: [
   { process: processes[1], total_results: 80, admitted_count: 16, absent_count: 8, average_score: "62.5", highest_score: "95.0" },
   { process: processes[0], total_results: 100, admitted_count: 20, absent_count: 10, average_score: "65.5", highest_score: "98.0" },
@@ -391,7 +391,7 @@ describe("DashboardPage", () => {
         ...overview.processes[0],
         majors: [
           overview.processes[0].majors[0],
-          { major_id: 2, major_code: "DER", major_name: "Derecho", total_results: 20, admitted_count: 8, absent_count: 2, average_score: "80" },
+          { major_id: 2, major_code: "DER", major_name: "Derecho", total_results: 20, admitted_count: 8, absent_count: 2, average_score: "80", is_new: true },
         ],
       }],
     };
@@ -413,6 +413,7 @@ describe("DashboardPage", () => {
     const table = screen.getByRole("table");
     await waitFor(() => {
       expect(within(table).getByText("Derecho")).toBeInTheDocument();
+      expect(within(table).getByText("Nueva")).toBeInTheDocument();
       expect(within(table).queryByText("Ingeniería")).not.toBeInTheDocument();
     });
 
