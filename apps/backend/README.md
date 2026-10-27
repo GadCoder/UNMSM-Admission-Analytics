@@ -47,3 +47,29 @@ schema is available at `/api/schema/`. The versioned API root is available at
 - `/api/v1/processes/<id>/`
 - `/api/v1/analytics/latest/`
 - `/api/v1/analytics/overview/`
+
+## HTTP compression
+
+Django compresses eligible responses when the client sends
+`Accept-Encoding: gzip`. This covers API JSON independently of the frontend
+Nginx server, which serves the built SPA and does not proxy API requests. Frontend
+Nginx compresses text, JavaScript, JSON, and SVG responses of at least 1 KiB and
+adds `Vary: Accept-Encoding`.
+
+Check both deployed hosts (the API and web app may use different hosts):
+
+```sh
+curl -sS -D - -o /dev/null -H 'Accept-Encoding: gzip' \
+  https://api.example.com/api/v1/processes/
+curl -sS -D - -o /dev/null -H 'Accept-Encoding: gzip' \
+  https://www.example.com/
+```
+
+For compressible responses, confirm `Content-Encoding: gzip` and
+`Vary: Accept-Encoding`. Use `curl --compressed` to download and transparently
+decompress a response while checking it remains readable:
+
+```sh
+curl --compressed -fsS -H 'Accept-Encoding: gzip' \
+  https://api.example.com/api/v1/processes/ | head
+```
