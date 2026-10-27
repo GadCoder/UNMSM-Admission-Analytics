@@ -1,0 +1,2 @@
+cd apps/fronted
+npx lint-staged
