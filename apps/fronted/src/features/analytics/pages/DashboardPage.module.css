@@ -390,16 +390,30 @@
 }
 
 .kpiComparisonContext {
-  margin: 0 0 0.55rem;
+  margin: 0;
   color: var(--color-muted);
   font-size: 0.68rem;
-  font-weight: 700;
+  font-weight: 600;
+}
+.processKpiSection {
+  margin: var(--space-5) 0;
+  --analytics-surface-padding: var(--space-5);
+}
+.processKpiHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+  margin-bottom: var(--space-4);
 }
 .kpis {
   display: grid;
   grid-template-columns: repeat(6, minmax(0, 1fr));
   gap: var(--space-3);
   margin-bottom: var(--space-5);
+}
+.processKpiGrid {
+  margin-bottom: 0;
 }
 .kpi,
 .card {
@@ -2048,6 +2062,15 @@ tbody tr:hover {
   .kpis {
     grid-template-columns: repeat(2, 1fr);
   }
+  .processKpiSection {
+    --analytics-surface-padding: var(--space-4);
+  }
+  .processKpiHeader {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 0.2rem;
+    margin-bottom: var(--space-3);
+  }
   .heading {
     align-items: flex-start;
     flex-direction: column;
@@ -2231,6 +2254,13 @@ tbody tr:hover {
   color: var(--color-muted);
   font-size: 0.68rem;
   line-height: 1.5;
+}
+.processKpiSection .kpi {
+  background: var(--color-background);
+  box-shadow: none;
+}
+.processKpiSection .kpiFootnote {
+  margin: var(--space-3) 0 0;
 }
 
 .page .processToolbar {
