@@ -16,54 +16,65 @@ import type {
 
 export type AnalyticsFilters = { academicArea?: string; faculty?: string; modality?: string };
 
-export function getPublishedProcesses(): Promise<AdmissionProcess[]> {
-  return apiFetch<AdmissionProcess[]>("/api/v1/processes/");
+export function getPublishedProcesses(signal?: AbortSignal): Promise<AdmissionProcess[]> {
+  return apiFetch<AdmissionProcess[]>("/api/v1/processes/", { signal });
 }
-export function getAcademicAreas(): Promise<AcademicArea[]> {
-  return apiFetch<AcademicArea[]>("/api/v1/academic-areas/");
+export function getAcademicAreas(signal?: AbortSignal): Promise<AcademicArea[]> {
+  return apiFetch<AcademicArea[]>("/api/v1/academic-areas/", { signal });
 }
-export function getFaculties(): Promise<Faculty[]> {
-  return apiFetch<Faculty[]>("/api/v1/faculties/");
+export function getFaculties(signal?: AbortSignal): Promise<Faculty[]> {
+  return apiFetch<Faculty[]>("/api/v1/faculties/", { signal });
 }
-export function getModalities(): Promise<Modality[]> {
-  return apiFetch<Modality[]>("/api/v1/modalities/");
+export function getModalities(signal?: AbortSignal): Promise<Modality[]> {
+  return apiFetch<Modality[]>("/api/v1/modalities/", { signal });
 }
-export function getMajorCatalog(): Promise<MajorCatalogItem[]> {
-  return apiFetch<MajorCatalogItem[]>("/api/v1/majors/");
+export function getMajorCatalog(signal?: AbortSignal): Promise<MajorCatalogItem[]> {
+  return apiFetch<MajorCatalogItem[]>("/api/v1/majors/", { signal });
 }
 
 export function getAnalyticsOverview(
   primary: string | number,
   comparisons: Array<string | number> = [],
   filters: AnalyticsFilters = {},
+  signal?: AbortSignal,
 ): Promise<ComparativeOverview> {
   const params = new URLSearchParams({ process: String(primary) });
   if (comparisons.length) params.set("compare", comparisons.slice(0, 3).map(String).join(","));
   if (filters.academicArea) params.set("academic_area", filters.academicArea);
   if (filters.faculty) params.set("faculty", filters.faculty);
   if (filters.modality) params.set("modality", filters.modality);
-  return apiFetch<ComparativeOverview>(`/api/v1/analytics/overview/?${params.toString()}`);
+  return apiFetch<ComparativeOverview>(`/api/v1/analytics/overview/?${params.toString()}`, {
+    signal,
+  });
 }
 
-export function getProcessHistory(filters: AnalyticsFilters = {}): Promise<ProcessHistory> {
+export function getProcessHistory(
+  filters: AnalyticsFilters = {},
+  signal?: AbortSignal,
+): Promise<ProcessHistory> {
   const params = new URLSearchParams();
   if (filters.academicArea) params.set("academic_area", filters.academicArea);
   if (filters.faculty) params.set("faculty", filters.faculty);
   if (filters.modality) params.set("modality", filters.modality);
   const query = params.toString();
-  return apiFetch<ProcessHistory>(`/api/v1/analytics/history/${query ? `?${query}` : ""}`);
+  return apiFetch<ProcessHistory>(`/api/v1/analytics/history/${query ? `?${query}` : ""}`, {
+    signal,
+  });
 }
 
 export function useProcessHistory(filters: AnalyticsFilters = {}) {
   return useQuery({
     queryKey: ["analytics-history", filters],
-    queryFn: () => getProcessHistory(filters),
+    queryFn: ({ signal }) => getProcessHistory(filters, signal),
     staleTime: 300000,
   });
 }
 
 export function usePublishedProcesses() {
-  return useQuery({ queryKey: ["published-processes"], queryFn: getPublishedProcesses });
+  return useQuery({
+    queryKey: ["published-processes"],
+    queryFn: ({ signal }) => getPublishedProcesses(signal),
+  });
 }
 
 export function getMajorDetail(
@@ -71,11 +82,14 @@ export function getMajorDetail(
   primary: string | number,
   comparisons: Array<string | number> = [],
   modality?: string,
+  signal?: AbortSignal,
 ): Promise<MajorDetail> {
   const params = new URLSearchParams({ process: String(primary) });
   if (comparisons.length) params.set("compare", comparisons.slice(0, 3).map(String).join(","));
   if (modality) params.set("modality", modality);
-  return apiFetch<MajorDetail>(`/api/v1/analytics/majors/${majorId}/?${params.toString()}`);
+  return apiFetch<MajorDetail>(`/api/v1/analytics/majors/${majorId}/?${params.toString()}`, {
+    signal,
+  });
 }
 
 export function useMajorDetail(
@@ -88,7 +102,7 @@ export function useMajorDetail(
   const resolvedModality = resolveAdmissionModality(modality);
   const query = useQuery({
     ...majorHistoryQueryOptions(majorId, resolvedModality, processes),
-    queryFn: () => getMajorDetail(majorId, primary, [], resolvedModality),
+    queryFn: ({ signal }) => getMajorDetail(majorId, primary, [], resolvedModality, signal),
     enabled: Boolean(majorId && processes.some((process) => String(process.id) === primary)),
     select: (detail) => {
       const selectedIds = [...new Set([primary, ...comparisons])];
@@ -149,19 +163,32 @@ export function majorHistoryQueryOptions(
 export function useAcademicAreas(enabled = true) {
   return useQuery({
     queryKey: ["academic-areas"],
-    queryFn: getAcademicAreas,
+    queryFn: ({ signal }) => getAcademicAreas(signal),
     staleTime: 300000,
     enabled,
   });
 }
 export function useFaculties(enabled = true) {
-  return useQuery({ queryKey: ["faculties"], queryFn: getFaculties, staleTime: 300000, enabled });
+  return useQuery({
+    queryKey: ["faculties"],
+    queryFn: ({ signal }) => getFaculties(signal),
+    staleTime: 300000,
+    enabled,
+  });
 }
 export function useModalities() {
-  return useQuery({ queryKey: ["modalities"], queryFn: getModalities, staleTime: 300000 });
+  return useQuery({
+    queryKey: ["modalities"],
+    queryFn: ({ signal }) => getModalities(signal),
+    staleTime: 300000,
+  });
 }
 export function useMajorCatalog() {
-  return useQuery({ queryKey: ["major-catalog"], queryFn: getMajorCatalog, staleTime: 300000 });
+  return useQuery({
+    queryKey: ["major-catalog"],
+    queryFn: ({ signal }) => getMajorCatalog(signal),
+    staleTime: 300000,
+  });
 }
 
 export function useAnalyticsOverview(
@@ -171,7 +198,7 @@ export function useAnalyticsOverview(
 ) {
   return useQuery({
     queryKey: ["analytics-overview", primary, comparisons, filters],
-    queryFn: () => getAnalyticsOverview(primary, comparisons, filters),
+    queryFn: ({ signal }) => getAnalyticsOverview(primary, comparisons, filters, signal),
     enabled: Boolean(primary),
     placeholderData: (previousData, previousQuery) =>
       JSON.stringify(previousQuery?.queryKey[3]) === JSON.stringify(filters) &&

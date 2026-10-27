@@ -79,7 +79,7 @@ export function CareerComparisonPage() {
         ? []
         : url.careerIds.map((id) => ({
             ...api.majorHistoryQueryOptions(id, modality, processes),
-            queryFn: () => api.getMajorDetail(id, processId, [], modality),
+            queryFn: ({ signal }) => api.getMajorDetail(id, processId, [], modality, signal),
             enabled: Boolean(selectedProcess),
           })),
   });
