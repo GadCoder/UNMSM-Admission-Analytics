@@ -115,3 +115,88 @@ def test_cache_read_failure_falls_through_to_public_api(monkeypatch):
 
     assert response.status_code == 404
     assert response.json() == {"detail": "No published admission process found."}
+
+
+@pytest.mark.django_db
+def test_latest_cache_hit_avoids_database_queries(django_assert_num_queries):
+    AdmissionProcess.objects.create(year=2026, sequence="26-1")
+    client = APIClient()
+    initial = client.get("/api/v1/analytics/latest/")
+    with django_assert_num_queries(0):
+        cached = client.get("/api/v1/analytics/latest/")
+    assert cached.json() == initial.json()
+
+
+@pytest.mark.django_db
+def test_import_invalidates_once_after_commit_and_refreshes_results(
+    tmp_path, django_capture_on_commit_callbacks,
+):
+    from modules.ingestion.services import import_process_directory
+
+    major_dir = tmp_path / "2026" / "26-2" / "E" / "DERECHO"
+    major_dir.mkdir(parents=True)
+    csv_path = major_dir / "postulantes.csv"
+    header = "codigo,apellidos,nombres,carrera,puntaje,merito,observacion,modalidad\n"
+    row = f"A001,DOE,JANE,DERECHO,100,1,,{DEFAULT_ADMISSION_MODALITY}\n"
+    csv_path.write_text(header + row, encoding="utf-8")
+    with django_capture_on_commit_callbacks(execute=True) as callbacks:
+        import_process_directory(major_dir.parent.parent)
+    assert len(callbacks) == 1
+    client = APIClient()
+    assert client.get("/api/v1/analytics/latest/").json()["total_results"] == 1
+
+    csv_path.write_text(header + row + row.replace("A001", "A002"), encoding="utf-8")
+    with django_capture_on_commit_callbacks(execute=True) as callbacks:
+        import_process_directory(major_dir.parent.parent)
+    assert len(callbacks) == 1
+    assert client.get("/api/v1/analytics/latest/").json()["total_results"] == 2
+    with django_capture_on_commit_callbacks(execute=True) as callbacks:
+        import_process_directory(major_dir.parent.parent, dry_run=True)
+    assert callbacks == []
+
+
+@pytest.mark.django_db
+def test_rolled_back_import_does_not_invalidate_cache(
+    tmp_path, monkeypatch, django_capture_on_commit_callbacks,
+):
+    from modules.ingestion.services import import_process_directory
+
+    major_dir = tmp_path / "2026" / "26-2" / "E" / "DERECHO"
+    major_dir.mkdir(parents=True)
+    (major_dir / "postulantes.csv").write_text(
+        "codigo,apellidos,nombres,carrera,puntaje,merito,observacion,modalidad\n"
+        "A001,DOE,JANE,DERECHO,100,1,,ORDINARIO\n", encoding="utf-8",
+    )
+
+    def fail_insert(*args, **kwargs):
+        raise RuntimeError("failed insert")
+
+    monkeypatch.setattr(AdmissionResult.objects, "bulk_create", fail_insert)
+    with django_capture_on_commit_callbacks(execute=True) as callbacks:
+        with pytest.raises(RuntimeError, match="failed insert"):
+            import_process_directory(major_dir.parent.parent)
+    assert callbacks == []
+    assert not AdmissionProcess.objects.exists()
+
+
+def test_generation_eviction_does_not_reuse_old_response():
+    from django.core.cache import cache
+
+    from modules.analytics.cache import GENERATION_KEY, get_or_compute
+
+    assert get_or_compute("test", {}, lambda: {"value": 1}) == {"value": 1}
+    cache.delete(GENERATION_KEY)
+    assert get_or_compute("test", {}, lambda: {"value": 2}) == {"value": 2}
+
+
+@pytest.mark.django_db
+def test_cache_write_failure_does_not_break_successful_response(monkeypatch):
+    AdmissionProcess.objects.create(year=2026, sequence="26-1")
+
+    def fail_set(*args, **kwargs):
+        raise OSError("cache unavailable")
+
+    monkeypatch.setattr("modules.analytics.cache.cache.set", fail_set)
+    response = APIClient().get("/api/v1/analytics/latest/")
+    assert response.status_code == 200
+    assert response.json()["total_results"] == 0

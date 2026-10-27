@@ -13,4 +13,3 @@ def isolate_cache_between_tests(settings):
     cache.clear()
     yield
     cache.clear()
-    cache.clear()

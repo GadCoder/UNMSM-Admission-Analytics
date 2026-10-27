@@ -16,12 +16,6 @@ The project defaults to SQLite when `DATABASE_URL` is unset. To use the local
 PostgreSQL container, copy the repository `.env.example` to `.env` and run the
 commands from the repository root with Docker Compose.
 
-Public analytics responses are cached for 60 seconds. Set `CACHE_REDIS_URL` to
-a Redis URL (for example, `redis://redis:6379/0`) in production to share entries
-and invalidation across API workers. Without it, Django uses a process-local
-cache; each worker remains correct but will warm its own cache. Cache failures
-fall through to the database, with the 60-second TTL bounding stale entries.
-
 ## Commands
 
 ```bash
@@ -39,6 +33,24 @@ uv run python manage.py import_results /path/to/Resultados-UNMSM/2026/26-2
 The importer supports the historical Spanish CSV schema and the newer combined
 name schema. It replaces existing results for the selected process and reports
 duplicate/rejected rows instead of silently creating inconsistent records.
+
+## Analytics caching
+
+Public analytics responses are cached for 60 seconds. Set `CACHE_REDIS_URL` to
+a Redis URL (for example, `redis://redis:6379/0`) in production to share entries
+and invalidation across API workers. Without it, Django uses a process-local
+cache; each worker warms its own entries and changes from other workers or
+management commands may remain stale for up to 60 seconds. Use shared Redis
+for invalidation across processes. Cache failures fall through to the database;
+if invalidation fails, existing entries may remain stale until their TTL expires.
+
+Imports invalidate once after the replacement transaction commits. Model saves
+and deletes also invalidate after commit, including publication changes in admin.
+Future writers using `QuerySet.update()`, `bulk_update()`, or `bulk_create()` must
+explicitly schedule `invalidate_analytics_cache` with `transaction.on_commit()`;
+those operations do not emit model save signals.
+
+## API resources
 
 The API health check is available at `/health/`. Interactive API documentation is
 available at `/api/docs/` (Swagger UI) and `/api/redoc/` (ReDoc); the raw OpenAPI

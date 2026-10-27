@@ -31,7 +31,8 @@ def suspend_invalidation():
 
 
 def _key(view_name, params):
-    generation = cache.get(GENERATION_KEY, "0")
+    # A fresh namespace after eviction must not resurrect an older default key.
+    generation = cache.get_or_set(GENERATION_KEY, lambda: uuid.uuid4().hex, timeout=None)
     payload = json.dumps(
         [view_name, generation, params], sort_keys=True, separators=(",", ":")
     )
