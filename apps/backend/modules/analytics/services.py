@@ -21,7 +21,7 @@ _EMPTY_TOTALS = {
 }
 
 
-# Minimum and average use the same valid admitted-applicant population.
+# Admitted-score statistics use the same valid admitted-applicant population.
 _VALID_ADMITTED_SCORES = Q(
     status=AdmissionResult.Status.ADMITTED,
     score__gte=Decimal("-9999.9999"), score__lte=Decimal("9999.9999"),
@@ -36,7 +36,7 @@ def _aggregate_totals(results):
         ),
         absent_count=Count("id", filter=Q(status=AdmissionResult.Status.ABSENT)),
         average_score=Avg("score", filter=_VALID_ADMITTED_SCORES),
-        highest_score=Max("score"),
+        highest_score=Max("score", filter=_VALID_ADMITTED_SCORES),
         minimum_admitted_score=Min("score", filter=_VALID_ADMITTED_SCORES),
         admitted_score_modality=Min("modality__name", filter=_VALID_ADMITTED_SCORES),
         admitted_score_modality_count=Count(

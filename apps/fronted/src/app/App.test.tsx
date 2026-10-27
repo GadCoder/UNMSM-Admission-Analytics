@@ -74,4 +74,13 @@ describe("App shell", () => {
     </Route></Routes></MemoryRouter>);
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
   });
+
+  it("preserves comparison context in primary navigation without adding a duplicate heading", () => {
+    renderWithCatalog(<MemoryRouter initialEntries={["/comparar-carreras?careers=11,22&process=9&modality=1&metric=highest_score"]}><Routes><Route element={<App />}>
+      <Route path="comparar-carreras" element={<h1>Compara carreras</h1>} />
+    </Route></Routes></MemoryRouter>);
+    expect(screen.getByRole("link", { name: "Comparar carreras" })).toHaveAttribute("aria-current", "page");
+    expect(screen.getByRole("link", { name: "Comparar carreras" })).toHaveAttribute("href", "/comparar-carreras?process=9&modality=1&careers=11%2C22&metric=highest_score");
+    expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
+  });
 });

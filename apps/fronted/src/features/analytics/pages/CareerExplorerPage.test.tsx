@@ -98,6 +98,15 @@ describe("CareerExplorerPage route integration", () => {
     expect(screen.getAllByLabelText("Modalidad")).toHaveLength(1);
     expect(screen.getByRole("link", { name: /Cambiar carrera/ })).toHaveAttribute("href", expect.stringContaining("academic_area=ING"));
     expect(screen.queryByRole("heading", { name: "Carreras con más postulantes" })).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Comparar esta carrera" })).toHaveAttribute("href", "/comparar-carreras?careers=42&process=23&modality=2");
+  });
+
+  it("returns to a validated internal comparison URL and ignores external return targets", () => {
+    renderExplorer("/carreras/42?process=23&modality=2&returnTo=%2Fcomparar-carreras%3Fcareers%3D42%2C43%26process%3D24%26modality%3D1");
+    expect(screen.getByRole("link", { name: "Volver a comparar carreras" })).toHaveAttribute("href", "/comparar-carreras?careers=42,43&process=24&modality=1");
+    cleanup();
+    renderExplorer("/carreras/42?process=23&modality=2&returnTo=https%3A%2F%2Fexample.com%2F");
+    expect(screen.queryByRole("link", { name: "Volver a comparar carreras" })).not.toBeInTheDocument();
   });
 
   it("retains discovery query and filters on career selection and returns to the query state with browser back", async () => {

@@ -30,7 +30,8 @@ class ProcessOverviewSerializer(serializers.Serializer):
     admitted_score_modality_count = serializers.IntegerField()
     admitted_score_modality = serializers.CharField(allow_null=True)
     highest_score = serializers.DecimalField(
-        max_digits=8, decimal_places=4, allow_null=True
+        max_digits=8, decimal_places=4, allow_null=True,
+        help_text="Maximum valid score among admitted applicants within the applied filters.",
     )
     majors = MajorOverviewSerializer(many=True)
 
@@ -51,7 +52,10 @@ class ProcessHistoryItemSerializer(serializers.Serializer):
     minimum_admitted_score = serializers.FloatField(allow_null=True)
     admitted_score_modality_count = serializers.IntegerField()
     admitted_score_modality = serializers.CharField(allow_null=True)
-    highest_score = serializers.DecimalField(max_digits=8, decimal_places=4, allow_null=True)
+    highest_score = serializers.DecimalField(
+        max_digits=8, decimal_places=4, allow_null=True,
+        help_text="Maximum valid score among admitted applicants within the applied filters.",
+    )
 
 
 class ProcessHistorySerializer(serializers.Serializer):
@@ -71,7 +75,8 @@ class MajorProcessDetailSerializer(serializers.Serializer):
     admitted_score_modality_count = serializers.IntegerField()
     admitted_score_modality = serializers.CharField(allow_null=True)
     highest_score = serializers.DecimalField(
-        max_digits=8, decimal_places=4, allow_null=True
+        max_digits=8, decimal_places=4, allow_null=True,
+        help_text="Maximum valid score among admitted applicants in this career, process and modality.",
     )
 
 

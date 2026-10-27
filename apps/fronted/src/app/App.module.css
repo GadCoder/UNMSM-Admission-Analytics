@@ -13,6 +13,12 @@
 .headerNav a.activeLink { background:rgb(255 255 255 / 14%); color:#fff; }
 
 .main { max-width:var(--content-width); margin:0 auto; padding:var(--space-8) var(--space-6) var(--space-12); }
+@media (max-width:1050px) {
+  .header { flex-wrap:wrap; }
+  .header > div { flex:1; }
+  .headerNav { width:100%; min-height:2.75rem; margin-left:0; justify-content:space-between; }
+  .headerNav a { flex:1; justify-content:center; white-space:normal; text-align:center; }
+}
 @media (max-width:760px) {
   .header { flex-wrap:wrap; }
   .header > div { flex:1; }

@@ -9,6 +9,8 @@ import dashboardStyles from "./DashboardPage.module.css";
 import { CareerBrowse } from "./CareerBrowse";
 import { MajorDetailContent } from "./MajorDetailPage";
 import styles from "./CareerExplorerPage.module.css";
+import { isValidComparisonReturnTo } from "../utils/careerNavigation";
+import { buildCareerComparisonHref } from "../utils/careerComparisonUrl";
 
 export function CareerExplorerPage() {
   const { majorId } = useParams();
@@ -44,6 +46,7 @@ export function CareerExplorerPage() {
   const discoveryHref = `/carreras?${discoveryParams}`;
   const origin = params.get("returnTo");
   const processOrigin = origin?.startsWith("/?") ? origin : undefined;
+  const comparisonOrigin = isValidComparisonReturnTo(origin) ? origin : undefined;
 
   if (processesQuery.isPending && !processesQuery.data) return <p role="status">Cargando procesos…</p>;
   if (processesQuery.isError && !processesQuery.data) return <div role="alert" className={styles.notice}>
@@ -71,6 +74,8 @@ export function CareerExplorerPage() {
   return <div className={styles.page}>
     {majorId && <div className={styles.detailNavigation}>
       <Link className={styles.changeCareer} to={discoveryHref}>← Cambiar carrera</Link>
+      {comparisonOrigin && <Link to={comparisonOrigin}>Volver a comparar carreras</Link>}
+      {majorId && Number.isSafeInteger(Number(majorId)) && Number(majorId) > 0 && <Link to={buildCareerComparisonHref({ careerIds: [Number(majorId)], processId, modalityId: modalityParam })}>Comparar esta carrera</Link>}
       {processOrigin && <Link to={processOrigin}>Volver a resultados del proceso</Link>}
     </div>}
     {modalitiesQuery.isError && <div role="status" className={styles.notice}>
