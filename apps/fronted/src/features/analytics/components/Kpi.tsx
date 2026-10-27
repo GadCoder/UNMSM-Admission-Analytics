@@ -11,9 +11,17 @@ type KpiProps = {
 
 export function Kpi({ label, value, trend, description, footnoteId }: KpiProps) {
   return (
-    <article className={styles.kpi} title={description} aria-description={description} aria-describedby={footnoteId}>
+    <article
+      className={styles.kpi}
+      title={description}
+      aria-description={description}
+      aria-describedby={footnoteId}
+    >
       <div className={styles.kpiValueBlock}>
-        <span className={styles.kpiLabel}>{label}{footnoteId && <sup aria-hidden="true">*</sup>}</span>
+        <span className={styles.kpiLabel}>
+          {label}
+          {footnoteId && <sup aria-hidden="true">*</sup>}
+        </span>
         <div className={styles.kpiValuePrimary}>
           <strong>{value}</strong>
         </div>

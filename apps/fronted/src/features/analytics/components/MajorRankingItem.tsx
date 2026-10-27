@@ -13,15 +13,10 @@ type MajorRankingItemProps = {
   overviews: ProcessOverview[];
 };
 
-export function MajorRankingItem({
-  major,
-  rank,
-  overviews,
-}: MajorRankingItemProps) {
+export function MajorRankingItem({ major, rank, overviews }: MajorRankingItemProps) {
   const comparisonMode = overviews.length > 1;
   const [primary] = overviews;
   const comparisonGridStyle = getComparisonGridStyle(overviews.length);
-
 
   return (
     <li
@@ -37,17 +32,13 @@ export function MajorRankingItem({
           <strong>{major.major_name}</strong>
         </Link>
         {!comparisonMode && (
-          <span className={styles.majorApplicants}>
-            {formatNumber(major.total_results)}
-          </span>
+          <span className={styles.majorApplicants}>{formatNumber(major.total_results)}</span>
         )}
       </div>
       {comparisonMode ? (
         <div className={styles.majorComparisonValues}>
           {overviews.map((overview) => {
-            const processMajor = overview.majors.find(
-              (item) => item.major_id === major.major_id,
-            );
+            const processMajor = overview.majors.find((item) => item.major_id === major.major_id);
             return processMajor ? (
               <ComparisonMetrics
                 key={overview.process.id}

@@ -16,15 +16,14 @@ export function ProcessComparisonTable({ overviews, metricValues }: ProcessCompa
   return (
     <div className={styles.processComparisonTableWrap}>
       <table className={styles.processComparisonTable}>
-        <caption className={styles.visuallyHidden}>Comparación de postulantes, admitidos y ausentes entre procesos</caption>
+        <caption className={styles.visuallyHidden}>
+          Comparación de postulantes, admitidos y ausentes entre procesos
+        </caption>
         <thead>
           <tr>
             <th scope="col" aria-label="Métrica"></th>
             {overviews.map((overview) => (
-              <th
-                scope="col"
-                key={overview.process.id}
-              >
+              <th scope="col" key={overview.process.id}>
                 <strong>{formatProcessLabel(overview.process)}</strong>
               </th>
             ))}
@@ -35,10 +34,18 @@ export function ProcessComparisonTable({ overviews, metricValues }: ProcessCompa
             <tr key={row.label}>
               <th scope="row">{row.label}</th>
               {row.values.map((value, index) => (
-                <td
-                  key={`${row.label}-${overviews[index].process.id}`}
-                >
-                  <span className={comparisonExtremum(row, index) === "maximum" ? styles.metricMaximum : comparisonExtremum(row, index) === "minimum" ? styles.metricMinimum : undefined}>{value}</span>
+                <td key={`${row.label}-${overviews[index].process.id}`}>
+                  <span
+                    className={
+                      comparisonExtremum(row, index) === "maximum"
+                        ? styles.metricMaximum
+                        : comparisonExtremum(row, index) === "minimum"
+                          ? styles.metricMinimum
+                          : undefined
+                    }
+                  >
+                    {value}
+                  </span>
                 </td>
               ))}
             </tr>

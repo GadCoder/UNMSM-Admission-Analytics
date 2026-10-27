@@ -15,9 +15,7 @@ export function ComparisonMetrics({ major, overview }: ComparisonMetricsProps) {
 
   return (
     <div className={styles.majorComparisonCell}>
-      <span className={styles.majorComparisonProcess}>
-        {formatProcessLabel(overview.process)}
-      </span>
+      <span className={styles.majorComparisonProcess}>{formatProcessLabel(overview.process)}</span>
       <strong>{formatNumber(major.total_results)}</strong>
       <span>{formatNumber(share, 1)}% del total</span>
     </div>
@@ -29,10 +27,7 @@ type SingleProcessMetricsProps = {
   overview: ProcessOverview;
 };
 
-export function SingleProcessMetrics({
-  major,
-  overview,
-}: SingleProcessMetricsProps) {
+export function SingleProcessMetrics({ major, overview }: SingleProcessMetricsProps) {
   const { share } = calculateMetrics(major, overview.total_results);
 
   return (
@@ -47,16 +42,9 @@ type MajorComparisonHeaderProps = {
   style: CSSProperties;
 };
 
-export function MajorComparisonHeader({
-  overviews,
-  style,
-}: MajorComparisonHeaderProps) {
+export function MajorComparisonHeader({ overviews, style }: MajorComparisonHeaderProps) {
   return (
-    <div
-      className={styles.majorComparisonHeader}
-      style={style}
-      aria-hidden="true"
-    >
+    <div className={styles.majorComparisonHeader} style={style} aria-hidden="true">
       <span>Carrera</span>
       {overviews.map((overview) => (
         <span key={overview.process.id}>{formatProcessLabel(overview.process)}</span>

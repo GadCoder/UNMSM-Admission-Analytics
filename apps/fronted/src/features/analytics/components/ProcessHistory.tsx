@@ -19,23 +19,50 @@ function sequenceOrder(sequence: string) {
 }
 
 function compareProcessPeriod(left: ProcessHistoryItem, right: ProcessHistoryItem) {
-  return right.process.year - left.process.year
-    || sequenceOrder(right.process.sequence) - sequenceOrder(left.process.sequence)
-    || right.process.id - left.process.id;
+  return (
+    right.process.year - left.process.year ||
+    sequenceOrder(right.process.sequence) - sequenceOrder(left.process.sequence) ||
+    right.process.id - left.process.id
+  );
 }
 
-export function ProcessHistory({ items, selectedProcessId, status = "ready", onSelectProcess }: ProcessHistoryProps) {
+export function ProcessHistory({
+  items,
+  selectedProcessId,
+  status = "ready",
+  onSelectProcess,
+}: ProcessHistoryProps) {
   const history = [...items].sort(compareProcessPeriod);
 
   return (
-    <section className={`${styles.card} ${styles.comparisonCard}`} aria-labelledby="process-history-heading" aria-busy={status === "loading"}>
+    <section
+      className={`${styles.card} ${styles.comparisonCard}`}
+      aria-labelledby="process-history-heading"
+      aria-busy={status === "loading"}
+    >
       <header className={styles.comparisonCardHeader}>
-        <h2 id="process-history-heading" className={surfaceStyles.sectionTitle}>Resultados históricos</h2>
+        <h2 id="process-history-heading" className={surfaceStyles.sectionTitle}>
+          Resultados históricos
+        </h2>
       </header>
-      {status === "loading" ? <p role="status" className={styles.historyState}>Cargando resultados históricos…</p>
-        : status === "error" ? <p role="alert" className={styles.historyState}>No pudimos cargar los resultados históricos.</p>
-        : history.length === 0 ? <p className={styles.historyState}>Aún no hay resultados históricos disponibles.</p>
-        : <MajorDetailHistory items={history} selectedProcessId={selectedProcessId} initialProcessCount={3} onSelectProcess={onSelectProcess} />}
+      {status === "loading" ? (
+        <p role="status" className={styles.historyState}>
+          Cargando resultados históricos…
+        </p>
+      ) : status === "error" ? (
+        <p role="alert" className={styles.historyState}>
+          No pudimos cargar los resultados históricos.
+        </p>
+      ) : history.length === 0 ? (
+        <p className={styles.historyState}>Aún no hay resultados históricos disponibles.</p>
+      ) : (
+        <MajorDetailHistory
+          items={history}
+          selectedProcessId={selectedProcessId}
+          initialProcessCount={3}
+          onSelectProcess={onSelectProcess}
+        />
+      )}
     </section>
   );
 }

@@ -1,7 +1,12 @@
 import { useId, useMemo, useState } from "react";
 
 import type { ProcessMetrics } from "../api/analytics.types";
-import { METRIC_OPTIONS, canCompareMinimumScores, getMetricValue, type MetricKey } from "./metricHistory";
+import {
+  METRIC_OPTIONS,
+  canCompareMinimumScores,
+  getMetricValue,
+  type MetricKey,
+} from "./metricHistory";
 import { formatNumber } from "../utils/formatters";
 import { formatProcessLabel } from "../utils/processLabels";
 import { MetricHistoryPlot } from "./MetricHistoryPlot";
@@ -19,9 +24,24 @@ type MetricHistoryChartProps = {
 };
 
 function getStatusMessage(status: MetricHistoryChartProps["status"], hasValues: boolean) {
-  if (status === "loading") return <p className={styles.metricHistoryEmpty} role="status">Cargando evolución histórica…</p>;
-  if (status === "error") return <p className={styles.metricHistoryEmpty} role="alert">No pudimos cargar la evolución histórica.</p>;
-  if (!hasValues) return <p className={styles.metricHistoryEmpty}>Aún no hay suficientes procesos publicados para mostrar una evolución histórica.</p>;
+  if (status === "loading")
+    return (
+      <p className={styles.metricHistoryEmpty} role="status">
+        Cargando evolución histórica…
+      </p>
+    );
+  if (status === "error")
+    return (
+      <p className={styles.metricHistoryEmpty} role="alert">
+        No pudimos cargar la evolución histórica.
+      </p>
+    );
+  if (!hasValues)
+    return (
+      <p className={styles.metricHistoryEmpty}>
+        Aún no hay suficientes procesos publicados para mostrar una evolución histórica.
+      </p>
+    );
   return null;
 }
 
@@ -56,7 +76,9 @@ function getMinimumScoreInsight(items: ProcessMetrics[], selectedProcessId?: num
 
   const last = segment.at(-1)!;
   const prior = segment.at(-2)!;
-  const changes = segment.slice(1).map((item, index) => item.minimum_admitted_score! - segment[index].minimum_admitted_score!);
+  const changes = segment
+    .slice(1)
+    .map((item, index) => item.minimum_admitted_score! - segment[index].minimum_admitted_score!);
   const monotonic = changes.every((change) => change > 0) || changes.every((change) => change < 0);
   const first = monotonic ? segment[0] : prior;
   const difference = last.minimum_admitted_score! - first.minimum_admitted_score!;
@@ -65,7 +87,8 @@ function getMinimumScoreInsight(items: ProcessMetrics[], selectedProcessId?: num
     return `${period}, el puntaje mínimo de ingreso se mantuvo en ${formatNumber(last.minimum_admitted_score!, 4)} puntos en esta modalidad.`;
   }
   const direction = difference > 0 ? "aumentó" : "disminuyó";
-  const continuity = monotonic && segment.length > 2 ? ` a lo largo de ${segment.length} procesos consecutivos` : "";
+  const continuity =
+    monotonic && segment.length > 2 ? ` a lo largo de ${segment.length} procesos consecutivos` : "";
   return `${period}, el puntaje mínimo de ingreso ${direction} ${formatNumber(Math.abs(difference), 2)} puntos${continuity} en esta modalidad.`;
 }
 
@@ -83,20 +106,30 @@ function getInsight(items: ProcessMetrics[], metric: MetricKey) {
     .map(([year, entries]) => ({ year, entries: entries.sort((a, b) => a.order - b.order) }))
     .filter(({ entries }) => entries.length >= 2)
     .sort((a, b) => a.year - b.year)
-    .map(({ year, entries }) => ({ year, firstExceedsSecond: entries[0].value > entries[1].value }));
+    .map(({ year, entries }) => ({
+      year,
+      firstExceedsSecond: entries[0].value > entries[1].value,
+    }));
 
   let repeatedPattern: { start: number; end: number; direction: boolean } | null = null;
   for (let start = 0; start < withinYearComparisons.length; start += 1) {
     let end = start + 1;
-    while (end < withinYearComparisons.length
-      && withinYearComparisons[end].firstExceedsSecond === withinYearComparisons[start].firstExceedsSecond) end += 1;
+    while (
+      end < withinYearComparisons.length &&
+      withinYearComparisons[end].firstExceedsSecond ===
+        withinYearComparisons[start].firstExceedsSecond
+    )
+      end += 1;
     if (end - start >= 2 && (!repeatedPattern || end > repeatedPattern.end)) {
       repeatedPattern = { start, end, direction: withinYearComparisons[start].firstExceedsSecond };
     }
   }
 
   if (repeatedPattern) {
-    const years = withinYearComparisons.slice(repeatedPattern.start, repeatedPattern.end).map(({ year }) => year).join(" y ");
+    const years = withinYearComparisons
+      .slice(repeatedPattern.start, repeatedPattern.end)
+      .map(({ year }) => year)
+      .join(" y ");
     const metricPhrase: Record<MetricKey, string> = {
       total_results: "la cantidad de postulantes",
       admitted_count: "la cantidad de ingresantes",
@@ -132,7 +165,8 @@ function getInsight(items: ProcessMetrics[], metric: MetricKey) {
     const current = yearly.get(years[index])!;
     for (const [period, value] of current) {
       const priorValue = previous.get(period);
-      if (priorValue !== undefined && priorValue !== 0) changes.push(((value - priorValue) / Math.abs(priorValue)) * 100);
+      if (priorValue !== undefined && priorValue !== 0)
+        changes.push(((value - priorValue) / Math.abs(priorValue)) * 100);
     }
   }
 
@@ -143,36 +177,60 @@ function getInsight(items: ProcessMetrics[], metric: MetricKey) {
     return `El valor disminuyó en los ${changes.length} procesos comparables más recientes entre años.`;
   }
 
-  const values = items.map((item) => getMetricValue(item, metric)).filter((value): value is number => value !== null);
+  const values = items
+    .map((item) => getMetricValue(item, metric))
+    .filter((value): value is number => value !== null);
   if (values.length >= 4) {
     const latest = values.at(-1)!;
     const max = Math.max(...values);
     const min = Math.min(...values);
-    if (latest === max && max > values.slice(0, -1).reduce((currentMax, value) => Math.max(currentMax, value), -Infinity)) {
+    if (
+      latest === max &&
+      max >
+        values.slice(0, -1).reduce((currentMax, value) => Math.max(currentMax, value), -Infinity)
+    ) {
       return "El último proceso alcanzó el valor más alto de la serie histórica.";
     }
-    if (latest === min && min < values.slice(0, -1).reduce((currentMin, value) => Math.min(currentMin, value), Infinity)) {
+    if (
+      latest === min &&
+      min < values.slice(0, -1).reduce((currentMin, value) => Math.min(currentMin, value), Infinity)
+    ) {
       return "El último proceso registró el valor más bajo de la serie histórica.";
     }
   }
   return null;
 }
 
-export function MetricHistoryChart({ items, title, status = "ready", defaultMetric = "total_results", selectedProcessId }: MetricHistoryChartProps) {
+export function MetricHistoryChart({
+  items,
+  title,
+  status = "ready",
+  defaultMetric = "total_results",
+  selectedProcessId,
+}: MetricHistoryChartProps) {
   const [metricChoice, setSelectedMetric] = useState<MetricKey | null>(null);
   const selectedMetric = metricChoice ?? defaultMetric;
   const [showLimitations, setShowLimitations] = useState(false);
   const limitationsId = useId();
-  const metric = METRIC_OPTIONS.find((option) => option.key === selectedMetric) ?? METRIC_OPTIONS[0];
-  const orderedItems = useMemo(() => [...items].sort((a, b) => chronologicalValue(a) - chronologicalValue(b)), [items]);
-  const values = useMemo(() => orderedItems.flatMap((item) => {
-    const value = getMetricValue(item, selectedMetric);
-    return value === null ? [] : [{ item, value }];
-  }), [orderedItems, selectedMetric]);
+  const metric =
+    METRIC_OPTIONS.find((option) => option.key === selectedMetric) ?? METRIC_OPTIONS[0];
+  const orderedItems = useMemo(
+    () => [...items].sort((a, b) => chronologicalValue(a) - chronologicalValue(b)),
+    [items],
+  );
+  const values = useMemo(
+    () =>
+      orderedItems.flatMap((item) => {
+        const value = getMetricValue(item, selectedMetric);
+        return value === null ? [] : [{ item, value }];
+      }),
+    [orderedItems, selectedMetric],
+  );
   const statusMessage = getStatusMessage(status, values.length > 0);
-  const insight = selectedMetric === "minimum_admitted_score"
-    ? getMinimumScoreInsight(orderedItems, selectedProcessId)
-    : getInsight(orderedItems, selectedMetric);
+  const insight =
+    selectedMetric === "minimum_admitted_score"
+      ? getMinimumScoreInsight(orderedItems, selectedProcessId)
+      : getInsight(orderedItems, selectedMetric);
 
   return (
     <AnalyticsSurface className={styles.metricHistory} aria-label={title}>
@@ -182,25 +240,67 @@ export function MetricHistoryChart({ items, title, status = "ready", defaultMetr
             <h2 className={surfaceStyles.sectionTitle}>{title}</h2>
             <p>{metric.label} por proceso de admisión</p>
           </div>
-          <SelectField label="Métrica" aria-label="Métrica" value={selectedMetric} onChange={(event) => setSelectedMetric(event.target.value as MetricKey)}>
-            {METRIC_OPTIONS.map((option) => <option key={option.key} value={option.key}>{option.label}</option>)}
+          <SelectField
+            label="Métrica"
+            aria-label="Métrica"
+            value={selectedMetric}
+            onChange={(event) => setSelectedMetric(event.target.value as MetricKey)}
+          >
+            {METRIC_OPTIONS.map((option) => (
+              <option key={option.key} value={option.key}>
+                {option.label}
+              </option>
+            ))}
           </SelectField>
         </header>
-        {selectedMetric === "minimum_admitted_score" && <div className={styles.metricHistoryExplanation}>
-          <p>Menor puntaje obtenido por un ingresante en cada proceso. Los resultados históricos no garantizan el ingreso futuro.</p>
-          <div className={styles.metricHistoryHelp} onMouseEnter={() => setShowLimitations(true)} onMouseLeave={() => setShowLimitations(false)}>
-            <button type="button" aria-label="Información sobre comparabilidad de puntajes" aria-describedby={showLimitations ? limitationsId : undefined}
-              onFocus={() => setShowLimitations(true)} onBlur={() => setShowLimitations(false)} onClick={() => setShowLimitations(true)}
-              onKeyDown={(event) => { if (event.key === "Escape") setShowLimitations(false); }}>ⓘ</button>
-            {showLimitations && <span id={limitationsId} role="tooltip" className={styles.metricHistoryHelpTooltip}>
-              Las comparaciones usan mínimos válidos de una misma modalidad identificada. Los procesos con modalidades mezcladas o sin datos se muestran como huecos. Las escalas y reglas históricas no están documentadas; una modalidad común no confirma que esas reglas sean iguales.
-            </span>}
+        {selectedMetric === "minimum_admitted_score" && (
+          <div className={styles.metricHistoryExplanation}>
+            <p>
+              Menor puntaje obtenido por un ingresante en cada proceso. Los resultados históricos no
+              garantizan el ingreso futuro.
+            </p>
+            <div
+              className={styles.metricHistoryHelp}
+              onMouseEnter={() => setShowLimitations(true)}
+              onMouseLeave={() => setShowLimitations(false)}
+            >
+              <button
+                type="button"
+                aria-label="Información sobre comparabilidad de puntajes"
+                aria-describedby={showLimitations ? limitationsId : undefined}
+                onFocus={() => setShowLimitations(true)}
+                onBlur={() => setShowLimitations(false)}
+                onClick={() => setShowLimitations(true)}
+                onKeyDown={(event) => {
+                  if (event.key === "Escape") setShowLimitations(false);
+                }}
+              >
+                ⓘ
+              </button>
+              {showLimitations && (
+                <span id={limitationsId} role="tooltip" className={styles.metricHistoryHelpTooltip}>
+                  Las comparaciones usan mínimos válidos de una misma modalidad identificada. Los
+                  procesos con modalidades mezcladas o sin datos se muestran como huecos. Las
+                  escalas y reglas históricas no están documentadas; una modalidad común no confirma
+                  que esas reglas sean iguales.
+                </span>
+              )}
+            </div>
           </div>
-        </div>}
+        )}
         {statusMessage ?? (
           <>
-            <MetricHistoryPlot items={orderedItems} metric={metric} selectedProcessId={selectedProcessId} />
-            {insight && <aside className={styles.metricHistoryInsight}><strong>Patrón histórico</strong><p>{insight}</p></aside>}
+            <MetricHistoryPlot
+              items={orderedItems}
+              metric={metric}
+              selectedProcessId={selectedProcessId}
+            />
+            {insight && (
+              <aside className={styles.metricHistoryInsight}>
+                <strong>Patrón histórico</strong>
+                <p>{insight}</p>
+              </aside>
+            )}
           </>
         )}
       </div>

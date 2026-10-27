@@ -10,7 +10,14 @@ type SelectFieldProps = Omit<ComponentPropsWithoutRef<"select">, "children" | "c
   wrapperClassName?: string;
 };
 
-export function SelectField({ label, children, id, className = "", wrapperClassName, ...selectProps }: SelectFieldProps) {
+export function SelectField({
+  label,
+  children,
+  id,
+  className = "",
+  wrapperClassName,
+  ...selectProps
+}: SelectFieldProps) {
   const generatedId = useId();
   const controlId = id ?? generatedId;
   const controlClassName = [styles.control, styles.select, className].filter(Boolean).join(" ");

@@ -9,12 +9,21 @@ export function DashboardLoadingSkeleton() {
     <div className={styles.skeletonPage} role="status" aria-label="Cargando resultados de admisión">
       <span className={styles.visuallyHidden}>Cargando resultados de admisión…</span>
       <div className={styles.skeletonKpis} aria-hidden="true">
-        {Array.from({ length: 6 }, (_, index) => <div className={styles.skeletonKpi} key={index}><SkeletonLine className={styles.skeletonKpiLabel} /><SkeletonLine className={styles.skeletonKpiValue} /></div>)}
+        {Array.from({ length: 6 }, (_, index) => (
+          <div className={styles.skeletonKpi} key={index}>
+            <SkeletonLine className={styles.skeletonKpiLabel} />
+            <SkeletonLine className={styles.skeletonKpiValue} />
+          </div>
+        ))}
       </div>
       <div className={styles.skeletonCard} aria-hidden="true">
         <SkeletonLine className={styles.skeletonSectionTitle} />
         <SkeletonLine className={styles.skeletonSectionDescription} />
-        <div className={styles.skeletonRows}>{Array.from({ length: 5 }, (_, index) => <SkeletonLine className={styles.skeletonRow} key={index} />)}</div>
+        <div className={styles.skeletonRows}>
+          {Array.from({ length: 5 }, (_, index) => (
+            <SkeletonLine className={styles.skeletonRow} key={index} />
+          ))}
+        </div>
       </div>
     </div>
   );
@@ -25,9 +34,22 @@ export function DashboardOverviewLoadingSkeleton() {
     <div className={styles.skeletonPage} role="status" aria-label="Cargando indicadores">
       <span className={styles.visuallyHidden}>Cargando indicadores…</span>
       <div className={styles.skeletonKpis} aria-hidden="true">
-        {Array.from({ length: 6 }, (_, index) => <div className={styles.skeletonKpi} key={index}><SkeletonLine className={styles.skeletonKpiLabel} /><SkeletonLine className={styles.skeletonKpiValue} /></div>)}
+        {Array.from({ length: 6 }, (_, index) => (
+          <div className={styles.skeletonKpi} key={index}>
+            <SkeletonLine className={styles.skeletonKpiLabel} />
+            <SkeletonLine className={styles.skeletonKpiValue} />
+          </div>
+        ))}
       </div>
-      <div className={styles.skeletonCard} aria-hidden="true"><SkeletonLine className={styles.skeletonSectionTitle} /><SkeletonLine className={styles.skeletonSectionDescription} /><div className={styles.skeletonRows}>{Array.from({ length: 5 }, (_, index) => <SkeletonLine className={styles.skeletonRow} key={index} />)}</div></div>
+      <div className={styles.skeletonCard} aria-hidden="true">
+        <SkeletonLine className={styles.skeletonSectionTitle} />
+        <SkeletonLine className={styles.skeletonSectionDescription} />
+        <div className={styles.skeletonRows}>
+          {Array.from({ length: 5 }, (_, index) => (
+            <SkeletonLine className={styles.skeletonRow} key={index} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
@@ -36,27 +58,55 @@ export function MajorDetailLoadingSkeleton() {
   return (
     <div className={styles.skeletonPage} role="status" aria-label="Cargando detalle de la carrera">
       <span className={styles.visuallyHidden}>Cargando detalle de la carrera…</span>
-      <div className={styles.skeletonBack} aria-hidden="true"><SkeletonLine className={styles.skeletonBackLine} /></div>
+      <div className={styles.skeletonBack} aria-hidden="true">
+        <SkeletonLine className={styles.skeletonBackLine} />
+      </div>
       <div className={styles.skeletonHero} aria-hidden="true">
-        <div className={styles.skeletonHeroCopy}><SkeletonLine className={styles.skeletonEyebrow} /><SkeletonLine className={styles.skeletonTitle} /><SkeletonLine className={styles.skeletonDescription} /></div>
+        <div className={styles.skeletonHeroCopy}>
+          <SkeletonLine className={styles.skeletonEyebrow} />
+          <SkeletonLine className={styles.skeletonTitle} />
+          <SkeletonLine className={styles.skeletonDescription} />
+        </div>
         <div className={styles.skeletonControls}>
-          <div><SkeletonLine className={styles.skeletonLabel} /><SkeletonLine className={styles.skeletonControl} /></div>
-          <div><SkeletonLine className={styles.skeletonLabel} /><SkeletonLine className={styles.skeletonControl} /></div>
+          <div>
+            <SkeletonLine className={styles.skeletonLabel} />
+            <SkeletonLine className={styles.skeletonControl} />
+          </div>
+          <div>
+            <SkeletonLine className={styles.skeletonLabel} />
+            <SkeletonLine className={styles.skeletonControl} />
+          </div>
         </div>
       </div>
       <div className={styles.skeletonKpis} aria-hidden="true">
-        {Array.from({ length: 6 }, (_, index) => <div className={styles.skeletonKpi} key={index}><SkeletonLine className={styles.skeletonKpiLabel} /><SkeletonLine className={styles.skeletonKpiValue} /></div>)}
+        {Array.from({ length: 6 }, (_, index) => (
+          <div className={styles.skeletonKpi} key={index}>
+            <SkeletonLine className={styles.skeletonKpiLabel} />
+            <SkeletonLine className={styles.skeletonKpiValue} />
+          </div>
+        ))}
       </div>
-      <div className={styles.skeletonCard} aria-hidden="true"><SkeletonLine className={styles.skeletonSectionTitle} /><div className={styles.skeletonRows}>{Array.from({ length: 6 }, (_, index) => <SkeletonLine className={styles.skeletonRow} key={index} />)}</div></div>
+      <div className={styles.skeletonCard} aria-hidden="true">
+        <SkeletonLine className={styles.skeletonSectionTitle} />
+        <div className={styles.skeletonRows}>
+          {Array.from({ length: 6 }, (_, index) => (
+            <SkeletonLine className={styles.skeletonRow} key={index} />
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
 
 export function MajorBreakdownSortingSkeleton() {
-  return <div className={styles.sortingSkeleton} role="status" aria-label="Ordenando carreras">
-    <span className={styles.visuallyHidden}>Ordenando carreras…</span>
-    <div className={styles.skeletonRows} aria-hidden="true">
-      {Array.from({ length: 5 }, (_, index) => <SkeletonLine className={styles.skeletonRow} key={index} />)}
+  return (
+    <div className={styles.sortingSkeleton} role="status" aria-label="Ordenando carreras">
+      <span className={styles.visuallyHidden}>Ordenando carreras…</span>
+      <div className={styles.skeletonRows} aria-hidden="true">
+        {Array.from({ length: 5 }, (_, index) => (
+          <SkeletonLine className={styles.skeletonRow} key={index} />
+        ))}
+      </div>
     </div>
-  </div>;
+  );
 }

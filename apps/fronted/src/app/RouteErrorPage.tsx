@@ -12,11 +12,15 @@ function PageMessage({ code, title, message }: PageMessageProps) {
   return (
     <main className={styles.page}>
       <section className={styles.message} aria-labelledby="page-message-title">
-        <p className={styles.face} aria-hidden="true">:(</p>
+        <p className={styles.face} aria-hidden="true">
+          :(
+        </p>
         <p className={styles.code}>{code}</p>
         <h1 id="page-message-title">{title}</h1>
         <p className={styles.description}>{message}</p>
-        <Link className={styles.homeLink} to="/">Volver al inicio</Link>
+        <Link className={styles.homeLink} to="/">
+          Volver al inicio
+        </Link>
       </section>
     </main>
   );
@@ -40,9 +44,11 @@ export function RouteErrorPage() {
     <PageMessage
       code={isMissingRoute ? "404" : "Error"}
       title={isMissingRoute ? "No encontramos esa página" : "No pudimos cargar esta página"}
-      message={isMissingRoute
-        ? "Revisa la dirección o vuelve al inicio para seguir explorando los resultados de admisión."
-        : "Ocurrió un problema al mostrar esta página. Puedes volver al inicio e intentarlo de nuevo."}
+      message={
+        isMissingRoute
+          ? "Revisa la dirección o vuelve al inicio para seguir explorando los resultados de admisión."
+          : "Ocurrió un problema al mostrar esta página. Puedes volver al inicio e intentarlo de nuevo."
+      }
     />
   );
 }

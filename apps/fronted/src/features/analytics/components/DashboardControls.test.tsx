@@ -27,7 +27,9 @@ describe("DashboardControls process selector", () => {
   });
 
   it("reflects a process selected elsewhere in the page", () => {
-    const { rerender } = render(<DashboardControls processes={processes} primaryId="4" onChange={vi.fn()} />);
+    const { rerender } = render(
+      <DashboardControls processes={processes} primaryId="4" onChange={vi.fn()} />,
+    );
     rerender(<DashboardControls processes={processes} primaryId="1" onChange={vi.fn()} />);
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("1");
   });

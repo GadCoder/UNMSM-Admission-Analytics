@@ -23,10 +23,7 @@ export function MajorRankingList({ majors, overviews }: MajorRankingListProps) {
         </div>
       )}
       {comparisonMode && (
-        <MajorComparisonHeader
-          overviews={overviews}
-          style={comparisonGridStyle}
-        />
+        <MajorComparisonHeader overviews={overviews} style={comparisonGridStyle} />
       )}
       <ol className={styles.majorRanking} aria-label="Principales carreras por postulantes">
         {majors.map((major, index) => (

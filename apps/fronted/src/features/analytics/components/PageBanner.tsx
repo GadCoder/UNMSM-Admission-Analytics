@@ -11,16 +11,25 @@ type PageBannerProps = {
   children?: ReactNode;
 };
 
-export function PageBanner({ eyebrow, title, titleId, description, filters, children }: PageBannerProps) {
-  return <section className={styles.banner} aria-labelledby={titleId}>
-    <div className={styles.heading}>
-      <div>
-        <p className={styles.eyebrow}>{eyebrow}</p>
-        <h1 id={titleId}>{title}</h1>
-        {description && <p className={styles.description}>{description}</p>}
+export function PageBanner({
+  eyebrow,
+  title,
+  titleId,
+  description,
+  filters,
+  children,
+}: PageBannerProps) {
+  return (
+    <section className={styles.banner} aria-labelledby={titleId}>
+      <div className={styles.heading}>
+        <div>
+          <p className={styles.eyebrow}>{eyebrow}</p>
+          <h1 id={titleId}>{title}</h1>
+          {description && <p className={styles.description}>{description}</p>}
+        </div>
       </div>
-    </div>
-    {filters}
-    {children}
-  </section>;
+      {filters}
+      {children}
+    </section>
+  );
 }

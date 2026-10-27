@@ -6,10 +6,7 @@ type MajorDemandSummaryProps = {
   highestAdmission?: MajorOverview;
 };
 
-export function MajorDemandSummary({
-  mostDemanded,
-  highestAdmission,
-}: MajorDemandSummaryProps) {
+export function MajorDemandSummary({ mostDemanded, highestAdmission }: MajorDemandSummaryProps) {
   if (!mostDemanded || !highestAdmission) return null;
 
   return (

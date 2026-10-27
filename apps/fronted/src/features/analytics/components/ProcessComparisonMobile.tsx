@@ -10,7 +10,13 @@ type ProcessComparisonMobileProps = {
 
 export function ProcessComparisonMobile({ overviews, rows }: ProcessComparisonMobileProps) {
   return (
-    <div className={styles.comparisonMobile} aria-label="Comparación móvil por métrica" data-testid="comparison-mobile" data-process-count={overviews.length} data-mobile-layout="heading-above-values">
+    <div
+      className={styles.comparisonMobile}
+      aria-label="Comparación móvil por métrica"
+      data-testid="comparison-mobile"
+      data-process-count={overviews.length}
+      data-mobile-layout="heading-above-values"
+    >
       {rows.map((row) => (
         <section className={styles.comparisonMobileMetric} key={row.label}>
           <h3>{row.label}</h3>
@@ -22,7 +28,11 @@ export function ProcessComparisonMobile({ overviews, rows }: ProcessComparisonMo
                 key={`${row.label}-${overviews[index].process.id}`}
               >
                 <span>{formatProcessLabel(overviews[index].process)}</span>
-                <strong className={isComparisonWinner(row, index) ? styles.metricWinner : undefined}>{value}</strong>
+                <strong
+                  className={isComparisonWinner(row, index) ? styles.metricWinner : undefined}
+                >
+                  {value}
+                </strong>
               </div>
             ))}
           </div>

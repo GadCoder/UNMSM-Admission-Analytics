@@ -11,10 +11,7 @@ type MajorDemandRankingProps = {
   comparisons?: ProcessOverview[];
 };
 
-export function MajorDemandRanking({
-  overview,
-  comparisons = [],
-}: MajorDemandRankingProps) {
+export function MajorDemandRanking({ overview, comparisons = [] }: MajorDemandRankingProps) {
   const overviews = [overview, ...comparisons];
   const majors = getTopMajors(overview.majors);
   const comparisonMode = comparisons.length > 0;

@@ -1,5 +1,9 @@
 import type { Modality } from "../features/analytics/api/analytics.types";
-import { DEFAULT_ADMISSION_MODALITY, modalityNameFromParam, modalityUrlValue } from "../features/analytics/utils/admissionModality";
+import {
+  DEFAULT_ADMISSION_MODALITY,
+  modalityNameFromParam,
+  modalityUrlValue,
+} from "../features/analytics/utils/admissionModality";
 
 type AppNavigationOptions = {
   pathname: string;
@@ -32,26 +36,37 @@ const pageNavigation = {
     discoveryParams: [],
     comparisonParams: ["careers", "metric"],
   },
-} satisfies Record<AppPage, {
-  defaultModality: string | undefined;
-  discoveryParams: string[];
-  comparisonParams: string[];
-}>;
+} satisfies Record<
+  AppPage,
+  {
+    defaultModality: string | undefined;
+    discoveryParams: string[];
+    comparisonParams: string[];
+  }
+>;
 
-export function buildAppNavigation({ pathname, search, modalities, savedModality }: AppNavigationOptions) {
+export function buildAppNavigation({
+  pathname,
+  search,
+  modalities,
+  savedModality,
+}: AppNavigationOptions) {
   const page = pageByPath(pathname);
   const pageRules = pageNavigation[page];
   const params = new URLSearchParams(search);
   const rawModality = params.get("modality");
   const currentModality = rawModality
     ? modalityNameFromParam(rawModality, modalities)
-    : pageRules.defaultModality ?? savedModality;
+    : (pageRules.defaultModality ?? savedModality);
   const sharedParams = new URLSearchParams();
   const process = params.get("process");
   if (process) sharedParams.set("process", process);
-  const modalityId = rawModality && /^\d+$/.test(rawModality)
-    ? rawModality
-    : currentModality ? modalityUrlValue(currentModality, modalities) : undefined;
+  const modalityId =
+    rawModality && /^\d+$/.test(rawModality)
+      ? rawModality
+      : currentModality
+        ? modalityUrlValue(currentModality, modalities)
+        : undefined;
   if (modalityId) sharedParams.set("modality", modalityId);
   const processQuery = sharedParams.size ? `?${sharedParams.toString()}` : "";
 

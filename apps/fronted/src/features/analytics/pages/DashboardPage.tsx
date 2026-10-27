@@ -2,15 +2,28 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { SelectField } from "../components/SelectField";
-import { formatAdmissionModalityLabel, modalityNameFromParam, modalityUrlValue, resolveAdmissionModality } from "../utils/admissionModality";
+import {
+  formatAdmissionModalityLabel,
+  modalityNameFromParam,
+  modalityUrlValue,
+  resolveAdmissionModality,
+} from "../utils/admissionModality";
 import * as api from "../api/analytics";
 import { ActiveFilterChips } from "../components/ActiveFilterChips";
 import controlsStyles from "../components/ResultsControls.module.css";
 import { DashboardContent } from "../components/DashboardContent";
 import { DashboardControls, DashboardFilterControls } from "../components/DashboardControls";
 import { PageBanner } from "../components/PageBanner";
-import { DashboardLoadingSkeleton, DashboardOverviewLoadingSkeleton } from "../components/LoadingSkeletons";
-import { emptyDashboardView, readDashboardView, saveDashboardView, type DashboardView } from "../utils/dashboardSessionState";
+import {
+  DashboardLoadingSkeleton,
+  DashboardOverviewLoadingSkeleton,
+} from "../components/LoadingSkeletons";
+import {
+  emptyDashboardView,
+  readDashboardView,
+  saveDashboardView,
+  type DashboardView,
+} from "../utils/dashboardSessionState";
 import styles from "./DashboardPage.module.css";
 
 const FILTER_PARAM_NAMES = ["academic_area", "faculty", "modality"] as const;
@@ -26,11 +39,19 @@ export function DashboardPage() {
   const facultiesQuery = api.useFaculties();
   const modalitiesQuery = api.useModalities();
   const modalityParam = params.get("modality");
-  const modalityName = modalityParam ? modalityNameFromParam(modalityParam, modalitiesQuery.data) : undefined;
+  const modalityName = modalityParam
+    ? modalityNameFromParam(modalityParam, modalitiesQuery.data)
+    : undefined;
   const filters = {
     academicArea: params.get("academic_area") ?? savedView.filters.academicArea,
     faculty: params.get("faculty") ?? savedView.filters.faculty,
-    modality: resolveAdmissionModality(modalityName ?? (modalityParam && /^\d+$/.test(modalityParam) && !modalitiesQuery.data ? savedView.filters.modality : modalityParam) ?? savedView.filters.modality),
+    modality: resolveAdmissionModality(
+      modalityName ??
+        (modalityParam && /^\d+$/.test(modalityParam) && !modalitiesQuery.data
+          ? savedView.filters.modality
+          : modalityParam) ??
+        savedView.filters.modality,
+    ),
   };
   const latest = processes[0];
   const primaryId = params.get("process") ?? (latest ? String(latest.id) : "");
@@ -50,9 +71,16 @@ export function DashboardPage() {
   }, [latest, params, setParams]);
 
   useEffect(() => {
-    const hasLegacyViewParams = comparisonParam !== null || FILTER_PARAM_NAMES.some((name) => params.has(name));
+    const hasLegacyViewParams =
+      comparisonParam !== null || FILTER_PARAM_NAMES.some((name) => params.has(name));
     if (!hasLegacyViewParams) return;
-    if (modalityParam && /^\d+$/.test(modalityParam) && !modalitiesQuery.data && !modalitiesQuery.isError) return;
+    if (
+      modalityParam &&
+      /^\d+$/.test(modalityParam) &&
+      !modalitiesQuery.data &&
+      !modalitiesQuery.isError
+    )
+      return;
     const paramsKey = params.toString();
     if (migratedParamsRef.current === paramsKey) return;
     migratedParamsRef.current = paramsKey;
@@ -61,7 +89,11 @@ export function DashboardPage() {
       filters: {
         academicArea: params.get("academic_area") ?? savedView.filters.academicArea,
         faculty: params.get("faculty") ?? savedView.filters.faculty,
-        modality: resolveAdmissionModality(modalityName ?? (modalityParam && /^\d+$/.test(modalityParam) ? undefined : modalityParam) ?? savedView.filters.modality),
+        modality: resolveAdmissionModality(
+          modalityName ??
+            (modalityParam && /^\d+$/.test(modalityParam) ? undefined : modalityParam) ??
+            savedView.filters.modality,
+        ),
       },
     };
     setSavedView(migratedView);
@@ -71,7 +103,17 @@ export function DashboardPage() {
     next.delete("compare");
     FILTER_PARAM_NAMES.forEach((name) => next.delete(name));
     setParams(next, { replace: true });
-  }, [comparisonParam, modalityName, modalityParam, modalitiesQuery.data, modalitiesQuery.isError, params, primaryId, savedView, setParams]);
+  }, [
+    comparisonParam,
+    modalityName,
+    modalityParam,
+    modalitiesQuery.data,
+    modalitiesQuery.isError,
+    params,
+    primaryId,
+    savedView,
+    setParams,
+  ]);
 
   const overviewQuery = api.useAnalyticsOverview(primaryId, overviewComparisons, filters);
   const historyQuery = api.useProcessHistory(filters);
@@ -83,13 +125,18 @@ export function DashboardPage() {
     setParams(next);
   };
 
-  const updateFilters = useCallback((nextFilters: { academicArea: string; faculty: string; modality: string }) => {
-    const next = new URLSearchParams(primaryId ? { process: primaryId } : {});
-    const nextView = { filters: { ...nextFilters, modality: resolveAdmissionModality(nextFilters.modality) } };
-    setSavedView(nextView);
-    saveDashboardView(nextView);
-    setParams(next);
-  }, [primaryId, setParams]);
+  const updateFilters = useCallback(
+    (nextFilters: { academicArea: string; faculty: string; modality: string }) => {
+      const next = new URLSearchParams(primaryId ? { process: primaryId } : {});
+      const nextView = {
+        filters: { ...nextFilters, modality: resolveAdmissionModality(nextFilters.modality) },
+      };
+      setSavedView(nextView);
+      saveDashboardView(nextView);
+      setParams(next);
+    },
+    [primaryId, setParams],
+  );
 
   const returnParams = new URLSearchParams({ process: primaryId });
   if (filters.academicArea) returnParams.set("academic_area", filters.academicArea);
@@ -117,42 +164,64 @@ export function DashboardPage() {
         title="Resultados por proceso"
         titleId="process-results-title"
         description="Explora los resultados de admisión y su evolución entre procesos."
-        filters={processes.length > 0 && <section className={`${controlsStyles.toolbar} ${styles.processToolbar}`} aria-label="Controles del análisis">
-          <DashboardControls
-            processes={processes}
-            primaryId={primaryId}
-            onChange={updateSelection}
-          />
-          <div className={styles.modalityControl}>
-            <SelectField label="Modalidad" aria-label="Modalidad" value={filters.modality} title={filters.modality}
-              aria-description={filters.modality} onChange={(event) => updateFilters({ ...filters, modality: event.target.value })}>
-              {!(modalitiesQuery.data ?? []).some((item) => item.name === filters.modality)
-                && <option value={filters.modality}>{formatAdmissionModalityLabel(filters.modality)}</option>}
-              {(modalitiesQuery.data ?? []).map((item) => <option key={item.id} value={item.name} title={item.name}>{formatAdmissionModalityLabel(item.name)}</option>)}
-            </SelectField>
-          </div>
-          <div className={`${controlsStyles.filterAction} ${styles.filterControl}`}>
-            <DashboardFilterControls
-              areas={areasQuery.data ?? []}
-              faculties={facultiesQuery.data ?? []}
-              modalities={modalitiesQuery.data ?? []}
-              filters={filters}
-              onChange={updateFilters}
-              onReset={resetFilters}
-            />
-          </div>
-          <ActiveFilterChips
-            filters={filters}
-            areas={areasQuery.data ?? []}
-            faculties={facultiesQuery.data ?? []}
-            onChange={updateFilters}
-          />
-        </section>}
+        filters={
+          processes.length > 0 && (
+            <section
+              className={`${controlsStyles.toolbar} ${styles.processToolbar}`}
+              aria-label="Controles del análisis"
+            >
+              <DashboardControls
+                processes={processes}
+                primaryId={primaryId}
+                onChange={updateSelection}
+              />
+              <div className={styles.modalityControl}>
+                <SelectField
+                  label="Modalidad"
+                  aria-label="Modalidad"
+                  value={filters.modality}
+                  title={filters.modality}
+                  aria-description={filters.modality}
+                  onChange={(event) => updateFilters({ ...filters, modality: event.target.value })}
+                >
+                  {!(modalitiesQuery.data ?? []).some((item) => item.name === filters.modality) && (
+                    <option value={filters.modality}>
+                      {formatAdmissionModalityLabel(filters.modality)}
+                    </option>
+                  )}
+                  {(modalitiesQuery.data ?? []).map((item) => (
+                    <option key={item.id} value={item.name} title={item.name}>
+                      {formatAdmissionModalityLabel(item.name)}
+                    </option>
+                  ))}
+                </SelectField>
+              </div>
+              <div className={`${controlsStyles.filterAction} ${styles.filterControl}`}>
+                <DashboardFilterControls
+                  areas={areasQuery.data ?? []}
+                  faculties={facultiesQuery.data ?? []}
+                  modalities={modalitiesQuery.data ?? []}
+                  filters={filters}
+                  onChange={updateFilters}
+                  onReset={resetFilters}
+                />
+              </div>
+              <ActiveFilterChips
+                filters={filters}
+                areas={areasQuery.data ?? []}
+                faculties={facultiesQuery.data ?? []}
+                onChange={updateFilters}
+              />
+            </section>
+          )
+        }
       />
 
       {processesQuery.isPending && <DashboardLoadingSkeleton />}
       {processesQuery.isError && (
-        <p role="alert" className={styles.state}>No pudimos cargar los procesos. Intenta nuevamente.</p>
+        <p role="alert" className={styles.state}>
+          No pudimos cargar los procesos. Intenta nuevamente.
+        </p>
       )}
       {!processesQuery.isPending && !processesQuery.isError && processes.length === 0 && (
         <p className={styles.state}>Aún no hay procesos publicados.</p>
@@ -169,7 +238,9 @@ export function DashboardPage() {
             </div>
           )}
           {overviewQuery.isError && (
-            <p role="alert" className={styles.state}>No pudimos cargar el resumen analítico.</p>
+            <p role="alert" className={styles.state}>
+              No pudimos cargar el resumen analítico.
+            </p>
           )}
           {overviewQuery.isSuccess && primary && (
             <div aria-busy={overviewQuery.isFetching}>
@@ -179,7 +250,13 @@ export function DashboardPage() {
                 selectedProcessId={Number(primaryId)}
                 previous={previous}
                 historyItems={historyQuery.data?.processes ?? []}
-                historyStatus={historyQuery.isFetching && !historyQuery.data ? "loading" : historyQuery.isError ? "error" : "ready"}
+                historyStatus={
+                  historyQuery.isFetching && !historyQuery.data
+                    ? "loading"
+                    : historyQuery.isError
+                      ? "error"
+                      : "ready"
+                }
                 onSelectProcess={(processId) => updateSelection(String(processId))}
               />
             </div>

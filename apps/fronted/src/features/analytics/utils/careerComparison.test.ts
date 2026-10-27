@@ -14,7 +14,14 @@ import {
   type CareerComparisonRecord,
 } from "./careerComparison";
 
-function row(id: number, year: number, sequence: string, total: number, admitted: number, extra: Partial<CareerComparisonRecord> = {}): CareerComparisonRecord {
+function row(
+  id: number,
+  year: number,
+  sequence: string,
+  total: number,
+  admitted: number,
+  extra: Partial<CareerComparisonRecord> = {},
+): CareerComparisonRecord {
   return {
     process: { id, year, sequence, name: `Proceso ${year}-${sequence}` },
     total_results: total,
@@ -36,7 +43,12 @@ describe("career comparison metric helpers", () => {
     expect(getCareerComparisonMetricValue(noAdmissions, "applicants_per_admitted")).toBeNull();
     expect(getCareerComparisonMetricValue(row(2, 2025, "II", 0, 0), "admission_rate")).toBeNull();
     expect(getCareerComparisonMetricValue(null, "total_results")).toBeNull();
-    expect(getCareerComparisonMetricValue(row(3, 2025, "III", 3, 1, { highest_score: "not a number" }), "highest_score")).toBeNull();
+    expect(
+      getCareerComparisonMetricValue(
+        row(3, 2025, "III", 3, 1, { highest_score: "not a number" }),
+        "highest_score",
+      ),
+    ).toBeNull();
   });
 
   it("requires a known, matching single modality for admitted-score comparisons", () => {
@@ -46,22 +58,45 @@ describe("career comparison metric helpers", () => {
     expect(canCompareAdmittedScores(known, known)).toBe(true);
     expect(canCompareMinimumScores(known, known)).toBe(true);
     expect(canCompareAdmittedScores(known, mixed)).toBe(false);
-    expect(canCompareMinimumScores(known, row(4, 2025, "IV", 3, 1, { minimum_admitted_score: null }))).toBe(false);
+    expect(
+      canCompareMinimumScores(known, row(4, 2025, "IV", 3, 1, { minimum_admitted_score: null })),
+    ).toBe(false);
     expect(canCompareAdmittedScores(known, other)).toBe(false);
     expect(getCareerComparisonMetricValue(mixed, "average_score")).toBeNull();
-    expect(getComparableCareerMetricValues([
-      { id: 1, name: "A", record: known },
-      { id: 2, name: "B", record: other },
-    ], "minimum_admitted_score")).toEqual([]);
+    expect(
+      getComparableCareerMetricValues(
+        [
+          { id: 1, name: "A", record: known },
+          { id: 2, name: "B", record: other },
+        ],
+        "minimum_admitted_score",
+      ),
+    ).toEqual([]);
   });
 
   it("ranks raw values and carries scope and ties", () => {
-    expect(rankCareerMetric([
-      { id: 1, name: "A", value: 4.1231 },
-      { id: 2, name: "B", value: 4.1232 },
-      { id: 3, name: "C", value: null },
-    ], "admission_rate", 3)).toMatchObject({ minimum: [{ id: 1, name: "A", value: 4.1231 }], maximum: [{ id: 2, name: "B", value: 4.1232 }], scope: "Entre las carreras con datos (2 de 3)" });
-    const tied = rankCareerMetric([{ id: 1, name: "A", value: 0 }, { id: 2, name: "B", value: 0 }], "admission_rate");
+    expect(
+      rankCareerMetric(
+        [
+          { id: 1, name: "A", value: 4.1231 },
+          { id: 2, name: "B", value: 4.1232 },
+          { id: 3, name: "C", value: null },
+        ],
+        "admission_rate",
+        3,
+      ),
+    ).toMatchObject({
+      minimum: [{ id: 1, name: "A", value: 4.1231 }],
+      maximum: [{ id: 2, name: "B", value: 4.1232 }],
+      scope: "Entre las carreras con datos (2 de 3)",
+    });
+    const tied = rankCareerMetric(
+      [
+        { id: 1, name: "A", value: 0 },
+        { id: 2, name: "B", value: 0 },
+      ],
+      "admission_rate",
+    );
     expect(tied.minimum).toHaveLength(2);
     expect(tied.tied).toBe(true);
   });
@@ -74,41 +109,100 @@ describe("career comparison metric helpers", () => {
     const result = mergeCareerHistory([duplicate, newer, excluded], [older], 2);
     expect(result.map((item) => item.process.id)).toEqual([1, 2]);
     expect(result[0].total_results).toBe(99);
-    const roman: AdmissionProcess[] = [newer.process, row(4, 2025, "III", 1, 1).process, older.process];
-    expect(roman.toSorted((a, b) => a.year - b.year || (a.sequence > b.sequence ? 1 : -1)).map((item) => item.id)).toEqual([1, 4, 2]);
-    expect(mergeCareerHistory(roman.map((process) => row(process.id, process.year, process.sequence, 1, 1)), []).map((item) => item.process.id)).toEqual([1, 4, 2]);
-    expect(mergeCareerHistory([row(5, 2026, "10", 1, 1), row(6, 2026, "2", 1, 1)], []).map((item) => item.process.id)).toEqual([6, 5]);
+    const roman: AdmissionProcess[] = [
+      newer.process,
+      row(4, 2025, "III", 1, 1).process,
+      older.process,
+    ];
+    expect(
+      roman
+        .toSorted((a, b) => a.year - b.year || (a.sequence > b.sequence ? 1 : -1))
+        .map((item) => item.id),
+    ).toEqual([1, 4, 2]);
+    expect(
+      mergeCareerHistory(
+        roman.map((process) => row(process.id, process.year, process.sequence, 1, 1)),
+        [],
+      ).map((item) => item.process.id),
+    ).toEqual([1, 4, 2]);
+    expect(
+      mergeCareerHistory([row(5, 2026, "10", 1, 1), row(6, 2026, "2", 1, 1)], []).map(
+        (item) => item.process.id,
+      ),
+    ).toEqual([6, 5]);
   });
 
   it("aligns process IDs with null gaps and reports only shared unique minima", () => {
-    const processes = [row(1, 2025, "I", 10, 1).process, row(2, 2025, "II", 10, 1).process, row(3, 2026, "I", 10, 1).process];
-    const aligned = alignCareerHistory([
-      { id: 1, label: "A", items: [row(1, 2025, "I", 10, 1), row(2, 2025, "II", 10, 1), row(3, 2026, "I", 10, 1)] },
-      { id: 2, label: "B", items: [row(1, 2025, "I", 10, 2), row(3, 2026, "I", 10, 2)] },
-    ], processes, "admission_rate");
+    const processes = [
+      row(1, 2025, "I", 10, 1).process,
+      row(2, 2025, "II", 10, 1).process,
+      row(3, 2026, "I", 10, 1).process,
+    ];
+    const aligned = alignCareerHistory(
+      [
+        {
+          id: 1,
+          label: "A",
+          items: [row(1, 2025, "I", 10, 1), row(2, 2025, "II", 10, 1), row(3, 2026, "I", 10, 1)],
+        },
+        { id: 2, label: "B", items: [row(1, 2025, "I", 10, 2), row(3, 2026, "I", 10, 2)] },
+      ],
+      processes,
+      "admission_rate",
+    );
     expect(aligned.series[1].values[1]).toBeNull();
-    expect(getSharedHistoryMinimumInsight(aligned)).toMatchObject({ careerIds: [1], uniqueMinimumCount: 2, sharedProcessCount: 2 });
+    expect(getSharedHistoryMinimumInsight(aligned)).toMatchObject({
+      careerIds: [1],
+      uniqueMinimumCount: 2,
+      sharedProcessCount: 2,
+    });
   });
 
   it("breaks admitted-score history when career populations do not match the selected process", () => {
-    const selected = [row(2, 2025, "II", 10, 2), row(2, 2025, "II", 10, 2, { admitted_score_modality: "CEPRE" })];
-    const aligned = alignCareerHistory([
-      { id: 1, label: "A", items: [row(1, 2025, "I", 10, 2), selected[0]] },
-      { id: 2, label: "B", items: [row(1, 2025, "I", 10, 2, { admitted_score_modality: "CEPRE" }), selected[1]] },
-    ], [row(1, 2025, "I", 10, 2).process, selected[0].process], "average_score", 2);
-    expect(aligned.series.map((item) => item.values)).toEqual([[null, null], [null, null]]);
+    const selected = [
+      row(2, 2025, "II", 10, 2),
+      row(2, 2025, "II", 10, 2, { admitted_score_modality: "CEPRE" }),
+    ];
+    const aligned = alignCareerHistory(
+      [
+        { id: 1, label: "A", items: [row(1, 2025, "I", 10, 2), selected[0]] },
+        {
+          id: 2,
+          label: "B",
+          items: [row(1, 2025, "I", 10, 2, { admitted_score_modality: "CEPRE" }), selected[1]],
+        },
+      ],
+      [row(1, 2025, "I", 10, 2).process, selected[0].process],
+      "average_score",
+      2,
+    );
+    expect(aligned.series.map((item) => item.values)).toEqual([
+      [null, null],
+      [null, null],
+    ]);
   });
 
   it("keeps known historical admitted scores when the selected process has no valid scores", () => {
     const selectedWithoutScores = row(2, 2025, "II", 10, 2, {
-      minimum_admitted_score: null, average_score: null, highest_score: null,
-      admitted_score_modality_count: 0, admitted_score_modality: null,
+      minimum_admitted_score: null,
+      average_score: null,
+      highest_score: null,
+      admitted_score_modality_count: 0,
+      admitted_score_modality: null,
     });
-    const aligned = alignCareerHistory([
-      { id: 1, label: "A", items: [row(1, 2025, "I", 10, 2), selectedWithoutScores] },
-      { id: 2, label: "B", items: [row(1, 2025, "I", 10, 2), selectedWithoutScores] },
-    ], [row(1, 2025, "I", 10, 2).process, selectedWithoutScores.process], "average_score", 2);
-    expect(aligned.series.map((item) => item.values)).toEqual([[72.5, null], [72.5, null]]);
+    const aligned = alignCareerHistory(
+      [
+        { id: 1, label: "A", items: [row(1, 2025, "I", 10, 2), selectedWithoutScores] },
+        { id: 2, label: "B", items: [row(1, 2025, "I", 10, 2), selectedWithoutScores] },
+      ],
+      [row(1, 2025, "I", 10, 2).process, selectedWithoutScores.process],
+      "average_score",
+      2,
+    );
+    expect(aligned.series.map((item) => item.values)).toEqual([
+      [72.5, null],
+      [72.5, null],
+    ]);
   });
 
   it("keeps visual slots stable across removal and reordering", () => {
