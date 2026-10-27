@@ -7,23 +7,23 @@ React + TypeScript public web application for UNMSM Admission Analytics.
 From this directory:
 
 ```bash
-npm install
-npm run dev
+corepack pnpm install
+corepack pnpm run dev
 ```
 
 The API base URL defaults to `http://localhost:8000`. Set
 `VITE_API_BASE_URL` when using another backend, for example:
 
 ```bash
-VITE_API_BASE_URL=https://api.resultados-unmsm.com npm run dev
+VITE_API_BASE_URL=https://api.resultados-unmsm.com corepack pnpm run dev
 ```
 
 ## Validation
 
 ```bash
-npm test
-npm run lint
-npm run build
+corepack pnpm test
+corepack pnpm run lint
+corepack pnpm run build
 ```
 
 ## Structure
