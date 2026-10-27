@@ -1,3 +1,4 @@
+import type { CareerNavigationContext } from "../utils/careerNavigation";
 import type { ProcessHistoryItem, ProcessOverview } from "../api/analytics.types";
 import { MetricHistoryChart } from "./MetricHistoryChart";
 import { ProcessHistory } from "./ProcessHistory";
@@ -8,7 +9,7 @@ import { MajorBreakdown } from "./MajorBreakdown";
 
 type DashboardContentProps = {
   primary: ProcessOverview;
-  modality?: string;
+  navigation: CareerNavigationContext;
   selectedProcessId: number;
   previous?: ProcessOverview;
   historyItems: ProcessHistoryItem[];
@@ -18,7 +19,7 @@ type DashboardContentProps = {
 
 export function DashboardContent({
   primary,
-  modality,
+  navigation,
   selectedProcessId,
   previous,
   historyItems,
@@ -31,7 +32,7 @@ export function DashboardContent({
       <MetricHistoryChart items={historyItems} title="Evolución histórica" status={historyStatus} />
       <ProcessHistory items={historyItems} selectedProcessId={selectedProcessId} status={historyStatus} onSelectProcess={onSelectProcess} />
       <MajorDemandChart majors={getTopMajors(primary.majors)} process={primary.process} />
-      <MajorBreakdown overview={primary} modality={modality} />
+      <MajorBreakdown overview={primary} navigation={navigation} />
     </>
   );
 }

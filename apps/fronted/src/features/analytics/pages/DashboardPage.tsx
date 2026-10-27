@@ -2,7 +2,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
 import { SelectField } from "../components/SelectField";
-import { formatAdmissionModalityLabel, resolveAdmissionModality } from "../utils/admissionModality";
+import { formatAdmissionModalityLabel, modalityNameFromParam, modalityUrlValue, resolveAdmissionModality } from "../utils/admissionModality";
 import * as api from "../api/analytics";
 import { ActiveFilterChips } from "../components/ActiveFilterChips";
 import controlsStyles from "../components/ResultsControls.module.css";
@@ -24,10 +24,12 @@ export function DashboardPage() {
   const areasQuery = api.useAcademicAreas();
   const facultiesQuery = api.useFaculties();
   const modalitiesQuery = api.useModalities();
+  const modalityParam = params.get("modality");
+  const modalityName = modalityParam ? modalityNameFromParam(modalityParam, modalitiesQuery.data) : undefined;
   const filters = {
     academicArea: params.get("academic_area") ?? savedView.filters.academicArea,
     faculty: params.get("faculty") ?? savedView.filters.faculty,
-    modality: resolveAdmissionModality(params.get("modality") ?? savedView.filters.modality),
+    modality: resolveAdmissionModality(modalityName ?? (modalityParam && /^\d+$/.test(modalityParam) && !modalitiesQuery.data ? savedView.filters.modality : modalityParam) ?? savedView.filters.modality),
   };
   const latest = processes[0];
   const primaryId = params.get("process") ?? (latest ? String(latest.id) : "");
@@ -49,6 +51,7 @@ export function DashboardPage() {
   useEffect(() => {
     const hasLegacyViewParams = comparisonParam !== null || FILTER_PARAM_NAMES.some((name) => params.has(name));
     if (!hasLegacyViewParams) return;
+    if (modalityParam && /^\d+$/.test(modalityParam) && !modalitiesQuery.data && !modalitiesQuery.isError) return;
     const paramsKey = params.toString();
     if (migratedParamsRef.current === paramsKey) return;
     migratedParamsRef.current = paramsKey;
@@ -57,7 +60,7 @@ export function DashboardPage() {
       filters: {
         academicArea: params.get("academic_area") ?? savedView.filters.academicArea,
         faculty: params.get("faculty") ?? savedView.filters.faculty,
-        modality: resolveAdmissionModality(params.get("modality") ?? savedView.filters.modality),
+        modality: resolveAdmissionModality(modalityName ?? (modalityParam && /^\d+$/.test(modalityParam) ? undefined : modalityParam) ?? savedView.filters.modality),
       },
     };
     setSavedView(migratedView);
@@ -67,7 +70,7 @@ export function DashboardPage() {
     next.delete("compare");
     FILTER_PARAM_NAMES.forEach((name) => next.delete(name));
     setParams(next, { replace: true });
-  }, [comparisonParam, params, primaryId, savedView, setParams]);
+  }, [comparisonParam, modalityName, modalityParam, modalitiesQuery.data, modalitiesQuery.isError, params, primaryId, savedView, setParams]);
 
   const overviewQuery = api.useAnalyticsOverview(primaryId, overviewComparisons, filters);
   const historyQuery = api.useProcessHistory(filters);
@@ -86,6 +89,13 @@ export function DashboardPage() {
     saveDashboardView(nextView);
     setParams(next);
   }, [primaryId, setParams]);
+
+  const returnParams = new URLSearchParams({ process: primaryId });
+  if (filters.academicArea) returnParams.set("academic_area", filters.academicArea);
+  if (filters.faculty) returnParams.set("faculty", filters.faculty);
+  const modalityId = modalityUrlValue(filters.modality, modalitiesQuery.data);
+  if (modalityId) returnParams.set("modality", modalityId);
+  const returnTo = `/?${returnParams.toString()}`;
 
   const resetFilters = () => {
     const nextView = { filters: emptyDashboardView.filters };
@@ -160,7 +170,7 @@ export function DashboardPage() {
             <div aria-busy={overviewQuery.isFetching}>
               <DashboardContent
                 primary={primary}
-                modality={filters.modality}
+                navigation={{ modalityId, processReturnTo: returnTo }}
                 selectedProcessId={Number(primaryId)}
                 previous={previous}
                 historyItems={historyQuery.data?.processes ?? []}

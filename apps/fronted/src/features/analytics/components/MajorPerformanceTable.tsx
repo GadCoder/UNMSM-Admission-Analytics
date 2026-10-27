@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 
 import type { MajorOverview, ProcessOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
+import { careerDetailHref, type CareerNavigationContext } from "../utils/careerNavigation";
 import { formatProcessLabel } from "../utils/processLabels";
 import { admissionRate, type SortDirection, type SortKey } from "./majorPerformance.utils";
 import styles from "../pages/DashboardPage.module.css";
@@ -10,13 +11,13 @@ type MajorPerformanceTableProps = {
   majors: MajorOverview[];
   process: ProcessOverview["process"];
   rankOffset?: number;
-  modality?: string;
+  navigation?: CareerNavigationContext;
   sortKey: SortKey;
   sortDirection: SortDirection;
   onSort: (key: SortKey) => void;
 };
 
-export function MajorPerformanceTable({ majors, process, modality, rankOffset = 0, sortKey, sortDirection, onSort }: MajorPerformanceTableProps) {
+export function MajorPerformanceTable({ majors, process, navigation, rankOffset = 0, sortKey, sortDirection, onSort }: MajorPerformanceTableProps) {
   const sortableHeader = (key: SortKey, label: string) => {
     const active = sortKey === key;
     const direction = active ? sortDirection : key === "major_name" ? "asc" : "desc";
@@ -34,7 +35,7 @@ export function MajorPerformanceTable({ majors, process, modality, rankOffset = 
       <tbody>
         {majors.map((major, index) => <tr key={major.major_id}>
           <td className={styles.performanceRank}>{String(rankOffset + index + 1).padStart(2, "0")}</td>
-          <th scope="row"><Link className={styles.majorDetailLink} to={`/analytics/careers/${major.major_id}?${new URLSearchParams({ process: String(process.id), ...(modality ? { modality } : {}) })}`}>{major.major_name}</Link></th>
+          <th scope="row"><Link className={styles.majorDetailLink} to={careerDetailHref(major.major_id, process.id, navigation)}>{major.major_name}</Link></th>
           <td>{formatNumber(major.total_results)}</td>
           <td>{formatNumber(major.admitted_count)}</td>
           <td>{formatNumber(admissionRate(major), 1)}%</td>

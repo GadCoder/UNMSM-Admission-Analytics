@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 
 import type { MajorOverview, ProcessOverview } from "../api/analytics.types";
 import { formatNumber } from "../utils/formatters";
+import { careerDetailHref } from "../utils/careerNavigation";
 import styles from "../pages/DashboardPage.module.css";
 import { ComparisonMetrics, SingleProcessMetrics } from "./MajorRankingComparison";
 import { getComparisonGridStyle } from "./majorRankingList.utils";
@@ -31,7 +32,7 @@ export function MajorRankingItem({
         <span className={styles.majorRank}>{String(rank).padStart(2, "0")}</span>
         <Link
           className={styles.majorDetailLink}
-          to={`/analytics/careers/${major.major_id}?process=${primary.process.id}`}
+          to={careerDetailHref(major.major_id, primary.process.id)}
         >
           <strong>{major.major_name}</strong>
         </Link>

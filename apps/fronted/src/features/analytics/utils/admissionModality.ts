@@ -1,4 +1,19 @@
+import type { Modality } from "../api/analytics.types";
+
 export const DEFAULT_ADMISSION_MODALITY = "EDUCACIÓN BÁSICA REGULAR (EBR) Y EDUCACIÓN BÁSICA ALTERNATIVA (EBA)";
+
+export function modalityNameFromParam(value: string | null | undefined, modalities: Modality[] = []): string | undefined {
+  const raw = value?.trim();
+  if (!raw) return undefined;
+  const byId = modalities.find((item) => String(item.id) === raw);
+  return byId?.name;
+}
+
+export function modalityUrlValue(name: string, modalities: Modality[] = []): string | undefined {
+  if (/^\d+$/.test(name)) return name;
+  const id = modalities.find((item) => item.name === name)?.id;
+  return id === undefined ? undefined : String(id);
+}
 
 export function resolveAdmissionModality(value: string | null | undefined): string {
   return value?.trim() || DEFAULT_ADMISSION_MODALITY;

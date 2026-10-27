@@ -1,0 +1,57 @@
+.discovery {
+  min-width:0;
+  margin-bottom:var(--space-5);
+  padding:var(--space-5);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);
+  background:var(--color-surface);
+  box-shadow:0 4px 20px rgb(45 34 35 / 4%);
+}
+.heading { display:flex; align-items:flex-end; justify-content:space-between; gap:var(--space-3); margin-bottom:var(--space-4); }
+.eyebrow { margin:0 0 var(--space-1); color:var(--color-primary); font-size:.7rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase; }
+.heading h1 { margin:0; color:var(--color-text); font-size:clamp(1.2rem, 2vw, 1.55rem); line-height:1.2; }
+.searchWrap { position:relative; }
+.searchLabel { display:block; margin-bottom:.45rem; color:var(--color-text); font-size:.84rem; font-weight:750; }
+.searchBox { display:flex; align-items:center; gap:.75rem; min-height:3.35rem; padding:0 .9rem; border:1px solid var(--color-border); border-radius:var(--radius-md); background:var(--color-background, #fff); transition:border-color .15s, box-shadow .15s; }
+.searchBox:focus-within { border-color:var(--color-primary); box-shadow:0 0 0 3px color-mix(in srgb, var(--color-primary) 16%, transparent); }
+.searchIcon { width:1.2rem; flex:none; fill:none; stroke:var(--color-muted); stroke-linecap:round; stroke-width:1.8; }
+.searchBox input { width:100%; min-width:0; border:0; outline:0; background:transparent; color:var(--color-text); font:inherit; font-size:.94rem; }
+.searchBox input::placeholder { color:var(--color-muted); opacity:.8; }
+.searchBox input:disabled { cursor:wait; }
+.searchStatus { display:flex; align-items:center; gap:.65rem; margin:.55rem 0 0; color:var(--color-muted); font-size:.82rem; }
+.searchStatus button { padding:.35rem .6rem; border:1px solid var(--color-border); border-radius:var(--radius-sm); background:var(--color-surface); color:var(--color-primary); cursor:pointer; font:inherit; font-weight:700; }
+.clear { width:2rem; height:2rem; flex:none; border:0; border-radius:50%; background:transparent; color:var(--color-muted); cursor:pointer; font-size:1.4rem; line-height:1; }
+.clear:hover { background:var(--color-background, #f7f4f4); color:var(--color-text); }
+.careerCard:focus-visible, .clear:focus-visible, .showAll:focus-visible { outline:2px solid var(--color-primary); outline-offset:2px; }
+.explore { display:block; margin-top:var(--space-4); }
+.explore h2 { margin:0 0 .8rem; color:var(--color-text); font-size:.9rem; font-weight:750; }
+.resultCount { margin:-.45rem 0 .8rem; color:var(--color-muted); font-size:.82rem; }
+.careerList { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:.65rem; margin:0; padding:0; list-style:none; }
+.careerCard { position:relative; display:grid; height:100%; min-height:6.55rem; grid-template-rows:auto 1fr; gap:.55rem; padding:.8rem; border:1px solid var(--color-border); border-radius:var(--radius-md); color:var(--color-text); text-decoration:none; transition:border-color .15s, background-color .15s, transform .15s; }
+.careerCard:hover { transform:translateY(-1px); border-color:color-mix(in srgb, var(--color-primary) 55%, var(--color-border)); background:color-mix(in srgb, var(--color-primary) 3%, var(--color-surface)); }
+.careerCard:focus-visible { outline:2px solid var(--color-primary); outline-offset:2px; background:color-mix(in srgb, var(--color-primary) 4%, var(--color-surface)); }
+.careerName { display:block; min-width:0; padding-right:1.2rem; overflow-wrap:anywhere; font-size:.86rem; font-weight:750; line-height:1.3; }
+.cardArrow { position:absolute; top:.8rem; right:.8rem; width:.8rem; height:.8rem; fill:none; stroke:var(--color-muted); stroke-linecap:round; stroke-linejoin:round; stroke-width:1.5; }
+.careerCard:hover .cardArrow, .careerCard:focus-visible .cardArrow { stroke:var(--color-primary); }
+.metrics { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:end; gap:.75rem; color:var(--color-muted); font-size:.7rem; line-height:1.4; }
+.rateMetric { display:grid; gap:.12rem; min-width:0; }
+.counts { display:grid; gap:.25rem; text-align:right; font-variant-numeric:tabular-nums; }
+.metrics strong { color:var(--color-text); font-weight:750; }
+.metrics .rate { color:var(--color-primary); font-size:1.65rem; line-height:1.15; }
+.emptyState { padding:.85rem; border:1px dashed var(--color-border); border-radius:var(--radius-md); color:var(--color-muted); font-size:.8rem; }
+.emptyState p { margin:0; }
+.showAll { display:flex; align-items:center; justify-content:center; gap:.35rem; margin:var(--space-3) auto 0; padding:.45rem .65rem; border:0; border-radius:var(--radius-sm); background:transparent; color:var(--color-primary); cursor:pointer; font:inherit; font-size:.78rem; font-weight:750; }
+.showAll:hover { background:var(--color-primary-soft); color:var(--color-primary-dark); }
+.searchStatus button:focus-visible { outline:2px solid var(--color-primary); outline-offset:2px; }
+@media (max-width: 760px) {
+  .discovery { padding:var(--space-4); }
+}
+@media (max-width: 600px) {
+  .heading { align-items:flex-start; flex-direction:column; gap:.35rem; }
+  .careerList { grid-template-columns:minmax(0, 1fr); padding:.15rem 0 .65rem; }
+  .careerCard { min-height:7rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .searchBox, .careerCard { transition:none; }
+  .careerCard:hover { transform:none; }
+}
