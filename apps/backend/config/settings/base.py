@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from urllib.parse import urlparse
 
+from django.core.exceptions import ImproperlyConfigured
+
 BASE_DIR = Path(__file__).resolve().parents[2]
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-local-development-key")
@@ -62,6 +64,20 @@ TEMPLATES = [
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL:
+    raw_conn_max_age = os.getenv("DATABASE_CONN_MAX_AGE", "60")
+    try:
+        database_conn_max_age = int(raw_conn_max_age)
+    except ValueError as error:
+        raise ImproperlyConfigured(
+            "DATABASE_CONN_MAX_AGE must be a non-negative integer; "
+            f"received {raw_conn_max_age!r}."
+        ) from error
+    if database_conn_max_age < 0:
+        raise ImproperlyConfigured(
+            "DATABASE_CONN_MAX_AGE must be a non-negative integer; "
+            f"received {raw_conn_max_age!r}."
+        )
+
     database = urlparse(DATABASE_URL)
     DATABASES = {
         "default": {
@@ -71,6 +87,8 @@ if DATABASE_URL:
             "PASSWORD": database.password,
             "HOST": database.hostname,
             "PORT": database.port or 5432,
+            "CONN_MAX_AGE": database_conn_max_age,
+            "CONN_HEALTH_CHECKS": True,
         }
     }
 else:
