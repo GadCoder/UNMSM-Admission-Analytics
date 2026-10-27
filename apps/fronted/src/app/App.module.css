@@ -1,8 +1,8 @@
 .app { min-height: 100vh; background: var(--color-background); color: var(--color-text); }
-.header { display:flex; align-items:center; justify-content:space-between; gap:var(--space-6); max-width:none; margin:0; padding:1rem max(var(--space-6), calc((100vw - var(--content-width)) / 2 + var(--space-6))); border-bottom:0; background:#7f454b; color:#fff; }
-.brand { display:flex; align-items:center; gap:var(--space-3); color:inherit; text-decoration:none; }
-.brandLogo { width:2.2rem; height:2.6rem; flex:none; object-fit:contain; }
-.brand strong { display:block; font-size:.92rem; }
+.header { display:flex; align-items:center; gap:var(--space-4); padding:1.25rem max(var(--space-6), calc((100vw - var(--content-width)) / 2 + var(--space-6))); background:#7f454b; color:#fff; }
+.brand { display:flex; flex:none; }
+.brandLogo { width:clamp(2.2rem,5vw,3rem); height:clamp(2.6rem,6vw,3.5rem); object-fit:contain; }
+.header h1 { margin:0 0 .35rem; font-size:clamp(1.5rem,3.5vw,2.35rem); letter-spacing:-.045em; line-height:1.08; }
+.header p { max-width:650px; margin:0; color:rgb(255 255 255 / 85%); font-size:.82rem; line-height:1.5; }
 
 .main { max-width:var(--content-width); margin:0 auto; padding:var(--space-8) var(--space-6) var(--space-12); }
-@media (max-width:640px) { .header { padding:1rem var(--space-6); } }

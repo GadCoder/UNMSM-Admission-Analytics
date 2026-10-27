@@ -72,8 +72,6 @@ describe("DashboardPage", () => {
   });
   it("defaults to latest process and renders KPIs", async () => {
     renderPage();
-    expect(screen.getByRole("heading", { name: "Resultados de admisión" })).toBeInTheDocument();
-    expect(screen.getByText("Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.")).toBeInTheDocument();
     expect(screen.getByText("Proceso", { selector: "label" })).toBeInTheDocument();
     expect(screen.getByLabelText("Proceso analizado")).toHaveValue("1");
     const history = screen.getByRole("region", { name: "Evolución histórica" });
