@@ -42,7 +42,7 @@ export function App() {
 
     function handlePointerDown(event: PointerEvent) {
       const target = event.target;
-      if (target instanceof Node && !target.closest("[data-mobile-navigation]")) {
+      if (!(target instanceof Element) || !target.closest("[data-mobile-navigation]")) {
         setMenuOpen(false);
       }
     }
