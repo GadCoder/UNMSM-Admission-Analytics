@@ -35,7 +35,7 @@ export function App() {
   return (
     <div className={styles.app}>
       <header className={styles.header}>
-        <Link className={styles.brand} to={processHref} aria-label="Inicio">
+        <Link className={styles.brand} to={navigation.processHref} aria-label="Inicio">
           <img className={styles.brandLogo} src="https://assets.resultados-unmsm.com/brand/unmsm-2e787805.png" alt="UNMSM" width="48" height="56" />
         </Link>
         <div>
