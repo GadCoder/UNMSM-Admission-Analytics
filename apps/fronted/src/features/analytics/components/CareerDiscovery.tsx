@@ -5,6 +5,7 @@ import type { ProcessOverview } from "../api/analytics.types";
 import { PageBanner } from "./PageBanner";
 import { CareerResults } from "./CareerResults";
 import { CareerSearch } from "./CareerSearch";
+import styles from "./CareerDiscovery.module.css";
 
 export type CareerDiscoveryProps = {
   overview?: ProcessOverview;
@@ -74,33 +75,36 @@ export function CareerDiscovery({
   };
 
   return (
-    <PageBanner
-      eyebrow="Explora tus opciones"
-      title="Encuentra tu carrera"
-      titleId="career-discovery-title"
-      filters={filters}
-    >
-      <CareerSearch
-        query={query}
-        status={status}
-        inputRef={searchInputRef}
-        onQueryChange={onQueryChange}
-        onKeyDown={handleSearchKeyDown}
-        onRetry={onRetry}
+    <div className={styles.discoveryLayout}>
+      <PageBanner
+        eyebrow="Explora tus opciones"
+        title="Encuentra tu carrera"
+        titleId="career-discovery-title"
+        filters={filters}
       />
-      {status === "ready" && (
-        <CareerResults
-          majors={hasQuery ? matches : majors}
-          hasQuery={hasQuery}
+      <section className={styles.discoveryPanel} aria-label="Búsqueda y carreras populares">
+        <CareerSearch
           query={query}
-          processId={processId}
-          navigation={navigation}
-          showAll={showAll}
-          resultLinkRefs={resultLinkRefs}
-          onShowAllChange={onShowAllChange}
-          onResultKeyDown={handleResultKeyDown}
+          status={status}
+          inputRef={searchInputRef}
+          onQueryChange={onQueryChange}
+          onKeyDown={handleSearchKeyDown}
+          onRetry={onRetry}
         />
-      )}
-    </PageBanner>
+        {status === "ready" && (
+          <CareerResults
+            majors={hasQuery ? matches : majors}
+            hasQuery={hasQuery}
+            query={query}
+            processId={processId}
+            navigation={navigation}
+            showAll={showAll}
+            resultLinkRefs={resultLinkRefs}
+            onShowAllChange={onShowAllChange}
+            onResultKeyDown={handleResultKeyDown}
+          />
+        )}
+      </section>
+    </div>
   );
 }
