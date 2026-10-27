@@ -1,7 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 
 import { apiFetch } from "../../../shared/api/client";
-import type { AcademicArea, AdmissionProcess, ComparativeOverview, Faculty, MajorDetail, Modality, ProcessHistory } from "./analytics.types";
+import type { AcademicArea, AdmissionProcess, ComparativeOverview, Faculty, MajorCatalogItem, MajorDetail, Modality, ProcessHistory } from "./analytics.types";
 
 export type AnalyticsFilters = { academicArea?: string; faculty?: string; modality?: string };
 
@@ -9,6 +9,7 @@ export function getPublishedProcesses(): Promise<AdmissionProcess[]> { return ap
 export function getAcademicAreas(): Promise<AcademicArea[]> { return apiFetch<AcademicArea[]>("/api/v1/academic-areas/"); }
 export function getFaculties(): Promise<Faculty[]> { return apiFetch<Faculty[]>("/api/v1/faculties/"); }
 export function getModalities(): Promise<Modality[]> { return apiFetch<Modality[]>("/api/v1/modalities/"); }
+export function getMajorCatalog(): Promise<MajorCatalogItem[]> { return apiFetch<MajorCatalogItem[]>("/api/v1/majors/"); }
 
 export function getAnalyticsOverview(primary: string | number, comparisons: Array<string | number> = [], filters: AnalyticsFilters = {}): Promise<ComparativeOverview> {
   const params = new URLSearchParams({ process: String(primary) });
@@ -57,6 +58,7 @@ export function useMajorDetail(majorId: string, primary: string, comparisons: st
 export function useAcademicAreas() { return useQuery({ queryKey: ["academic-areas"], queryFn: getAcademicAreas, staleTime: 300000 }); }
 export function useFaculties() { return useQuery({ queryKey: ["faculties"], queryFn: getFaculties, staleTime: 300000 }); }
 export function useModalities() { return useQuery({ queryKey: ["modalities"], queryFn: getModalities, staleTime: 300000 }); }
+export function useMajorCatalog() { return useQuery({ queryKey: ["major-catalog"], queryFn: getMajorCatalog, staleTime: 300000 }); }
 
 export function useAnalyticsOverview(primary: string, comparisons: string[], filters: AnalyticsFilters = {}) {
   return useQuery({

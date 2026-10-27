@@ -8,6 +8,7 @@ export type AdmissionProcess = {
 export type AcademicArea = { id: number; code: string; name: string };
 export type Faculty = { id: number; code: string; name: string; academic_area_id: number };
 export type Modality = { id: number; name: string };
+export type MajorCatalogItem = { id: number; code: string; name: string; faculty_id: number };
 
 export type MajorOverview = {
   major_id: number;

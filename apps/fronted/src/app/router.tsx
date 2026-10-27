@@ -4,6 +4,7 @@ import { App } from "./App";
 import { DashboardPage } from "../pages/DashboardPage";
 import { ResultsPage } from "../pages/ResultsPage/ResultsPage";
 import { CareerExplorerPage } from "../features/analytics/pages/CareerExplorerPage";
+import { CareerComparisonPage } from "../features/analytics/pages/CareerComparisonPage";
 
 export const router = createBrowserRouter([
   {
@@ -13,6 +14,7 @@ export const router = createBrowserRouter([
       { index: true, element: <DashboardPage /> },
       { path: "resultados", element: <ResultsPage /> },
       { path: "carreras/:majorId?", element: <CareerExplorerPage /> },
+      { path: "comparar-carreras", element: <CareerComparisonPage /> },
     ],
   },
 ]);

@@ -50,7 +50,7 @@ export function KpiGrid({ overview, previous, variant = "process" }: KpiGridProp
     ? "Hay ingresantes de distintas modalidades. Selecciona una modalidad para consultar su mínimo."
     : "Menor puntaje obtenido por un ingresante en este proceso.";
   const average = <Kpi label="Puntaje promedio" value={formatNumber(overview.average_score, 2)} trend={scoreTrend(overview.average_score, previous?.average_score, true)} description={averageNote} footnoteId={averageNoteId} />;
-  const highest = <Kpi label="Puntaje máximo" value={formatNumber(overview.highest_score, 2)} trend={scoreTrend(overview.highest_score, previous?.highest_score)} description={career ? "Máximo de todos los registros con puntaje, sin filtrar por estado." : undefined} />;
+  const highest = <Kpi label="Puntaje máximo" value={formatNumber(overview.highest_score, 2)} trend={scoreTrend(overview.highest_score, previous?.highest_score)} description={career ? "Máximo puntaje válido entre los ingresantes." : undefined} />;
 
   return (
     <>

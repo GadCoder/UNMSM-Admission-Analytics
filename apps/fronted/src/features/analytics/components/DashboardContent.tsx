@@ -31,7 +31,7 @@ export function DashboardContent({
       <KpiGrid overview={primary} previous={previous} />
       <MetricHistoryChart items={historyItems} title="Evolución histórica" status={historyStatus} />
       <ProcessHistory items={historyItems} selectedProcessId={selectedProcessId} status={historyStatus} onSelectProcess={onSelectProcess} />
-      <MajorDemandChart majors={getTopMajors(primary.majors)} process={primary.process} />
+      <MajorDemandChart majors={getTopMajors(primary.majors)} />
       <MajorBreakdown overview={primary} navigation={navigation} />
     </>
   );

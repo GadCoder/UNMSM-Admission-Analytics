@@ -324,7 +324,8 @@ describe("DashboardPage", () => {
     expect(screen.getByLabelText("Facultad")).toBeVisible();
 
     await user.click(document.body);
-    await waitFor(() => expect(screen.queryByLabelText("Facultad")).not.toBeInTheDocument());
+    await waitFor(() => expect(screen.queryByRole("dialog", { name: "Filtrar resultados" })).not.toBeInTheDocument());
+    expect(screen.getByLabelText("Facultad")).toBeVisible();
   });
 
   it("debounces filter changes before updating the URL", async () => {
@@ -462,8 +463,10 @@ describe("DashboardPage", () => {
     vi.mocked(api.useProcessHistory).mockClear();
     renderPage();
     fireEvent.click(screen.getByLabelText(/Abrir filtros de carreras/));
-    expect(screen.getByLabelText("Modalidad")).toHaveValue(DEFAULT_ADMISSION_MODALITY);
-    expect(within(screen.getByLabelText("Modalidad")).queryByRole("option", { name: /Todas/ })).not.toBeInTheDocument();
+    const filterDialog = screen.getByRole("dialog", { name: "Filtrar resultados" });
+    const modalityControl = within(filterDialog).getByLabelText("Modalidad");
+    expect(modalityControl).toHaveValue(DEFAULT_ADMISSION_MODALITY);
+    expect(within(modalityControl).queryByRole("option", { name: /Todas/ })).not.toBeInTheDocument();
     expect(vi.mocked(api.useAnalyticsOverview).mock.calls.every((call) => call[2]?.modality === DEFAULT_ADMISSION_MODALITY)).toBe(true);
     expect(vi.mocked(api.useProcessHistory).mock.calls.every((call) => call[0]?.modality === DEFAULT_ADMISSION_MODALITY)).toBe(true);
     expect(screen.getByText("El puntaje promedio considera solo a los ingresantes con puntaje válido.")).toBeInTheDocument();
@@ -474,19 +477,19 @@ describe("DashboardPage", () => {
     const user = userEvent.setup();
     const view = renderPage("/?process=1&modality=2");
     await user.click(screen.getByLabelText(/Abrir filtros de carreras/));
-    expect(screen.getByLabelText("Modalidad")).toHaveValue("Especial");
+    expect(within(screen.getByRole("dialog", { name: "Filtrar resultados" })).getByLabelText("Modalidad")).toHaveValue("Especial");
     await user.selectOptions(screen.getByLabelText("Proceso analizado"), "2");
     expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("2", ["3"], { academicArea: "", faculty: "", modality: "Especial" });
     expect(api.useProcessHistory).toHaveBeenLastCalledWith({ academicArea: "", faculty: "", modality: "Especial" });
     const majorLink = within(screen.getByRole("table")).getByRole("link", { name: "Ingeniería" });
-    expect(new URL(majorLink.getAttribute("href")!, "http://localhost").searchParams.get("modality")).toBe("Especial");
+    expect(new URL(majorLink.getAttribute("href")!, "http://localhost").searchParams.get("modality")).toBe("2");
     view.unmount();
     renderPage("/?process=2");
     await user.click(screen.getByLabelText(/Abrir filtros de carreras/));
-    expect(screen.getByLabelText("Modalidad")).toHaveValue("Especial");
+    expect(within(screen.getByRole("dialog", { name: "Filtrar resultados" })).getByLabelText("Modalidad")).toHaveValue("Especial");
     await user.click(screen.getByRole("button", { name: /Restablecer filtros/ }));
     await user.click(screen.getByLabelText(/Abrir filtros de carreras/));
-    expect(screen.getByLabelText("Modalidad")).toHaveValue(DEFAULT_ADMISSION_MODALITY);
+    expect(within(screen.getByRole("dialog", { name: "Filtrar resultados" })).getByLabelText("Modalidad")).toHaveValue(DEFAULT_ADMISSION_MODALITY);
     expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("2", ["3"], { academicArea: "", faculty: "", modality: DEFAULT_ADMISSION_MODALITY });
   });
 
@@ -498,7 +501,8 @@ describe("DashboardPage", () => {
     await waitFor(() => expect(api.useAnalyticsOverview).toHaveBeenLastCalledWith("1", ["2"], { academicArea: "", faculty: "", modality: "Especial" }));
     expect(api.useProcessHistory).toHaveBeenLastCalledWith({ academicArea: "", faculty: "", modality: "Especial" });
     await user.click(screen.getByLabelText(/Abrir filtros de carreras/));
-    expect(screen.getAllByLabelText("Modalidad")).toHaveLength(1);
+    expect(screen.getAllByLabelText("Modalidad")).toHaveLength(2);
+    expect(within(screen.getByRole("dialog", { name: "Filtrar resultados" })).getByLabelText("Modalidad")).toHaveValue("Especial");
     expect(screen.getByLabelText("Área académica")).toBeInTheDocument();
   });
 

@@ -150,7 +150,7 @@ def test_comparative_overview_returns_requested_processes_and_major_summaries(cl
             {
                 "process": {"id": second.id, "year": 2026, "sequence": "26-1", "name": "2026 I"},
                 "total_results": 1, "admitted_count": 0, "absent_count": 0,
-                "average_score": None, "highest_score": "800.0000",
+                "average_score": None, "highest_score": None,
                 "minimum_admitted_score": None, "admitted_score_modality_count": 0, "admitted_score_modality": None,
                 "majors": [{"major_id": nursing.id, "major_code": "013", "major_name": "Enfermería",
                              "total_results": 1, "admitted_count": 0, "absent_count": 0,
@@ -410,7 +410,7 @@ def test_comparative_overview_uses_bulk_aggregation_for_four_processes(
         for index in range(4)
     ]
 
-    with django_assert_num_queries(3):
+    with django_assert_num_queries(4):
         response = client.get(
             "/api/v1/analytics/overview/?process="
             + ",".join(str(process.id) for process in processes)
@@ -495,8 +495,8 @@ def test_minimum_admitted_score_filters_status_career_and_process(client, majors
     payload = client.get(f"/api/v1/analytics/majors/{nursing.id}/?process={process.id}").json()
     current = payload["selected_processes"][0]
     assert current["minimum_admitted_score"] == 900.1234
-    # The maximum retains all scores; the average includes only valid admitted scores.
-    assert current["highest_score"] == "1600.0000"
+    # Highest score includes only valid admitted applicants.
+    assert current["highest_score"] == "950.0000"
     assert current["average_score"] == "925.0617"
     assert [item["process"]["id"] for item in payload["history"]] == [old.id, empty.id]
     assert [item["minimum_admitted_score"] for item in payload["history"]] == [0.0, None]
@@ -514,7 +514,7 @@ def test_minimum_admitted_score_does_not_pool_modalities(client, majors, default
                                        candidate_code=str(index), last_names="DOE", given_names="TEST",
                                        status="admitted", score=score)
     url = f"/api/v1/analytics/majors/{nursing.id}/?process={process.id}"
-    with django_assert_num_queries(3):
+    with django_assert_num_queries(4):
         mixed = client.get(f"/api/v1/analytics/overview/?process={process.id}").json()["processes"][0]
     assert mixed["minimum_admitted_score"] == 1000.0
     assert mixed["admitted_score_modality_count"] == 1
@@ -608,18 +608,18 @@ def test_process_analytics_use_basic_education_and_admitted_averages(
                 candidate_code=str(index), last_names="DOE", given_names="TEST",
             )
     params = {} if modality_value is None else {"modality": modality_value}
-    with django_assert_num_queries(3):
+    with django_assert_num_queries(4):
         overview = client.get("/api/v1/analytics/overview/", {"process": latest.id, "compare": old.id, **params}).json()["processes"]
     assert [item["average_score"] for item in overview] == ["900.0000", "800.0000"]
     assert overview[0]["total_results"] == 7
     assert overview[0]["admitted_count"] == 3
     assert overview[0]["absent_count"] == 1
-    assert overview[0]["highest_score"] == "2000.0000"
+    assert overview[0]["highest_score"] == "1000.0000"
     assert [item["average_score"] for item in overview[0]["majors"]] == ["900.0000", None]
     with django_assert_num_queries(2):
         history = client.get("/api/v1/analytics/history/", params).json()["processes"]
     assert [item["average_score"] for item in history] == ["800.0000", "900.0000"]
-    with django_assert_num_queries(3):
+    with django_assert_num_queries(4):
         latest_overview = client.get("/api/v1/analytics/latest/").json()
     assert latest_overview["average_score"] == "900.0000"
     assert latest_overview["majors"][0]["average_score"] == "900.0000"

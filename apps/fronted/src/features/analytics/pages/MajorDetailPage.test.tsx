@@ -21,6 +21,9 @@ const detailProcess = (process: typeof processes[number], total: number): MajorD
   process, total_results: total, admitted_count: 10, absent_count: 2,
   average_score: "85.0000", highest_score: "95.0000", minimum_admitted_score: 80.1234,
 });
+const withKnownModality = (item: MajorDetailProcess): MajorDetailProcess => ({
+  ...item, admitted_score_modality_count: 1, admitted_score_modality: modality,
+});
 const detail: MajorDetail = {
   major: { id: 42, code: "015", name: "Ingeniería de Sistemas", faculty: "Facultad", academic_area: "Ingenierías", is_new: false },
   selected_processes: [detailProcess(processes[0], 100)], history: [detailProcess(processes[1], 80)],
@@ -53,11 +56,20 @@ describe("MajorDetailContent", () => {
   });
 
   it("renders career KPIs, chronological chart, and historical results", () => {
+    vi.mocked(api.useMajorDetail).mockReturnValue({
+      data: {
+        ...detail,
+        selected_processes: detail.selected_processes.map(withKnownModality),
+        history: detail.history.map(withKnownModality),
+      },
+      isPending: false, isFetching: false, isError: false,
+    } as unknown as ReturnType<typeof api.useMajorDetail>);
     renderContent();
     expect(within(screen.getByLabelText("Indicadores de la carrera")).getAllByRole("article")).toHaveLength(6);
     const chart = screen.getByRole("region", { name: "Evolución histórica de la carrera" });
-    expect(within(chart).getByRole("img", { name: "Postulantes por proceso" })).toBeInTheDocument();
-    expect(within(chart).getByRole("button", { name: /2025-2: 80/ })).toBeInTheDocument();
+    expect(within(chart).getByRole("img", { name: "Puntaje mínimo de ingreso por proceso" })).toBeInTheDocument();
+    expect(within(chart).getByRole("button", { name: /2025-2: 80\.1234/ })).toBeInTheDocument();
+    expect(within(chart).getByLabelText("Métrica")).toHaveValue("minimum_admitted_score");
     const history = screen.getByRole("list", { name: "Historial por proceso" });
     expect(history.textContent!.indexOf("2026-1")).toBeLessThan(history.textContent!.indexOf("2025-2"));
     expect(screen.getByRole("heading", { name: "Resultados históricos" })).toBeInTheDocument();
@@ -77,9 +89,8 @@ describe("MajorDetailContent", () => {
   });
 
   it("defaults to minimum score when the selected process has a valid minimum", () => {
-    const identified = (item: MajorDetailProcess): MajorDetailProcess => ({ ...item, admitted_score_modality_count: 1, admitted_score_modality: modality });
     vi.mocked(api.useMajorDetail).mockReturnValue({
-      data: { ...detail, selected_processes: [identified(detail.selected_processes[0])], history: [identified(detail.history[0])]},
+      data: { ...detail, selected_processes: [withKnownModality(detail.selected_processes[0])], history: [withKnownModality(detail.history[0])]},
       isPending: false, isFetching: false, isError: false,
     } as unknown as ReturnType<typeof api.useMajorDetail>);
     renderContent();
