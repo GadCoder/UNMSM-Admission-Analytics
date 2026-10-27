@@ -8,13 +8,13 @@ import type { AdmissionProcess, MajorCatalogItem, MajorDetail, MajorDetailProces
 import { DashboardControls } from "../components/DashboardControls";
 import { SelectField } from "../components/SelectField";
 import { CareerComparisonHistory } from "../components/CareerComparisonHistory";
+import { PageBanner } from "../components/PageBanner";
 import { CareerSearch } from "../components/CareerSearch";
 import { canCompareAdmittedScores, compareAdmissionProcesses, formatCareerComparisonMetric, getCareerComparisonMetricValue, getComparableCareerMetricValues, mergeCareerHistory, rankCareerMetric, useCareerSeriesSlots, type CareerComparisonMetricKey } from "../utils/careerComparison";
 import { MAX_COMPARISON_CAREERS, parseCareerComparisonUrl } from "../utils/careerComparisonUrl";
 import { formatAdmissionModalityLabel, modalityNameFromParam, modalityUrlValue, resolveAdmissionModality } from "../utils/admissionModality";
 import { formatProcessLabel } from "../utils/processLabels";
 import { careerDetailHref } from "../utils/careerNavigation";
-import discoveryStyles from "../components/CareerDiscovery.module.css";
 import styles from "./CareerComparisonPage.module.css";
 
 type CareerResult = { id: number; item?: MajorCatalogItem; query?: UseQueryResult<MajorDetail, Error>; detail?: MajorDetail; current?: MajorDetailProcess };
@@ -135,12 +135,16 @@ export function CareerComparisonPage() {
   if (catalogQuery.isPending && !catalogQuery.data) return <p role="status">Cargando catálogo de carreras…</p>;
 
   return <div className={styles.page}>
-    <header className={`${discoveryStyles.discovery} ${styles.pageHeading}`} aria-labelledby="comparison-page-title"><div className={discoveryStyles.heading}><div><p className={discoveryStyles.eyebrow}>Compara tus opciones</p><h1 id="comparison-page-title">Compara carreras</h1><p className={styles.subtitle}>Compara tasas de ingreso, demanda y puntajes históricos entre tus opciones.</p></div></div></header>
-
-    <section className={styles.controls} aria-label="Controles de comparación">
+    <PageBanner
+      eyebrow="Compara tus opciones"
+      title="Compara carreras"
+      titleId="comparison-page-title"
+      description="Compara tasas de ingreso, demanda y puntajes históricos entre tus opciones."
+      filters={<section className={styles.controls} aria-label="Controles de comparación">
       <div className={styles.selectors}><DashboardControls processes={processes} primaryId={processId} onChange={(id) => setContext("process", id)} /><SelectField label="Modalidad" value={resolvedModalityId} onChange={(event) => setContext("modality", event.target.value)}>{modalities.map((item) => <option key={item.id} value={String(item.id)}>{formatAdmissionModalityLabel(item.name)}</option>)}</SelectField></div>
       {selectedProcess && historyProcesses.length > 0 && <p className={styles.period}>Periodo histórico: {formatProcessLabel(historyProcesses[0])}–{formatProcessLabel(historyProcesses.at(-1)!)}</p>}
-    </section>
+      </section>}
+    />
 
     <section className={styles.selectionPanel} aria-label="Panel de selección de carreras">
       <h2>Carreras para comparar</h2>

@@ -61,29 +61,31 @@ export function CareerBrowse({ processes, processId, onSelectProcess, modality, 
   };
 
   return <>
-    <section className={`${controlsStyles.toolbar} ${styles.careerToolbar}`} aria-label="Controles del análisis">
-      <DashboardControls processes={processes} primaryId={processId} onChange={onSelectProcess} />
-      <div className={styles.modalityControl}>
-        <SelectField label="Modalidad" value={modalityUrlValue(modality, modalitiesQuery.data) ?? ""} onChange={(event) => updateFilters({ academicArea, faculty, modality: modalityNameFromParam(event.target.value, modalitiesQuery.data) ?? modality })}>
-          {!((modalitiesQuery.data ?? []).some((item) => item.name === modality)) && <option value={modalityUrlValue(modality, modalitiesQuery.data) ?? ""}>{formatAdmissionModalityLabel(modality)}</option>}
-          {(modalitiesQuery.data ?? []).map((item) => <option key={item.id} value={String(item.id)}>{formatAdmissionModalityLabel(item.name)}</option>)}
-        </SelectField>
-      </div>
-      <div className={`${controlsStyles.filterAction} ${styles.filterControl}`}>
-        <DashboardFilterControls
-          areas={areas}
-          faculties={faculties}
-          modalities={modalitiesQuery.data ?? []}
-          filters={{ academicArea, faculty, modality }}
-          onChange={updateFilters}
-          onReset={resetBrowseFilters}
-        />
-      </div>
-    </section>
-    {(areasQuery.isError || facultiesQuery.isError || modalitiesQuery.isError) && <p role="status" className={styles.filterError}>
-      No pudimos cargar todos los filtros. <button type="button" onClick={() => { void areasQuery.refetch(); void facultiesQuery.refetch(); void modalitiesQuery.refetch(); }}>Reintentar filtros</button>
-    </p>}
     <CareerDiscovery
+      filters={<>
+        <section className={`${controlsStyles.toolbar} ${styles.careerToolbar}`} aria-label="Controles del análisis">
+          <DashboardControls processes={processes} primaryId={processId} onChange={onSelectProcess} />
+          <div className={styles.modalityControl}>
+            <SelectField label="Modalidad" value={modalityUrlValue(modality, modalitiesQuery.data) ?? ""} onChange={(event) => updateFilters({ academicArea, faculty, modality: modalityNameFromParam(event.target.value, modalitiesQuery.data) ?? modality })}>
+              {!((modalitiesQuery.data ?? []).some((item) => item.name === modality)) && <option value={modalityUrlValue(modality, modalitiesQuery.data) ?? ""}>{formatAdmissionModalityLabel(modality)}</option>}
+              {(modalitiesQuery.data ?? []).map((item) => <option key={item.id} value={String(item.id)}>{formatAdmissionModalityLabel(item.name)}</option>)}
+            </SelectField>
+          </div>
+          <div className={`${controlsStyles.filterAction} ${styles.filterControl}`}>
+            <DashboardFilterControls
+              areas={areas}
+              faculties={faculties}
+              modalities={modalitiesQuery.data ?? []}
+              filters={{ academicArea, faculty, modality }}
+              onChange={updateFilters}
+              onReset={resetBrowseFilters}
+            />
+          </div>
+        </section>
+        {(areasQuery.isError || facultiesQuery.isError || modalitiesQuery.isError) && <p role="status" className={styles.filterError}>
+          No pudimos cargar todos los filtros. <button type="button" onClick={() => { void areasQuery.refetch(); void facultiesQuery.refetch(); void modalitiesQuery.refetch(); }}>Reintentar filtros</button>
+        </p>}
+      </>}
       overview={overview}
       processId={processId}
       navigation={{ ...navigation, discovery: { academicArea, faculty, query, showAll } }}

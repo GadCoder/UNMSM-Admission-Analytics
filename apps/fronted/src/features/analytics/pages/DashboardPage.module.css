@@ -2,7 +2,6 @@
 .hero { display:flex; align-items:flex-start; justify-content:space-between; gap:var(--space-6); margin-bottom:var(--space-6); }
 .eyebrow, .cardLabel { margin:0 0 var(--space-3); color:var(--color-primary); font-size:.68rem; font-weight:800; letter-spacing:.14em; text-transform:uppercase; }
 .page h1 { max-width:680px; margin:0 0 .35rem; font-size:clamp(1.75rem,3.5vw,2.35rem); letter-spacing:-.045em; line-height:1.08; }
-.intro { max-width:650px; margin:0; color:var(--color-muted); font-size:.82rem; line-height:1.5; }
 
 .controls { display:flex; flex-wrap:wrap; align-items:center; gap:var(--space-3); margin:0 0 var(--space-5); }
 .processContext { display:grid; grid-template-columns:minmax(8.5rem,11rem) minmax(12rem,16rem); align-items:start; gap:var(--space-6); margin:0 0 var(--space-6); padding:var(--space-4); border:1px solid var(--color-border); border-radius:var(--radius-lg); background:var(--color-surface); box-shadow:0 4px 20px rgb(45 34 35 / 4%); }
@@ -340,7 +339,7 @@ tbody tr:hover { background:#fdfafa; }
 
 .kpiFootnote { margin:calc(-1 * var(--space-3)) 0 var(--space-5); color:var(--color-muted); font-size:.68rem; line-height:1.5; }
 
-.page .processToolbar { grid-template-columns:10rem minmax(12rem,16rem) minmax(0,1fr); align-items:end; justify-content:start; }
+.page .processToolbar { grid-template-columns:10rem minmax(12rem,16rem) minmax(0,1fr); align-items:end; justify-content:start; margin-bottom:0; }
 .page .careerToolbar { grid-template-columns:10rem minmax(0,27rem); }
 .processToolbar .filterControl { justify-self:stretch; }
 .filterControl > div, .filterControl > div > button { width:100%; }

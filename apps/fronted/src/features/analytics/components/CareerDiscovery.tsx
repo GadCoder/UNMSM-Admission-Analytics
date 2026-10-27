@@ -1,7 +1,8 @@
-import { useMemo, useRef, type KeyboardEvent } from "react";
+import { useMemo, useRef, type KeyboardEvent, type ReactNode } from "react";
 
 import type { CareerNavigationContext } from "../utils/careerNavigation";
 import type { ProcessOverview } from "../api/analytics.types";
+import { PageBanner } from "./PageBanner";
 import styles from "./CareerDiscovery.module.css";
 import { CareerResults } from "./CareerResults";
 import { CareerSearch } from "./CareerSearch";
@@ -16,11 +17,12 @@ export type CareerDiscoveryProps = {
   onShowAllChange: (showAll: boolean) => void;
   status?: "ready" | "loading" | "error";
   onRetry?: () => void;
+  filters?: ReactNode;
 };
 
 const normalize = (value: string) => value.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLocaleLowerCase("es").trim();
 
-export function CareerDiscovery({ overview, processId, navigation, query, onQueryChange, showAll, onShowAllChange, status = "ready", onRetry }: CareerDiscoveryProps) {
+export function CareerDiscovery({ overview, processId, navigation, query, onQueryChange, showAll, onShowAllChange, status = "ready", onRetry, filters }: CareerDiscoveryProps) {
   const searchInputRef = useRef<HTMLInputElement>(null);
   const resultLinkRefs = useRef<Array<HTMLAnchorElement | null>>([]);
   const majors = useMemo(() => [...(overview?.majors ?? [])].sort((a, b) =>
@@ -47,10 +49,7 @@ export function CareerDiscovery({ overview, processId, navigation, query, onQuer
     }
   };
 
-  return <section className={styles.discovery} aria-labelledby="career-discovery-title">
-    <div className={styles.heading}>
-      <div><p className={styles.eyebrow}>Explora tus opciones</p><h1 id="career-discovery-title">Encuentra tu carrera</h1></div>
-    </div>
+  return <PageBanner eyebrow="Explora tus opciones" title="Encuentra tu carrera" titleId="career-discovery-title" filters={filters}>
     <CareerSearch query={query} status={status} inputRef={searchInputRef} onQueryChange={onQueryChange} onKeyDown={handleSearchKeyDown} onRetry={onRetry} />
     {status === "ready" && <CareerResults
       majors={hasQuery ? matches : majors}
@@ -63,5 +62,5 @@ export function CareerDiscovery({ overview, processId, navigation, query, onQuer
       onShowAllChange={onShowAllChange}
       onResultKeyDown={handleResultKeyDown}
     />}
-  </section>;
+  </PageBanner>;
 }
