@@ -8,6 +8,7 @@ import { ActiveFilterChips } from "../components/ActiveFilterChips";
 import controlsStyles from "../components/ResultsControls.module.css";
 import { DashboardContent } from "../components/DashboardContent";
 import { DashboardControls, DashboardFilterControls } from "../components/DashboardControls";
+import { PageBanner } from "../components/PageBanner";
 import { DashboardLoadingSkeleton, DashboardOverviewLoadingSkeleton } from "../components/LoadingSkeletons";
 import { emptyDashboardView, readDashboardView, saveDashboardView, type DashboardView } from "../utils/dashboardSessionState";
 import styles from "./DashboardPage.module.css";
@@ -111,8 +112,12 @@ export function DashboardPage() {
 
   return (
     <section className={styles.page}>
-      {processes.length > 0 && (
-        <section className={`${controlsStyles.toolbar} ${styles.processToolbar}`} aria-label="Controles del análisis">
+      <PageBanner
+        eyebrow="Admisión UNMSM"
+        title="Resultados por proceso"
+        titleId="process-results-title"
+        description="Explora los resultados de admisión y su evolución entre procesos."
+        filters={processes.length > 0 && <section className={`${controlsStyles.toolbar} ${styles.processToolbar}`} aria-label="Controles del análisis">
           <DashboardControls
             processes={processes}
             primaryId={primaryId}
@@ -142,8 +147,8 @@ export function DashboardPage() {
             faculties={facultiesQuery.data ?? []}
             onChange={updateFilters}
           />
-        </section>
-      )}
+        </section>}
+      />
 
       {processesQuery.isPending && <DashboardLoadingSkeleton />}
       {processesQuery.isError && (
