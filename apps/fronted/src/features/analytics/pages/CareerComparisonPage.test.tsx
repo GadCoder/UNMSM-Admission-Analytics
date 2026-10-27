@@ -407,6 +407,35 @@ describe("CareerComparisonPage", () => {
     expect(api.getMajorDetail).not.toHaveBeenCalled();
   });
 
+  it("aborts abandoned comparison histories on a modality change", async () => {
+    const requests: Array<{
+      signal: AbortSignal;
+      resolve: (detail: MajorDetail) => void;
+      id: number;
+    }> = [];
+    vi.mocked(api.getMajorDetail).mockImplementation(
+      (id, _process, _comparisons, _modality, signal) =>
+        new Promise((resolve, reject) => {
+          if (!signal) throw new Error("Missing comparison AbortSignal");
+          signal.addEventListener(
+            "abort",
+            () => reject(new DOMException("Aborted", "AbortError")),
+            { once: true },
+          );
+          requests.push({ signal, resolve, id: Number(id) });
+        }),
+    );
+    renderPage();
+    await waitFor(() => expect(requests).toHaveLength(2));
+    fireEvent.change(screen.getByLabelText("Modalidad"), { target: { value: "2" } });
+    await waitFor(() => expect(requests).toHaveLength(4));
+    expect(requests.slice(0, 2).every(({ signal }) => signal.aborted)).toBe(true);
+    expect(requests.slice(2).every(({ signal }) => !signal.aborted)).toBe(true);
+    requests.slice(2).forEach(({ resolve, id }) => resolve(detail(id)));
+    expect(await screen.findByRole("region", { name: "Resumen rápido" })).toBeInTheDocument();
+    expect(screen.queryByText(/No pudimos cargar algunas carreras/)).not.toBeInTheDocument();
+  });
+
   it("keeps late responses from the previous modality out of the active comparison", async () => {
     const waiting = new Map<string, Array<(value: MajorDetail) => void>>();
     vi.mocked(api.getMajorDetail).mockImplementation(
