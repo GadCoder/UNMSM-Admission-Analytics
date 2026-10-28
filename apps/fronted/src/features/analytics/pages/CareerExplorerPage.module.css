@@ -5,6 +5,7 @@
 .careerToolbar.careerToolbar {
   grid-template-columns: 10rem minmax(12rem, 16rem) minmax(0, 1fr);
   align-items: end;
+  margin-bottom: 0;
 }
 .careerToolbar .filterControl,
 .careerToolbar .filterControl > div,
