@@ -5,7 +5,11 @@ from rest_framework.test import APIClient
 
 from modules.academics.models import AcademicArea, Faculty, Major
 from modules.admission_processes.models import AdmissionModality, AdmissionProcess
-from modules.analytics.services import DEFAULT_ADMISSION_MODALITY
+from modules.analytics.services import (
+    DEFAULT_ADMISSION_MODALITY,
+    _aggregate_totals,
+    _new_major_ids,
+)
 from modules.results.models import AdmissionResult
 
 
@@ -101,6 +105,46 @@ def test_latest_overview_aggregates_newest_published_process(client, majors, def
             },
         ],
     }
+
+
+@pytest.mark.django_db
+def test_new_major_detection_uses_all_published_processes_and_modalities(client, majors, default_modality):
+    nursing, pharmacy = majors
+    inactive = Major.objects.create(code="099", name="Inactive career", faculty=nursing.faculty, is_active=False)
+    requested = AdmissionProcess.objects.create(year=2026, sequence="26-1")
+    other = AdmissionProcess.objects.create(year=2025, sequence="25-2")
+    unpublished = AdmissionProcess.objects.create(year=2027, sequence="27-1", is_published=False)
+    special = AdmissionModality.objects.create(name="Special")
+
+    for process, major, modality, candidate in [
+        (requested, nursing, default_modality, "nursing"),
+        (other, nursing, special, "nursing-other-modality"),
+        (requested, pharmacy, default_modality, "pharmacy"),
+        (unpublished, pharmacy, default_modality, "pharmacy-unpublished"),
+        (requested, inactive, default_modality, "inactive"),
+    ]:
+        AdmissionResult.objects.create(
+            process=process, major=major, modality=modality, candidate_code=candidate,
+            last_names="DOE", given_names="TEST", status=AdmissionResult.Status.POSTULANT,
+        )
+
+    response = client.get(f"/api/v1/analytics/overview/?process={requested.id}")
+
+    assert response.status_code == 200
+    is_new_by_id = {
+        row["major_id"]: row["is_new"]
+        for row in response.json()["processes"][0]["majors"]
+    }
+    assert is_new_by_id == {
+        nursing.id: False,  # A published result in another modality still counts.
+        pharmacy.id: True,  # Unpublished processes do not count.
+        inactive.id: True,  # Global new-major detection includes inactive careers.
+    }
+    assert pharmacy.id in _new_major_ids()
+
+    unpublished.is_published = True
+    unpublished.save(update_fields=["is_published"])
+    assert pharmacy.id not in _new_major_ids()
 
 
 @pytest.mark.django_db
@@ -286,7 +330,8 @@ def test_major_detail_uses_bulk_queries_for_history(client, majors, default_moda
             status=AdmissionResult.Status.POSTULANT,
         )
 
-    with django_assert_num_queries(3):
+    # One modality-name lookup resolves the filter ID for the cold request.
+    with django_assert_num_queries(4):
         response = client.get(
             f"/api/v1/analytics/majors/{nursing.id}/?process={processes[0].id}"
         )
@@ -403,14 +448,22 @@ def test_comparative_overview_rejects_excessively_long_numeric_id(client):
 
 @pytest.mark.django_db
 def test_comparative_overview_uses_bulk_aggregation_for_four_processes(
-    client, django_assert_num_queries
+    client, majors, default_modality, django_assert_num_queries
 ):
+    nursing, _ = majors
     processes = [
         AdmissionProcess.objects.create(year=2020 + index, sequence=f"{index}-1")
         for index in range(4)
     ]
+    for index in range(40):
+        AdmissionResult.objects.create(
+            process=processes[index % len(processes)], major=nursing,
+            modality=default_modality, candidate_code=str(index), last_names="DOE",
+            given_names="TEST", status=AdmissionResult.Status.POSTULANT,
+        )
 
-    with django_assert_num_queries(4):
+    # Query count remains fixed as applicant rows grow; aggregation stays in SQL.
+    with django_assert_num_queries(5):
         response = client.get(
             "/api/v1/analytics/overview/?process="
             + ",".join(str(process.id) for process in processes)
@@ -514,7 +567,7 @@ def test_minimum_admitted_score_does_not_pool_modalities(client, majors, default
                                        candidate_code=str(index), last_names="DOE", given_names="TEST",
                                        status="admitted", score=score)
     url = f"/api/v1/analytics/majors/{nursing.id}/?process={process.id}"
-    with django_assert_num_queries(4):
+    with django_assert_num_queries(5):
         mixed = client.get(f"/api/v1/analytics/overview/?process={process.id}").json()["processes"][0]
     assert mixed["minimum_admitted_score"] == 1000.0
     assert mixed["admitted_score_modality_count"] == 1
@@ -522,17 +575,90 @@ def test_minimum_admitted_score_does_not_pool_modalities(client, majors, default
     assert default_row["total_results"] == 1
     assert default_row["minimum_admitted_score"] == 1000.0
     for modality, expected, query_count in [
-        ("Ordinario", 900.0, 3),
+        ("Ordinario", 900.0, 4),
         # '+' in a query string decodes to spaces, which normalize to the same key.
         ("+Ordinario+", 900.0, 0),
-        ("Especial", 600.0, 3),
+        ("Especial", 600.0, 4),
         ("Unknown", None, 3),
     ]:
         with django_assert_num_queries(query_count):
             filtered = client.get(url + "&modality=" + modality).json()["selected_processes"][0]
         assert filtered["minimum_admitted_score"] == expected
+        if modality == "Unknown":
+            assert filtered["total_results"] == 0
     history = client.get("/api/v1/analytics/history/", {"modality": "Ordinario"}).json()["processes"]
     assert history[0]["minimum_admitted_score"] == 900.0
+
+
+@pytest.mark.django_db
+def test_generic_totals_keep_mixed_and_null_modalities_separate(majors, default_modality):
+    nursing, _ = majors
+    process = AdmissionProcess.objects.create(year=2026, sequence="26-1")
+    ordinary = AdmissionModality.objects.create(name="Ordinario")
+    for index, modality in enumerate((default_modality, ordinary, None)):
+        AdmissionResult.objects.create(
+            process=process, major=nursing, modality=modality, candidate_code=str(index),
+            last_names="DOE", given_names="TEST", status=AdmissionResult.Status.ADMITTED,
+            score=900 - index,
+        )
+
+    totals = _aggregate_totals(AdmissionResult.objects.filter(process=process))
+
+    assert totals[process.id]["admitted_score_modality_count"] == 3
+    assert totals[process.id]["minimum_admitted_score"] is None
+    assert totals[process.id]["admitted_score_modality"] is None
+
+
+@pytest.mark.django_db
+@pytest.mark.parametrize("published_count,unpublished_result", [(0, False), (0, True), (1, True), (2, True)])
+def test_career_publication_subquery_handles_empty_and_other_modality_results(
+    client, majors, default_modality, published_count, unpublished_result
+):
+    nursing, _ = majors
+    selected = AdmissionProcess.objects.create(year=2026, sequence="26-1")
+    older = AdmissionProcess.objects.create(year=2025, sequence="25-2")
+    hidden = AdmissionProcess.objects.create(year=2027, sequence="27-1", is_published=False)
+    special = AdmissionModality.objects.create(name="Special")
+    rows = [(older, special), (selected, default_modality)][:published_count]
+    if unpublished_result:
+        rows.append((hidden, default_modality))
+    for index, (process, modality) in enumerate(rows):
+        AdmissionResult.objects.create(
+            process=process, major=nursing, modality=modality, candidate_code=str(index),
+            last_names="DOE", given_names="TEST", status=AdmissionResult.Status.POSTULANT,
+        )
+
+    response = client.get(f"/api/v1/analytics/majors/{nursing.id}/?process={selected.id}")
+
+    assert response.status_code == 200
+    payload = response.json()
+    assert payload["major"]["is_new"] is (published_count == 1)
+    assert (nursing.id in _new_major_ids()) is (published_count == 1)
+    assert [row["process"]["id"] for row in payload["history"]] == [older.id]
+    # Career metadata counts all published modalities, while displayed scores
+    # still use only the requested default modality's valid admitted population.
+    assert payload["selected_processes"][0]["admitted_score_modality_count"] == 0
+    assert payload["selected_processes"][0]["admitted_score_modality"] is None
+
+
+@pytest.mark.django_db
+def test_single_modality_totals_preserve_inclusive_valid_score_bounds(client, majors, default_modality):
+    nursing, _ = majors
+    process = AdmissionProcess.objects.create(year=2026, sequence="26-1")
+    for index, score in enumerate(("-9999.9999", "9999.9999")):
+        AdmissionResult.objects.create(
+            process=process, major=nursing, modality=default_modality, candidate_code=str(index),
+            last_names="DOE", given_names="TEST", status=AdmissionResult.Status.ADMITTED,
+            score=Decimal(score),
+        )
+
+    payload = client.get(f"/api/v1/analytics/majors/{nursing.id}/?process={process.id}").json()
+    row = payload["selected_processes"][0]
+    assert row["minimum_admitted_score"] == -9999.9999
+    assert row["highest_score"] == "9999.9999"
+    assert row["average_score"] == "0.0000"
+    assert row["admitted_score_modality_count"] == 1
+    assert row["admitted_score_modality"] == DEFAULT_ADMISSION_MODALITY
 
 
 @pytest.mark.django_db
@@ -545,6 +671,8 @@ def test_minimum_admitted_score_unavailable_is_null(client, majors, default_moda
     payload = client.get(f"/api/v1/analytics/majors/{nursing.id}/?process={process.id}").json()
     assert payload["selected_processes"][0]["minimum_admitted_score"] is None
     assert payload["selected_processes"][0]["average_score"] is None
+    assert payload["selected_processes"][0]["admitted_score_modality_count"] == 0
+    assert payload["selected_processes"][0]["admitted_score_modality"] is None
 
 
 @pytest.mark.django_db
@@ -571,7 +699,8 @@ def test_major_detail_defaults_to_basic_education_for_selected_and_history(
     params = {"process": selected.id}
     if modality_value is not None:
         params["modality"] = modality_value
-    with django_assert_num_queries(3):
+    # The modality ID lookup adds one query to this cold path.
+    with django_assert_num_queries(4):
         response = client.get(f"/api/v1/analytics/majors/{nursing.id}/", params)
     assert response.status_code == 200
     payload = response.json()
@@ -614,7 +743,8 @@ def test_process_analytics_use_basic_education_and_admitted_averages(
                 candidate_code=str(index), last_names="DOE", given_names="TEST",
             )
     params = {} if modality_value is None else {"modality": modality_value}
-    with django_assert_num_queries(4):
+    # Cold process overviews resolve the modality name once before their aggregates.
+    with django_assert_num_queries(5):
         overview = client.get("/api/v1/analytics/overview/", {"process": latest.id, "compare": old.id, **params}).json()["processes"]
     assert [item["average_score"] for item in overview] == ["900.0000", "800.0000"]
     assert overview[0]["total_results"] == 7
@@ -622,10 +752,10 @@ def test_process_analytics_use_basic_education_and_admitted_averages(
     assert overview[0]["absent_count"] == 1
     assert overview[0]["highest_score"] == "1000.0000"
     assert [item["average_score"] for item in overview[0]["majors"]] == ["900.0000", None]
-    with django_assert_num_queries(2):
+    with django_assert_num_queries(3):
         history = client.get("/api/v1/analytics/history/", params).json()["processes"]
     assert [item["average_score"] for item in history] == ["800.0000", "900.0000"]
-    with django_assert_num_queries(4):
+    with django_assert_num_queries(5):
         latest_overview = client.get("/api/v1/analytics/latest/").json()
     assert latest_overview["average_score"] == "900.0000"
     assert latest_overview["majors"][0]["average_score"] == "900.0000"
