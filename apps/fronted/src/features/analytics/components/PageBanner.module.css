@@ -17,6 +17,12 @@
 .headingContent {
   min-width: 0;
 }
+.actions {
+  flex: none;
+}
+.detailBanner .detailHeading {
+  align-items: flex-start;
+}
 .eyebrow {
   margin: 0 0 var(--space-1);
   color: var(--color-primary);
@@ -43,5 +49,38 @@
 @media (max-width: 760px) {
   .banner {
     padding: var(--space-4);
+  }
+  .detailBanner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-4);
+    padding: clamp(1rem, 5vw, 1.5rem);
+  }
+  .detailBanner .detailHeading {
+    display: contents;
+    margin: 0;
+  }
+  .detailBanner .detailHeading .headingContent {
+    order: 2;
+  }
+  .detailBanner .detailHeading .detailActions {
+    order: 1;
+    width: 100%;
+  }
+  .detailBanner > :nth-child(2) {
+    order: 3;
+    width: 100%;
+  }
+  .detailBanner .headingContent .eyebrow {
+    margin-bottom: 0.45rem;
+  }
+  .detailBanner .headingContent h1 {
+    min-width: 0;
+    font-size: clamp(1.625rem, 7vw, 1.875rem);
+    line-height: 1.12;
+    overflow-wrap: break-word;
+  }
+  .detailBanner .headingContent .description {
+    margin-top: 0.45rem;
   }
 }

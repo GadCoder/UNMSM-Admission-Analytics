@@ -2204,7 +2204,7 @@ tbody tr:hover {
   flex: 1 1 auto;
   min-width: 0;
 }
-.hero .careerHeaderControls {
+.careerHeaderControls {
   display: grid;
   flex: 0 1 42rem;
   grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -2235,17 +2235,20 @@ tbody tr:hover {
   text-overflow: ellipsis;
 }
 
-@media (max-width: 600px) {
+@media (max-width: 760px) {
   .hero.careerIdentity {
     align-items: stretch;
     flex-direction: column;
     gap: var(--space-3);
   }
-  .hero .careerHeaderControls {
+  .careerHeaderControls {
     flex: none;
-    grid-template-columns: minmax(7rem, 8rem) minmax(0, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     width: 100%;
-    gap: var(--space-2);
+    gap: var(--space-3);
+  }
+  .careerHeaderControls > * {
+    width: 100%;
   }
 }
 

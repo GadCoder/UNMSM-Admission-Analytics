@@ -5,6 +5,7 @@ import * as api from "../api/analytics";
 import { DashboardControls } from "../components/DashboardControls";
 import { SelectField } from "../components/SelectField";
 import {
+  compactAdmissionModalityLabel,
   formatAdmissionModalityLabel,
   modalityNameFromParam,
   modalityUrlValue,
@@ -111,24 +112,10 @@ export function CareerExplorerPage() {
   }
 
   return (
-    <div className={styles.page}>
-      {majorId && (
+    <div className={`${styles.page} ${majorId ? styles.detailPage : ""}`}>
+      {majorId && (comparisonOrigin || processOrigin) && (
         <div className={styles.detailNavigation}>
-          <Link className={styles.changeCareer} to={discoveryHref}>
-            ← Cambiar carrera
-          </Link>
           {comparisonOrigin && <Link to={comparisonOrigin}>Volver a comparar carreras</Link>}
-          {majorId && Number.isSafeInteger(Number(majorId)) && Number(majorId) > 0 && (
-            <Link
-              to={buildCareerComparisonHref({
-                careerIds: [Number(majorId)],
-                processId,
-                modalityId: modalityParam,
-              })}
-            >
-              Comparar esta carrera
-            </Link>
-          )}
           {processOrigin && <Link to={processOrigin}>Volver a resultados del proceso</Link>}
         </div>
       )}
@@ -157,6 +144,7 @@ export function CareerExplorerPage() {
                 wrapperClassName={dashboardStyles.detailModalityControl}
                 label="Modalidad"
                 value={modalityParam}
+                displayValue={compactAdmissionModalityLabel(modality)}
                 onChange={(event) => updateContext("modality", event.target.value)}
               >
                 {!modalities.some((item) => item.name === modality) && (
@@ -169,6 +157,29 @@ export function CareerExplorerPage() {
                 ))}
               </SelectField>
             </div>
+          }
+          headerNavigation={
+            <nav className={styles.bannerActions} aria-label="Acciones de la carrera">
+              <Link className={styles.changeCareer} to={discoveryHref}>
+                ← Cambiar carrera
+              </Link>
+              {Number.isSafeInteger(Number(majorId)) && Number(majorId) > 0 && (
+                <Link
+                  to={buildCareerComparisonHref({
+                    careerIds: [Number(majorId)],
+                    processId,
+                    modalityId: modalityParam,
+                  })}
+                  aria-label="Comparar esta carrera"
+                >
+                  <svg viewBox="0 0 24 24" aria-hidden="true" focusable="false">
+                    <path d="M4 7h15l-3-3m4 13H5l3 3M19 7l-3 3M5 17l3-3" />
+                  </svg>
+                  <span className={styles.comparisonLabelFull}>Comparar esta carrera</span>
+                  <span className={styles.comparisonLabelCompact}>Comparar</span>
+                </Link>
+              )}
+            </nav>
           }
           onSelectProcess={(id) => updateContext("process", String(id))}
         />

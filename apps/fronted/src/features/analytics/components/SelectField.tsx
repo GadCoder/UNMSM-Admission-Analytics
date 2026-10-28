@@ -8,6 +8,7 @@ type SelectFieldProps = Omit<ComponentPropsWithoutRef<"select">, "children" | "c
   children: ReactNode;
   className?: string;
   wrapperClassName?: string;
+  displayValue?: string;
 };
 
 export function SelectField({
@@ -16,17 +17,29 @@ export function SelectField({
   id,
   className = "",
   wrapperClassName,
+  displayValue,
   ...selectProps
 }: SelectFieldProps) {
   const generatedId = useId();
   const controlId = id ?? generatedId;
-  const controlClassName = [styles.control, styles.select, className].filter(Boolean).join(" ");
+  const controlClassName = [
+    styles.control,
+    styles.select,
+    displayValue ? styles.compactSelect : "",
+    className,
+  ]
+    .filter(Boolean)
+    .join(" ");
+  const fieldClassName = [wrapperClassName, displayValue ? styles.compactField : ""]
+    .filter(Boolean)
+    .join(" ");
 
   return (
-    <FormField id={controlId} label={label} className={wrapperClassName}>
+    <FormField id={controlId} label={label} className={fieldClassName}>
       <select {...selectProps} id={controlId} className={controlClassName}>
         {children}
       </select>
+      {displayValue && <span className={styles.compactValue}>{displayValue}</span>}
     </FormField>
   );
 }
