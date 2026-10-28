@@ -12,6 +12,7 @@ import type {
 } from "../api/analytics.types";
 import { DashboardControls } from "../components/DashboardControls";
 import { SelectField } from "../components/SelectField";
+import { PageBannerHeading } from "../components/PageBannerHeading";
 import { CareerComparisonHistory } from "../components/CareerComparisonHistory";
 import { CareerComparisonScores } from "../components/CareerComparisonScores";
 import { CareerSearch } from "../components/CareerSearch";
@@ -268,15 +269,21 @@ export function CareerComparisonPage() {
   return (
     <div className={styles.page}>
       <section className={styles.selectionPanel} aria-label="Espacio de comparación">
-        <header className={styles.selectionHeader}>
-          <h1 id="comparison-page-title">Compara carreras</h1>
-          <p
-            className={styles.selectionCount}
-            aria-label={`${url.careerIds.length} de 4 carreras seleccionadas`}
-          >
-            {url.careerIds.length} de 4
-          </p>
-        </header>
+        <PageBannerHeading
+          eyebrow="Compara tus opciones"
+          title="Compara carreras"
+          titleId="comparison-page-title"
+          description="Compara tasas de ingreso, demanda y puntajes entre carreras."
+          compact
+          rightContent={
+            <p
+              className={styles.selectionCount}
+              aria-label={`${url.careerIds.length} de 4 carreras seleccionadas`}
+            >
+              {url.careerIds.length}/4
+            </p>
+          }
+        />
         <section className={styles.controls} aria-label="Controles de comparación">
           <div className={styles.selectors}>
             <DashboardControls

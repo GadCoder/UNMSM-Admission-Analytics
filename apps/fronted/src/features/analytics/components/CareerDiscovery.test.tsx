@@ -104,6 +104,10 @@ describe("CareerDiscovery", () => {
   it("shows three popular choices, then exposes every career and navigates with context", async () => {
     const user = userEvent.setup();
     const { onShowAllChange } = setup();
+    expect(screen.getByRole("heading", { name: "Encuentra tu carrera" })).toBeInTheDocument();
+    expect(
+      screen.getByText("Explora carreras y consulta sus resultados de admisión."),
+    ).toBeInTheDocument();
     const list = screen.getByRole("list");
     expect(within(list).getAllByRole("link")).toHaveLength(3);
     expect(

@@ -80,6 +80,7 @@ export function CareerDiscovery({
         eyebrow="Explora tus opciones"
         title="Encuentra tu carrera"
         titleId="career-discovery-title"
+        description="Explora carreras y consulta sus resultados de admisión."
         filters={filters}
       />
       <section className={styles.discoveryPanel} aria-label="Búsqueda y carreras populares">
