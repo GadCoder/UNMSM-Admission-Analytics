@@ -3,67 +3,83 @@
   background: var(--color-background);
   color: var(--color-text);
 }
-
 .header {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  gap: var(--space-6);
-  max-width: var(--content-width);
-  margin: 0 auto;
-  padding: var(--space-5) var(--space-6);
+  gap: var(--space-4);
+  padding: 1.25rem max(var(--space-6), calc((100vw - var(--content-width)) / 2 + var(--space-6)));
+  background: #7f454b;
+  color: #fff;
 }
-
 .brand {
   display: flex;
-  align-items: center;
-  gap: var(--space-3);
-  color: inherit;
-  text-decoration: none;
+  flex: none;
 }
-
-.brandMark {
-  display: grid;
-  width: 2.5rem;
-  height: 2.5rem;
-  place-items: center;
-  border-radius: var(--radius-md);
-  background: var(--color-primary);
-  color: white;
-  font-weight: 800;
-  letter-spacing: -0.08em;
+.brandLogo {
+  width: clamp(2.2rem, 5vw, 3rem);
+  height: clamp(2.6rem, 6vw, 3.5rem);
+  object-fit: contain;
 }
-
-.brand strong,
-.brand small {
-  display: block;
+.header > div {
+  min-width: 0;
 }
-
-.brand strong {
-  font-size: 0.95rem;
+.header h1 {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.5rem, 3.5vw, 2.35rem);
+  letter-spacing: -0.045em;
+  line-height: 1.08;
 }
-
-.brand small {
-  margin-top: 0.15rem;
-  color: var(--color-muted);
-  font-size: 0.72rem;
+.header p {
+  max-width: 650px;
+  margin: 0;
+  color: rgb(255 255 255 / 85%);
+  font-size: 0.82rem;
+  line-height: 1.5;
 }
-
-.header nav {
+.header .title {
+  margin: 0 0 0.35rem;
+  font-size: clamp(1.5rem, 3.5vw, 2.35rem);
+  font-weight: 700;
+  letter-spacing: -0.045em;
+  line-height: 1.08;
+}
+.headerNav {
   display: flex;
+  flex: none;
+  align-self: stretch;
+  align-items: center;
   gap: var(--space-5);
+  margin-left: auto;
 }
-
-.header nav a {
-  color: var(--color-muted);
-  font-size: 0.88rem;
-  font-weight: 600;
+.headerNav a {
+  display: inline-flex;
+  align-items: center;
+  align-self: center;
+  min-height: 2.5rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: var(--radius-md);
+  color: rgb(255 255 255 / 78%);
   text-decoration: none;
+  font-size: 0.8rem;
+  font-weight: 650;
+  white-space: nowrap;
+  transition:
+    color 0.16s ease,
+    background-color 0.16s ease;
 }
-
-.header nav a:hover,
-.header nav a:focus-visible {
-  color: var(--color-primary);
+.headerNav a:hover {
+  color: #fff;
+}
+.headerNav a:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: 3px;
+}
+.headerNav a.activeLink {
+  background: rgb(255 255 255 / 14%);
+  color: #fff;
+}
+.menuButton {
+  display: none;
 }
 
 .main {
@@ -71,14 +87,141 @@
   margin: 0 auto;
   padding: var(--space-8) var(--space-6) var(--space-12);
 }
-
-@media (max-width: 640px) {
+@media (max-width: 1050px) {
   .header {
-    align-items: flex-start;
-    flex-direction: column;
+    flex-wrap: wrap;
   }
-
-  .header nav {
-    gap: var(--space-4);
+  .header > div {
+    flex: 1;
+  }
+  .headerNav {
+    width: 100%;
+    min-height: 2.75rem;
+    margin-left: 0;
+    justify-content: space-between;
+  }
+  .headerNav a {
+    flex: 1;
+    justify-content: center;
+    white-space: normal;
+    text-align: center;
+  }
+}
+@media (max-width: 760px) {
+  .header {
+    position: relative;
+    flex-wrap: nowrap;
+    gap: var(--space-3);
+    padding: 0.65rem 1rem;
+  }
+  .brandLogo {
+    width: 2.5rem;
+    height: 3rem;
+  }
+  .header > div {
+    flex: 1;
+    min-width: 0;
+  }
+  .header h1,
+  .header .title {
+    margin: 0;
+    font-size: clamp(1rem, 5vw, 1.25rem);
+    line-height: 1.15;
+    letter-spacing: -0.025em;
+  }
+  .header p {
+    display: none;
+  }
+  .menuButton {
+    display: inline-flex;
+    flex: none;
+    width: 2.75rem;
+    height: 2.75rem;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 50%;
+    background: rgb(255 255 255 / 12%);
+    color: #fff;
+    cursor: pointer;
+  }
+  .menuButton svg {
+    width: 1.35rem;
+    height: 1.35rem;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.8;
+  }
+  .menuButton:focus-visible {
+    outline: 2px solid #fff;
+    outline-offset: 3px;
+  }
+  .headerNav {
+    position: absolute;
+    z-index: 10;
+    top: calc(100% + 0.5rem);
+    right: var(--space-6);
+    left: auto;
+    width: min(24rem, calc(100vw - 2 * var(--space-6)));
+    min-height: 0;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.3rem;
+    padding: 0.75rem;
+    border: 1px solid rgb(61 39 41 / 9%);
+    border-radius: 0.75rem;
+    background: #fff;
+    box-shadow: 0 8px 20px rgb(35 20 21 / 14%);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-6px) scale(0.98);
+    transform-origin: top right;
+    transition:
+      opacity 0.16s ease,
+      transform 0.16s ease,
+      visibility 0.16s ease;
+    visibility: hidden;
+  }
+  .headerNavOpen {
+    display: flex;
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0) scale(1);
+    visibility: visible;
+  }
+  .headerNav a {
+    flex: none;
+    justify-content: flex-start;
+    min-height: 3.25rem;
+    gap: 0.75rem;
+    padding: 0.5rem 0.65rem;
+    border-radius: 0.45rem;
+    color: #554448;
+    white-space: nowrap;
+    text-align: left;
+    font-size: 0.95rem;
+    font-weight: 600;
+  }
+  .headerNav a.activeLink {
+    background: #f6eded;
+    color: #7f454b;
+  }
+  .headerNav a:hover {
+    background: #f8f3f3;
+    color: #7f454b;
+  }
+  .headerNav a svg {
+    width: 1.35rem;
+    height: 1.35rem;
+    flex: none;
+    margin-right: 0;
+    fill: none;
+    stroke: currentColor;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    stroke-width: 1.7;
   }
 }

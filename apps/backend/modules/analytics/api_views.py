@@ -3,10 +3,23 @@ from drf_spectacular.utils import OpenApiParameter, OpenApiResponse, extend_sche
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
+from modules.academics.models import Major
 from modules.admission_processes.models import AdmissionProcess
 
-from .serializers import ComparativeOverviewSerializer, ProcessOverviewSerializer
-from .services import latest_process_overview, process_overviews
+from .cache import get_or_compute
+from .serializers import (
+    ComparativeOverviewSerializer,
+    MajorDetailSerializer,
+    ProcessHistorySerializer,
+    ProcessOverviewSerializer,
+)
+from .services import (
+    DEFAULT_ADMISSION_MODALITY,
+    latest_process_overview,
+    major_detail,
+    process_history,
+    process_overviews,
+)
 
 
 class LatestProcessOverviewView(APIView):
@@ -17,12 +30,23 @@ class LatestProcessOverviewView(APIView):
         }
     )
     def get(self, request):
-        overview = latest_process_overview()
-        if overview is None:
+        data = get_or_compute(
+            "latest",
+            {},
+            lambda: self._latest_data(),
+        )
+        if data is None:
             return Response(
                 {"detail": "No published admission process found."}, status=404
             )
-        return Response(ProcessOverviewSerializer(overview).data)
+        return Response(data)
+
+    @staticmethod
+    def _latest_data():
+        overview = latest_process_overview()
+        return (
+            ProcessOverviewSerializer(overview).data if overview is not None else None
+        )
 
 
 class ComparativeOverviewView(APIView):
@@ -45,6 +69,25 @@ class ComparativeOverviewView(APIView):
                 required=False,
                 description="Optional comma-separated positive integer process IDs (maximum 4 unique IDs total).",
             ),
+            OpenApiParameter(
+                name="academic_area",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+            OpenApiParameter(
+                name="faculty",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+            OpenApiParameter(
+                name="modality",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Admission modality name. Omitted or blank values default to Educación Básica Regular (EBR) y Educación Básica Alternativa (EBA).",
+            ),
         ],
         responses={
             200: ComparativeOverviewSerializer,
@@ -52,13 +95,15 @@ class ComparativeOverviewView(APIView):
             404: OpenApiResponse(
                 description="A requested process does not exist or is unpublished."
             ),
-        }
+        },
     )
     def get(self, request):
         process_value = request.query_params.get("process")
         if process_value is None or not process_value.strip():
             return Response(
-                {"detail": "The process query parameter is required and cannot be empty."},
+                {
+                    "detail": "The process query parameter is required and cannot be empty."
+                },
                 status=400,
             )
 
@@ -76,21 +121,47 @@ class ComparativeOverviewView(APIView):
         process_ids = list(dict.fromkeys(process_ids))
         if len(process_ids) > self.max_processes:
             return Response(
-                {"detail": f"A maximum of {self.max_processes} unique processes may be compared."},
+                {
+                    "detail": f"A maximum of {self.max_processes} unique processes may be compared."
+                },
                 status=400,
             )
 
+        academic_area = (request.query_params.get("academic_area") or "").strip()
+        faculty = (request.query_params.get("faculty") or "").strip()
+        modality = (
+            request.query_params.get("modality") or ""
+        ).strip() or DEFAULT_ADMISSION_MODALITY
+        params = {
+            "process_ids": process_ids,
+            "academic_area": academic_area,
+            "faculty": faculty,
+            "modality": modality,
+        }
         try:
-            overviews = process_overviews(process_ids)
+            data = get_or_compute(
+                "overview",
+                params,
+                lambda: (
+                    ComparativeOverviewSerializer(
+                        {
+                            "processes": process_overviews(
+                                process_ids,
+                                academic_area=academic_area or None,
+                                faculty=faculty or None,
+                                modality=modality,
+                            )
+                        }
+                    ).data
+                ),
+            )
         except AdmissionProcess.DoesNotExist:
             return Response(
                 {"detail": "Admission process not found or is not published."},
                 status=404,
             )
 
-        return Response(
-            ComparativeOverviewSerializer({"processes": overviews}).data
-        )
+        return Response(data)
 
     @staticmethod
     def _parse_ids(value, parameter):
@@ -101,5 +172,139 @@ class ComparativeOverviewView(APIView):
             or int(item) <= 0
             for item in values
         ):
-            return None, f"The {parameter} query parameter must contain positive integer IDs."
+            return (
+                None,
+                f"The {parameter} query parameter must contain positive integer IDs.",
+            )
         return [int(item) for item in values], None
+
+
+class ProcessHistoryView(APIView):
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="academic_area",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+            OpenApiParameter(
+                name="faculty",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+            OpenApiParameter(
+                name="modality",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Admission modality name. Omitted or blank values default to Educación Básica Regular (EBR) y Educación Básica Alternativa (EBA).",
+            ),
+        ],
+        responses={200: ProcessHistorySerializer},
+    )
+    def get(self, request):
+        academic_area = (request.query_params.get("academic_area") or "").strip()
+        faculty = (request.query_params.get("faculty") or "").strip()
+        modality = (
+            request.query_params.get("modality") or ""
+        ).strip() or DEFAULT_ADMISSION_MODALITY
+        data = get_or_compute(
+            "history",
+            {"academic_area": academic_area, "faculty": faculty, "modality": modality},
+            lambda: (
+                ProcessHistorySerializer(
+                    {
+                        "processes": process_history(
+                            academic_area=academic_area or None,
+                            faculty=faculty or None,
+                            modality=modality,
+                        )
+                    }
+                ).data
+            ),
+        )
+        return Response(data)
+
+
+class MajorDetailView(APIView):
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="modality",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+                description="Admission modality name. Omitted or blank values default to Educación Básica Regular (EBR) y Educación Básica Alternativa (EBA); this endpoint always filters by one modality.",
+            ),
+            OpenApiParameter(
+                name="process",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=True,
+            ),
+            OpenApiParameter(
+                name="compare",
+                type=OpenApiTypes.STR,
+                location=OpenApiParameter.QUERY,
+                required=False,
+            ),
+        ],
+        responses={
+            200: MajorDetailSerializer,
+            400: OpenApiResponse(description="Invalid process ID query parameter."),
+            404: OpenApiResponse(description="Major or process not found."),
+        },
+    )
+    def get(self, request, major_id):
+        process_value = request.query_params.get("process")
+        if process_value is None or not process_value.strip():
+            return Response(
+                {
+                    "detail": "The process query parameter is required and cannot be empty."
+                },
+                status=400,
+            )
+        process_ids, error = ComparativeOverviewView._parse_ids(
+            process_value, "process"
+        )
+        if error:
+            return Response({"detail": error}, status=400)
+        process_ids = process_ids or []
+        compare_value = request.query_params.get("compare")
+        if compare_value is not None:
+            compare_ids, error = ComparativeOverviewView._parse_ids(
+                compare_value, "compare"
+            )
+            if error:
+                return Response({"detail": error}, status=400)
+            process_ids.extend(compare_ids or [])
+        process_ids = list(dict.fromkeys(process_ids))
+        if len(process_ids) > 4:
+            return Response(
+                {"detail": "A maximum of 4 unique processes may be compared."},
+                status=400,
+            )
+        try:
+            modality = (
+                request.query_params.get("modality") or ""
+            ).strip() or DEFAULT_ADMISSION_MODALITY
+            data = get_or_compute(
+                "major-detail",
+                {
+                    "major_id": major_id,
+                    "process_ids": process_ids,
+                    "modality": modality,
+                },
+                lambda: (
+                    MajorDetailSerializer(
+                        major_detail(major_id, process_ids, modality=modality)
+                    ).data
+                ),
+            )
+        except (AdmissionProcess.DoesNotExist, Major.DoesNotExist):
+            return Response(
+                {"detail": "Major or admission process not found."}, status=404
+            )
+        return Response(data)

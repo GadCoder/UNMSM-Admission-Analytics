@@ -1,0 +1,2 @@
+cd apps/fronted
+corepack pnpm exec lint-staged

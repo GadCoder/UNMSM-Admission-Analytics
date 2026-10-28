@@ -1,0 +1,57 @@
+.field {
+  display: grid;
+  min-width: 0;
+  gap: 0.35rem;
+}
+
+.label {
+  color: #8f7e7f;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  line-height: 1.2;
+  text-transform: uppercase;
+}
+
+.control {
+  width: 100%;
+  min-width: 0;
+  min-height: 2.75rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: var(--color-background, #fff);
+  color: var(--color-text);
+  font: inherit;
+  font-size: 0.76rem;
+  font-weight: 600;
+  line-height: 1.5;
+}
+
+.control:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+.control:disabled {
+  background: var(--color-surface);
+  color: var(--color-muted);
+  cursor: not-allowed;
+}
+
+.select {
+  padding-right: 2.15rem;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 16 16' fill='none' stroke='%23765a5c' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.8'%3E%3Cpath d='m3.5 6 4.5 4 4.5-4'/%3E%3C/svg%3E");
+  background-position: right 0.75rem center;
+  background-repeat: no-repeat;
+  background-size: 0.85rem;
+  text-overflow: ellipsis;
+}
+
+@media (max-width: 600px) {
+  .control {
+    min-height: 2.9rem;
+  }
+}

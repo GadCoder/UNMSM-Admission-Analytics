@@ -1,58 +1,34 @@
 import type { AdmissionProcess } from "../api/analytics.types";
-import styles from "../pages/DashboardPage.module.css";
+import { formatProcessLabel } from "../utils/processLabels";
+import { SelectField } from "./SelectField";
+import styles from "./DashboardControls.module.css";
 
-type DashboardControlsProps = {
+export type { DashboardFilters, DashboardFilterControlsProps } from "./DashboardFilterControls";
+export { DashboardFilterControls } from "./DashboardFilterControls";
+
+export type DashboardControlsProps = {
   processes: AdmissionProcess[];
   primaryId: string;
-  comparisons: string[];
-  onChange: (process: string, comparisons: string[]) => void;
+  onChange: (process: string) => void;
 };
 
-export function DashboardControls({
-  processes,
-  primaryId,
-  comparisons,
-  onChange,
-}: DashboardControlsProps) {
+export function DashboardControls({ processes, primaryId, onChange }: DashboardControlsProps) {
   return (
-    <div className={styles.controls} aria-label="Selección de procesos">
-      <label htmlFor="primary-process">
-        Proceso principal
-        <select
-          id="primary-process"
-          value={primaryId}
-          onChange={(event) => onChange(event.target.value, comparisons)}
-        >
-          {processes.map((process) => (
-            <option key={process.id} value={process.id}>
-              {process.name}
-            </option>
-          ))}
-        </select>
-      </label>
-      <label htmlFor="comparison-processes">
-        Comparar con
-        <select
-          id="comparison-processes"
-          multiple
-          value={comparisons}
-          onChange={(event) =>
-            onChange(
-              primaryId,
-              Array.from(event.target.selectedOptions, (option) => option.value),
-            )
-          }
-        >
-          {processes
-            .filter((process) => String(process.id) !== primaryId)
-            .map((process) => (
-              <option key={process.id} value={process.id}>
-                {process.name}
-              </option>
-            ))}
-        </select>
-        <small>Selecciona hasta 3 procesos.</small>
-      </label>
+    <div className={styles.processControls} role="group" aria-label="Selección del proceso">
+      <SelectField
+        wrapperClassName={styles.primaryControl}
+        label="Proceso"
+        id="primary-process"
+        aria-label="Proceso analizado"
+        value={primaryId}
+        onChange={(event) => onChange(event.target.value)}
+      >
+        {processes.map((process) => (
+          <option key={process.id} value={process.id}>
+            {formatProcessLabel(process)}
+          </option>
+        ))}
+      </SelectField>
     </div>
   );
 }

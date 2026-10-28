@@ -2,6 +2,8 @@ import os
 from pathlib import Path
 from urllib.parse import urlparse
 
+from django.core.exceptions import ImproperlyConfigured
+
 BASE_DIR = Path(__file__).resolve().parents[2]
 
 SECRET_KEY = os.getenv("DJANGO_SECRET_KEY", "unsafe-local-development-key")
@@ -31,7 +33,9 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "config.middleware.PublicApiCacheHeadersMiddleware",
     "django.middleware.security.SecurityMiddleware",
+    "django.middleware.gzip.GZipMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "corsheaders.middleware.CorsMiddleware",
     "django.middleware.common.CommonMiddleware",
@@ -62,6 +66,20 @@ TEMPLATES = [
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL:
+    raw_conn_max_age = os.getenv("DATABASE_CONN_MAX_AGE", "60")
+    try:
+        database_conn_max_age = int(raw_conn_max_age)
+    except ValueError as error:
+        raise ImproperlyConfigured(
+            "DATABASE_CONN_MAX_AGE must be a non-negative integer; "
+            f"received {raw_conn_max_age!r}."
+        ) from error
+    if database_conn_max_age < 0:
+        raise ImproperlyConfigured(
+            "DATABASE_CONN_MAX_AGE must be a non-negative integer; "
+            f"received {raw_conn_max_age!r}."
+        )
+
     database = urlparse(DATABASE_URL)
     DATABASES = {
         "default": {
@@ -71,6 +89,8 @@ if DATABASE_URL:
             "PASSWORD": database.password,
             "HOST": database.hostname,
             "PORT": database.port or 5432,
+            "CONN_MAX_AGE": database_conn_max_age,
+            "CONN_HEALTH_CHECKS": True,
         }
     }
 else:
@@ -105,6 +125,28 @@ REST_FRAMEWORK = {
     "DEFAULT_PARSER_CLASSES": ["rest_framework.parsers.JSONParser"],
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+# Configure CACHE_VALKEY_URL in production for a cache shared by API workers.
+# The local fallback is process-local and its analytics entries expire in 60s.
+CACHE_VALKEY_URL = os.getenv("CACHE_VALKEY_URL")
+if CACHE_VALKEY_URL:
+    CACHES = {
+        "default": {
+            # Valkey supports this backend's Redis wire protocol and redis-py client.
+            "BACKEND": "django.core.cache.backends.redis.RedisCache",
+            "LOCATION": CACHE_VALKEY_URL,
+            "KEY_PREFIX": "unmsm-admission-analytics",
+            "OPTIONS": {"socket_connect_timeout": 1, "socket_timeout": 1},
+        }
+    }
+else:
+    CACHES = {
+        "default": {
+            "BACKEND": "django.core.cache.backends.locmem.LocMemCache",
+            "LOCATION": "unmsm-admission-analytics",
+            "TIMEOUT": 60,
+        }
+    }
 
 SPECTACULAR_SETTINGS = {
     "TITLE": "UNMSM Admission Analytics API",

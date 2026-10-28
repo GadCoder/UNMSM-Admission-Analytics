@@ -1,0 +1,120 @@
+.popover {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: min(34rem, calc(100vw - 1.5rem));
+  max-height: min(36rem, calc(100dvh - 2rem));
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: var(--color-text, #292526);
+  background: var(--color-surface, #fff);
+  border: 1px solid var(--color-border, #e7e1e2);
+  border-radius: var(--radius-md, 0.75rem);
+  box-shadow: 0 12px 36px rgb(35 20 24 / 16%);
+}
+
+.desktopHeader,
+.header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-4);
+  padding: 0 var(--space-4);
+}
+
+.desktopHeader h2,
+.header h2 {
+  margin: 0;
+  font: inherit;
+  font-size: 1rem;
+  font-weight: 650;
+}
+
+.close {
+  display: inline-grid;
+  flex: 0 0 2.75rem;
+  width: 2.75rem;
+  height: 2.75rem;
+  place-items: center;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: 0.5rem;
+  font-size: 1.5rem;
+  cursor: pointer;
+}
+
+.close:hover {
+  background: rgb(100 25 45 / 7%);
+}
+.close:focus-visible {
+  outline: 2px solid var(--color-primary, #8f5658);
+  outline-offset: 2px;
+}
+
+.body {
+  min-height: 0;
+  padding: 0 var(--space-4) var(--space-2);
+  overflow: auto;
+  overscroll-behavior: contain;
+}
+
+.footer {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: var(--space-2);
+  padding: var(--space-2) var(--space-4);
+  background: var(--color-surface, #fff);
+  border-top: 1px solid var(--color-border, #e7e1e2);
+}
+
+.sheet {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  .popover {
+    display: none;
+  }
+  .sheet {
+    display: block;
+    position: fixed;
+    inset: auto 0 0;
+    width: 100%;
+    max-width: none;
+    max-height: min(88dvh, 52rem);
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    color: var(--color-text, #292526);
+    background: transparent;
+    border: 0;
+    border-radius: var(--radius-lg, 1rem) var(--radius-lg, 1rem) 0 0;
+    box-shadow: 0 -12px 36px rgb(35 20 24 / 18%);
+  }
+  .sheet:not([open]) {
+    display: none;
+  }
+  .sheet::backdrop {
+    background: rgb(18 12 14 / 48%);
+  }
+  .sheetContent {
+    display: flex;
+    flex-direction: column;
+    max-height: min(88dvh, 52rem);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+    background: var(--color-surface, #fff);
+    border-radius: var(--radius-lg, 1rem) var(--radius-lg, 1rem) 0 0;
+  }
+  .header,
+  .footer {
+    flex: 0 0 auto;
+  }
+}
+
+.popover.compact {
+  width: min(20rem, calc(100vw - 1.5rem));
+}

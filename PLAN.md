@@ -28,8 +28,8 @@ Admission Analytics.
 | Completed | 4. Initial API | Catalog and process resources plus a latest-process analytics overview. |
 | Completed | 5. CSV ingestion | Mixed-schema parser, canonical taxonomy resolver, transactional process replacement, and management command. Complete processes from 2024 through 2026 are loaded; 2020, 2022, and 2023 remain excluded because their source data is incomplete. |
 | Completed | 6. Web scaffold | React + TypeScript application, routing, API-client foundation, and containerized frontend. |
-| In progress | 7. Analytics dashboard | Connect the frontend to real process/catalog/analytics endpoints; implement process selection, dashboard cards, charts, comparison views, responsive layout, and loading/error/empty states. |
-| Pending | 8. Quality baseline | Frontend tests, accessibility checks, local container validation, API smoke tests, and setup documentation. |
+| Completed | 7. Analytics dashboard | Frontend connected to real process/catalog/analytics endpoints; process selection, dashboard cards, accessible charts, comparison views, responsive layout, and loading/error/empty states implemented and validated against the deployed application. |
+| In progress | 8. Quality baseline | Frontend tests, accessibility checks, local container validation, API smoke tests, and setup documentation. |
 | Deferred | 9. Candidate search | Results listing/search endpoint, pagination, candidate lookup, and detailed result views. Implement only when candidate-level querying becomes a product priority. |
 
 ## Current Priority

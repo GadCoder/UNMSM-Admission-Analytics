@@ -6,13 +6,18 @@
     "node": ">=20.18.0"
   },
   "type": "module",
+  "packageManager": "pnpm@12.15.0",
   "scripts": {
+    "prepare": "cd ../.. && husky apps/fronted/.husky",
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint .",
     "test": "vitest run",
     "test:watch": "vitest",
     "preview": "vite preview"
+  },
+  "lint-staged": {
+    "**/*.{css,html,js,jsx,json,md,mdx,scss,ts,tsx}": "prettier --write"
   },
   "dependencies": {
     "@tanstack/react-query": "^5.102.8",
@@ -28,8 +33,11 @@
     "@types/react": "^19.2.18",
     "@types/react-dom": "^19.2.4",
     "@vitejs/plugin-react": "^4.3.4",
+    "husky": "^9.1.7",
     "jsdom": "^30.0.1",
+    "lint-staged": "^16.4.0",
     "oxlint": "^1.79.0",
+    "prettier": "^3.9.10",
     "typescript": "~6.0.2",
     "vite": "^6.3.5",
     "vitest": "^4.1.11"

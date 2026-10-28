@@ -5,13 +5,27 @@ services:
     build:
       context: ./apps/backend
     env_file: .env
+    environment:
+      CACHE_VALKEY_URL: ${CACHE_VALKEY_URL:-redis://valkey:6379/0}
     ports:
       - "8000:8000"
     volumes:
       - ./apps/backend:/app
+      - backend_staticfiles:/app/staticfiles
     depends_on:
       postgres:
         condition: service_healthy
+      valkey:
+        condition: service_healthy
+
+  valkey:
+    image: valkey/valkey:8-alpine
+    command: ["valkey-server", "--save", "", "--appendonly", "no", "--maxmemory", "256mb", "--maxmemory-policy", "allkeys-lru"]
+    healthcheck:
+      test: ["CMD", "valkey-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
 
   postgres:
     image: postgres:17-alpine
@@ -32,3 +46,4 @@ services:
 
 volumes:
   postgres_data:
+  backend_staticfiles:

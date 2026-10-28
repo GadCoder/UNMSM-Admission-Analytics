@@ -1,32 +1,43 @@
-import type { AdmissionProcess, ProcessOverview } from "../api/analytics.types";
-import { ProcessComparisonChart, TopMajorsChart } from "./AnalyticsCharts";
-import { ComparisonSummary } from "./ComparisonSummary";
+import type { CareerNavigationContext } from "../utils/careerNavigation";
+import type { ProcessHistoryItem, ProcessOverview } from "../api/analytics.types";
+import { MetricHistoryChart } from "./MetricHistoryChart";
+import { ProcessHistory } from "./ProcessHistory";
 import { KpiGrid } from "./KpiGrid";
+import { MajorDemandChart } from "./MajorDemandChart";
+import { getTopMajors } from "./majorDemandRanking.utils";
 import { MajorBreakdown } from "./MajorBreakdown";
-import { ProcessHeader } from "./ProcessHeader";
 
 type DashboardContentProps = {
   primary: ProcessOverview;
-  comparisons: ProcessOverview[];
-  processById: Map<string, AdmissionProcess>;
+  navigation: CareerNavigationContext;
+  selectedProcessId: number;
+  previous?: ProcessOverview;
+  historyItems: ProcessHistoryItem[];
+  historyStatus?: "ready" | "loading" | "error";
+  onSelectProcess?: (processId: number) => void;
 };
 
 export function DashboardContent({
   primary,
-  comparisons,
-  processById,
+  navigation,
+  selectedProcessId,
+  previous,
+  historyItems,
+  historyStatus = "ready",
+  onSelectProcess,
 }: DashboardContentProps) {
   return (
     <>
-      <ProcessHeader process={primary.process} />
-      <KpiGrid overview={primary} />
-      <ComparisonSummary
-        comparisons={comparisons}
-        processById={processById}
+      <KpiGrid overview={primary} previous={previous} />
+      <MetricHistoryChart items={historyItems} title="Evolución histórica" status={historyStatus} />
+      <ProcessHistory
+        items={historyItems}
+        selectedProcessId={selectedProcessId}
+        status={historyStatus}
+        onSelectProcess={onSelectProcess}
       />
-      <ProcessComparisonChart overviews={[primary, ...comparisons]} />
-      <TopMajorsChart overview={primary} />
-      <MajorBreakdown overview={primary} />
+      <MajorDemandChart majors={getTopMajors(primary.majors)} />
+      <MajorBreakdown overview={primary} navigation={navigation} />
     </>
   );
 }
