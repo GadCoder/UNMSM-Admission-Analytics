@@ -26,3 +26,13 @@ class AdmissionProcessDetailSerializer(AdmissionProcessSerializer):
             "admitted_count",
             "absent_count",
         )
+
+
+class PublishedProcessSerializer(AdmissionProcessSerializer):
+    available_modality_ids = serializers.SerializerMethodField()
+
+    class Meta(AdmissionProcessSerializer.Meta):
+        fields = AdmissionProcessSerializer.Meta.fields + ("available_modality_ids",)
+
+    def get_available_modality_ids(self, obj) -> list[int]:
+        return self.context["modality_ids_by_process"].get(obj.id, [])

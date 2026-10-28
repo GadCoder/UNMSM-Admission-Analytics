@@ -6,6 +6,7 @@ import {
   formatAdmissionModalityLabel,
   modalityNameFromParam,
   modalityUrlValue,
+  modalitiesForProcess,
   resolveAdmissionModality,
 } from "../utils/admissionModality";
 import * as api from "../api/analytics";
@@ -38,6 +39,10 @@ export function DashboardPage() {
   const areasQuery = api.useAcademicAreas();
   const facultiesQuery = api.useFaculties();
   const modalitiesQuery = api.useModalities();
+  const latest = processes[0];
+  const primaryId = params.get("process") ?? (latest ? String(latest.id) : "");
+  const selectedProcess = processes.find((process) => String(process.id) === primaryId);
+  const modalities = modalitiesForProcess(modalitiesQuery.data, selectedProcess);
   const modalityParam = params.get("modality");
   const modalityName = modalityParam
     ? modalityNameFromParam(modalityParam, modalitiesQuery.data)
@@ -53,8 +58,6 @@ export function DashboardPage() {
         savedView.filters.modality,
     ),
   };
-  const latest = processes[0];
-  const primaryId = params.get("process") ?? (latest ? String(latest.id) : "");
   const comparisonParam = params.get("compare");
   const primaryIndex = processes.findIndex((process) => String(process.id) === primaryId);
   const previousProcess = primaryIndex >= 0 ? processes[primaryIndex + 1] : undefined;
@@ -184,12 +187,7 @@ export function DashboardPage() {
                   aria-description={filters.modality}
                   onChange={(event) => updateFilters({ ...filters, modality: event.target.value })}
                 >
-                  {!(modalitiesQuery.data ?? []).some((item) => item.name === filters.modality) && (
-                    <option value={filters.modality}>
-                      {formatAdmissionModalityLabel(filters.modality)}
-                    </option>
-                  )}
-                  {(modalitiesQuery.data ?? []).map((item) => (
+                  {modalities.map((item) => (
                     <option key={item.id} value={item.name} title={item.name}>
                       {formatAdmissionModalityLabel(item.name)}
                     </option>
@@ -200,7 +198,7 @@ export function DashboardPage() {
                 <DashboardFilterControls
                   areas={areasQuery.data ?? []}
                   faculties={facultiesQuery.data ?? []}
-                  modalities={modalitiesQuery.data ?? []}
+                  modalities={modalities}
                   filters={filters}
                   onChange={updateFilters}
                   onReset={resetFilters}
