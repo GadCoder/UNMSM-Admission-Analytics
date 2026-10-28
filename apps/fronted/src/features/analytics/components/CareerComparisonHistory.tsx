@@ -1,15 +1,15 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import type { AdmissionProcess } from "../api/analytics.types";
 import { formatProcessLabel } from "../utils/processLabels";
 import type { PointerEvent, MouseEvent } from "react";
 import { SelectField } from "./SelectField";
 import {
   alignCareerHistory,
+  buildCareerHistoryInsight,
   CAREER_COMPARISON_METRICS,
   formatCareerComparisonMetric,
+  getCareerHistoryDomain,
   getCareerSeriesStyle,
-  getSharedHistoryCoverage,
-  getSharedHistoryMinimumInsight,
   useCareerSeriesSlots,
   type CareerComparisonMetricKey,
   type CareerComparisonSeries,
@@ -24,9 +24,11 @@ type CareerComparisonHistoryProps = {
   selectedProcessId?: number;
   insightsEnabled?: boolean;
   seriesSlots?: ReadonlyMap<number | string, number>;
+  loading?: boolean;
+  failed?: boolean;
+  expectedCareers?: Array<{ id: number | string; label: string }>;
 };
 
-const WIDTH = 840;
 const HEIGHT = 300;
 const PAD = { top: 18, right: 22, bottom: 48, left: 70 };
 function marker(index: number, x: number, y: number, color: string) {
@@ -91,7 +93,15 @@ export function CareerComparisonHistory({
   selectedProcessId,
   insightsEnabled = true,
   seriesSlots,
+  loading = false,
+  failed = false,
+  expectedCareers = [],
 }: CareerComparisonHistoryProps) {
+  const [view, setView] = useState<"chart" | "table">("chart");
+  const chartHostRef = useRef<HTMLDivElement>(null);
+  const [chartWidth, setChartWidth] = useState(640);
+  const WIDTH = chartWidth;
+  const PAD_LEFT = Math.min(PAD.left, Math.max(38, WIDTH * 0.14));
   const aligned = useMemo(
     () => alignCareerHistory(series, processes, metric, selectedProcessId),
     [series, processes, metric, selectedProcessId],
@@ -100,8 +110,27 @@ export function CareerComparisonHistory({
     contextId: number | null;
     processId: number;
   } | null>(null);
-  const [dismissedContextId, setDismissedContextId] = useState<number>(-1);
+  const [pinnedProcess, setPinnedProcess] = useState<{
+    contextId: number | null;
+    processId: number;
+  } | null>(null);
+  const [hoveredCareerId, setHoveredCareerId] = useState<number | string | null>(null);
+  const [pinnedCareerId, setPinnedCareerId] = useState<number | string | null>(null);
   const { processes: orderedProcesses, series: orderedSeries } = aligned;
+  const effectivePinnedCareerId = orderedSeries.some((item) => item.id === pinnedCareerId)
+    ? pinnedCareerId
+    : null;
+  const effectiveHoveredCareerId = orderedSeries.some((item) => item.id === hoveredCareerId)
+    ? hoveredCareerId
+    : null;
+  const activeCareerId = effectivePinnedCareerId ?? effectiveHoveredCareerId;
+  const plottedSeries =
+    activeCareerId === null
+      ? orderedSeries
+      : [
+          ...orderedSeries.filter((item) => item.id !== activeCareerId),
+          ...orderedSeries.filter((item) => item.id === activeCareerId),
+        ];
   const activeIndexFromHover =
     hoveredProcess?.contextId === (selectedProcessId ?? null)
       ? orderedProcesses.findIndex((process) => process.id === hoveredProcess.processId)
@@ -111,63 +140,85 @@ export function CareerComparisonHistory({
       ? -1
       : orderedProcesses.findIndex((process) => process.id === selectedProcessId);
   const activeIndex =
-    activeIndexFromHover >= 0 ? activeIndexFromHover : selectedIndex >= 0 ? selectedIndex : null;
-  const contextId = selectedProcessId ?? -3;
+    activeIndexFromHover >= 0
+      ? activeIndexFromHover
+      : pinnedProcess?.contextId === (selectedProcessId ?? null)
+        ? orderedProcesses.findIndex((process) => process.id === pinnedProcess.processId)
+        : selectedIndex >= 0
+          ? selectedIndex
+          : null;
+  const panelIndex =
+    activeIndexFromHover >= 0
+      ? activeIndexFromHover
+      : pinnedProcess?.contextId === (selectedProcessId ?? null)
+        ? orderedProcesses.findIndex((process) => process.id === pinnedProcess.processId)
+        : null;
+  const contextId = selectedProcessId ?? null;
   const values = orderedSeries.flatMap((item) =>
-    item.values.filter((value): value is number => value !== null),
+    item.values.filter((value): value is number => value !== null && Number.isFinite(value)),
   );
   const hasValues = values.length > 0;
-  const min = hasValues ? Math.min(...values) : 0;
-  const max = hasValues ? Math.max(...values) : 1;
-  const span = max - min || Math.max(Math.abs(max) * 0.1, 1);
-  const boundedMetric =
-    metric === "admission_rate" ||
-    metric === "total_results" ||
-    metric === "admitted_count" ||
-    metric === "absent_count" ||
-    metric === "applicants_per_admitted";
-  const yMin =
-    metric === "admission_rate"
-      ? 0
-      : boundedMetric
-        ? Math.max(0, min - span * 0.12)
-        : min - span * 0.12;
-  const yMax = metric === "admission_rate" ? 100 : Math.max(yMin + 1, max + span * 0.12);
-  const plotWidth = WIDTH - PAD.left - PAD.right;
+  useEffect(() => {
+    const host = chartHostRef.current;
+    if (!host || typeof ResizeObserver === "undefined") return;
+    const observer = new ResizeObserver(([entry]) => {
+      if (entry) setChartWidth(Math.max(240, Math.round(entry.contentRect.width)));
+    });
+    observer.observe(host);
+    return () => observer.disconnect();
+  }, [hasValues, view]);
+  const domain = getCareerHistoryDomain(aligned, metric);
+  const { min: yMin, max: yMax } = domain;
+  const rateTickStep =
+    metric === "admission_rate" && domain.ticks.length > 1
+      ? Math.abs(domain.ticks[0] - domain.ticks[1])
+      : 1;
+  const admissionRatePrecision = Math.min(2, Math.max(0, Math.ceil(-Math.log10(rateTickStep)) + 1));
+  const plotWidth = WIDTH - PAD_LEFT - PAD.right;
   const plotHeight = HEIGHT - PAD.top - PAD.bottom;
   const xPositions = orderedProcesses.map(
     (_, index) =>
-      PAD.left +
+      PAD_LEFT +
       (orderedProcesses.length <= 1
         ? plotWidth / 2
         : (index * plotWidth) / (orderedProcesses.length - 1)),
   );
+  const xLabelStep = Math.max(
+    1,
+    Math.ceil(((orderedProcesses.length - 1) * 65) / Math.max(1, plotWidth)),
+  );
   const yPosition = (value: number) => PAD.top + ((yMax - value) / (yMax - yMin)) * plotHeight;
   const metricOption = CAREER_COMPARISON_METRICS.find((item) => item.key === metric)!;
-  const insight =
-    insightsEnabled && metric === "admission_rate" ? getSharedHistoryMinimumInsight(aligned) : null;
-  const coverage = getSharedHistoryCoverage(aligned);
+  const insight = insightsEnabled ? buildCareerHistoryInsight(aligned, metric) : null;
   const activeProcess = activeIndex === null ? null : orderedProcesses[activeIndex];
 
   const localStyleSlots = useCareerSeriesSlots(series.map(({ id }) => id));
   const styleSlots = seriesSlots ?? localStyleSlots;
-  const tooltipDismissed = dismissedContextId === contextId;
-
   function moveActive(direction: number) {
     if (!orderedProcesses.length) return;
     const start = activeIndex ?? 0;
     const next = Math.max(0, Math.min(orderedProcesses.length - 1, start + direction));
-    setHoveredProcess({
+    setPinnedProcess({
       contextId: selectedProcessId ?? null,
       processId: orderedProcesses[next].id,
     });
-    setDismissedContextId(-1);
   }
 
   function indexAtPointer(event: PointerEvent<SVGRectElement> | MouseEvent<SVGRectElement>) {
-    const bounds = event.currentTarget.ownerSVGElement?.getBoundingClientRect();
-    if (!bounds || !orderedProcesses.length) return;
-    const pointX = ((event.clientX - bounds.left) / bounds.width) * WIDTH;
+    const svg = event.currentTarget.ownerSVGElement;
+    const point = svg?.createSVGPoint?.();
+    const matrix = svg?.getScreenCTM?.();
+    if (!svg || !orderedProcesses.length) return;
+    let pointX: number;
+    if (point && matrix) {
+      point.x = event.clientX;
+      point.y = event.clientY;
+      pointX = point.matrixTransform(matrix.inverse()).x;
+    } else {
+      const bounds = svg.getBoundingClientRect();
+      if (!bounds.width) return;
+      pointX = ((event.clientX - bounds.left) / bounds.width) * WIDTH;
+    }
     const closest = xPositions.reduce(
       (best, x, index) =>
         Math.abs(x - pointX) < Math.abs(xPositions[best] - pointX) ? index : best,
@@ -177,17 +228,19 @@ export function CareerComparisonHistory({
       contextId: selectedProcessId ?? null,
       processId: orderedProcesses[closest].id,
     });
-    setDismissedContextId(-1);
+    if (event.type === "pointerdown" || event.type === "click")
+      setPinnedProcess({
+        contextId: selectedProcessId ?? null,
+        processId: orderedProcesses[closest].id,
+      });
   }
 
   return (
     <section className={styles.history} aria-labelledby="career-history-heading">
       <div className={styles.heading}>
         <div>
-          <h2 id="career-history-heading">¿Cómo han cambiado los resultados?</h2>
-          <p>
-            Compara cada carrera en los mismos procesos publicados hasta el proceso seleccionado.
-          </p>
+          <h2 id="career-history-heading">Evolución histórica</h2>
+          <p>Compara cómo han cambiado los resultados entre procesos de admisión.</p>
         </div>
         <SelectField
           label="Métrica"
@@ -202,184 +255,306 @@ export function CareerComparisonHistory({
           ))}
         </SelectField>
       </div>
-      {insight && (
-        <p className={styles.insight}>
-          {insight.careerNames.join(" y ")}{" "}
-          {insight.careerNames.length > 1 ? "registraron" : "registró"} la menor tasa de ingreso en{" "}
-          {insight.uniqueMinimumCount} de {insight.sharedProcessCount} procesos con datos para todas
-          las carreras seleccionadas ({insight.period}).
-        </p>
+      <div className={styles.viewToggle} role="group" aria-label="Vista de resultados históricos">
+        <button
+          type="button"
+          className={styles.viewButton}
+          aria-pressed={view === "chart"}
+          onClick={() => setView("chart")}
+        >
+          Gráfico
+        </button>
+        <button
+          type="button"
+          className={styles.viewButton}
+          aria-pressed={view === "table"}
+          onClick={() => setView("table")}
+        >
+          Tabla
+        </button>
+      </div>
+      {insightsEnabled && (
+        <div className={styles.insight}>
+          <svg viewBox="0 0 20 20" aria-hidden="true" className={styles.insightIcon}>
+            <path
+              d="M3 7h14m0 0-3-3m3 3-3 3M17 13H3m0 0 3 3m-3-3 3-3"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.7"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            />
+          </svg>
+          <div>
+            <strong>Cambio destacado</strong>
+            <p>
+              {insight?.text ??
+                (orderedProcesses.length < 2 || !hasValues
+                  ? "Aún no hay suficientes observaciones para comparar procesos."
+                  : "No hay un cambio destacado entre los procesos disponibles.")}
+            </p>
+          </div>
+        </div>
       )}
-      {insightsEnabled &&
-        metric === "admission_rate" &&
-        !insight &&
-        !coverage.hasMinimumCoverage &&
-        series.length >= 2 && (
-          <p className={styles.coverageNote}>
-            Aún no hay dos procesos con datos para todas las carreras seleccionadas para resumir la
-            tasa histórica.
-          </p>
-        )}
-      {series.length > 0 && (
+      {view === "chart" && (series.length > 0 || expectedCareers.length > 0) && (
         <ul className={styles.legend} aria-label="Carreras del gráfico">
-          {series.map((item) => {
+          {(expectedCareers.length
+            ? expectedCareers.map(
+                (expected) => series.find((item) => item.id === expected.id) ?? expected,
+              )
+            : series
+          ).map((item) => {
             const style = getCareerSeriesStyle(styleSlots.get(item.id) ?? 0);
             return (
               <li key={item.id}>
-                <svg className={styles.legendMark} viewBox="0 0 28 12" aria-hidden="true">
-                  <line
-                    x1="0"
-                    x2="28"
-                    y1="6"
-                    y2="6"
-                    stroke={style.color}
-                    strokeWidth="2"
-                    strokeDasharray={style.dash}
-                  />
-                  {marker(style.markerIndex, 14, 6, style.color)}
-                </svg>
-                {item.label}
+                <button
+                  type="button"
+                  className={styles.legendButton}
+                  aria-pressed={effectivePinnedCareerId === item.id}
+                  onPointerEnter={() => setHoveredCareerId(item.id)}
+                  onPointerLeave={() => setHoveredCareerId(null)}
+                  onFocus={() => setHoveredCareerId(item.id)}
+                  onBlur={() => setHoveredCareerId(null)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Escape") {
+                      setPinnedCareerId(null);
+                      setHoveredCareerId(null);
+                    }
+                  }}
+                  onClick={() => {
+                    setPinnedCareerId((current) => (current === item.id ? null : item.id));
+                    setHoveredCareerId(null);
+                  }}
+                >
+                  <svg className={styles.legendMark} viewBox="0 0 28 12" aria-hidden="true">
+                    <line
+                      x1="0"
+                      x2="28"
+                      y1="6"
+                      y2="6"
+                      stroke={style.color}
+                      strokeWidth="2"
+                      strokeDasharray={style.dash}
+                    />
+                    {marker(style.markerIndex, 14, 6, style.color)}
+                  </svg>
+                  {item.label}
+                </button>
               </li>
             );
           })}
         </ul>
       )}
-      {!hasValues ? (
-        <p className={styles.empty} role="status">
-          No hay datos históricos disponibles para esta métrica.
+      {view === "chart" && loading && (
+        <p className={styles.requestStatus} role="status">
+          Cargando datos históricos…
         </p>
-      ) : (
-        <div className={styles.chartScroller}>
-          <svg
-            className={styles.chart}
-            viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
-            role="group"
-            aria-label={`${metricOption.label} por proceso para las carreras seleccionadas`}
-          >
-            {[0, 1, 2, 3].map((step) => {
-              const value = yMax - (step * (yMax - yMin)) / 3;
-              const y = PAD.top + (step * plotHeight) / 3;
-              return (
-                <g key={step}>
-                  <line
-                    x1={PAD.left}
-                    x2={WIDTH - PAD.right}
-                    y1={y}
-                    y2={y}
-                    className={styles.gridLine}
-                  />
-                  <text x={PAD.left - 10} y={y + 4} textAnchor="end" className={styles.axisLabel}>
-                    {formatCareerComparisonMetric(value, metric)}
-                  </text>
-                </g>
-              );
-            })}
-            {orderedProcesses.map((process, index) => (
-              <g key={process.id}>
-                <line
-                  x1={xPositions[index]}
-                  x2={xPositions[index]}
-                  y1={PAD.top}
-                  y2={HEIGHT - PAD.bottom}
-                  className={activeIndex === index ? styles.activeGuide : styles.guide}
-                />
-                {(orderedProcesses.length <= 12 ||
-                  index === 0 ||
-                  index === orderedProcesses.length - 1 ||
-                  index === activeIndex ||
-                  index % Math.ceil(orderedProcesses.length / 12) === 0) && (
-                  <text
-                    x={xPositions[index]}
-                    y={HEIGHT - 20}
-                    textAnchor="middle"
-                    className={styles.axisLabel}
-                  >
-                    {formatProcessLabel(process)}
-                  </text>
-                )}
-              </g>
-            ))}
-            {orderedSeries.map((item) => {
-              const style = getCareerSeriesStyle(styleSlots.get(item.id) ?? 0);
-              const color = style.color;
-              const paths = segments(item.values, xPositions, yPosition);
-              return (
-                <g key={item.id} aria-label={item.label}>
-                  {paths.map((path, index) => (
-                    <path
-                      key={index}
-                      d={path}
-                      fill="none"
-                      stroke={color}
-                      strokeWidth="2.5"
-                      strokeDasharray={style.dash}
+      )}
+      {view === "chart" && failed && (
+        <p className={styles.requestStatus} role="status">
+          No se pudieron cargar todos los datos históricos.
+        </p>
+      )}
+      {view === "chart" &&
+        (!hasValues && !loading && !failed ? (
+          <p className={styles.empty} role="status">
+            No hay datos históricos disponibles para esta métrica.
+          </p>
+        ) : hasValues ? (
+          <div className={styles.chartScroller} ref={chartHostRef}>
+            <svg
+              className={styles.chart}
+              viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
+              preserveAspectRatio="none"
+              role="group"
+              aria-label={`${metricOption.label} por proceso para las carreras seleccionadas`}
+            >
+              {domain.ticks.map((value) => {
+                const y = yPosition(value);
+                return (
+                  <g key={value}>
+                    <line
+                      x1={PAD_LEFT}
+                      x2={WIDTH - PAD.right}
+                      y1={y}
+                      y2={y}
+                      className={styles.gridLine}
                     />
-                  ))}
-                  {item.values.map((value, index) =>
-                    value === null ? null : (
-                      <g key={orderedProcesses[index].id}>
-                        {marker(style.markerIndex, xPositions[index], yPosition(value), color)}
-                      </g>
-                    ),
+                    <text x={PAD_LEFT - 8} y={y + 4} textAnchor="end" className={styles.axisLabel}>
+                      {formatCareerComparisonMetric(
+                        value,
+                        metric,
+                        metric === "admission_rate" ? admissionRatePrecision : undefined,
+                      )}
+                    </text>
+                  </g>
+                );
+              })}
+              {orderedProcesses.map((process, index) => (
+                <g key={process.id}>
+                  <line
+                    x1={xPositions[index]}
+                    x2={xPositions[index]}
+                    y1={PAD.top}
+                    y2={HEIGHT - PAD.bottom}
+                    className={activeIndex === index ? styles.activeGuide : styles.guide}
+                  />
+                  {(index === 0 ||
+                    index === orderedProcesses.length - 1 ||
+                    index === activeIndex ||
+                    index % xLabelStep === 0) && (
+                    <text
+                      x={xPositions[index]}
+                      y={HEIGHT - 20}
+                      textAnchor="middle"
+                      className={styles.axisLabel}
+                    >
+                      {formatProcessLabel(process)}
+                    </text>
                   )}
                 </g>
-              );
-            })}
-            <rect
-              x={PAD.left}
-              y={PAD.top}
-              width={plotWidth}
-              height={plotHeight}
-              fill="transparent"
-              role="slider"
-              tabIndex={0}
-              aria-label="Proceso histórico"
-              aria-valuemin={1}
-              aria-valuemax={Math.max(1, orderedProcesses.length)}
-              aria-valuenow={(activeIndex ?? 0) + 1}
-              aria-valuetext={
-                activeProcess
-                  ? formatProcessLabel(activeProcess)
-                  : "Usa las flechas izquierda y derecha para elegir un proceso"
-              }
-              onKeyDown={(event) => {
-                if (event.key === "ArrowLeft") {
-                  event.preventDefault();
-                  moveActive(-1);
-                } else if (event.key === "ArrowRight") {
-                  event.preventDefault();
-                  moveActive(1);
-                } else if (event.key === "Enter") setDismissedContextId(-1);
-                else if (event.key === "Escape") setDismissedContextId(contextId);
-              }}
-              onPointerMove={indexAtPointer}
-              onPointerDown={indexAtPointer}
-              onClick={indexAtPointer}
-            />
-          </svg>
-        </div>
+              ))}
+              {plottedSeries.map((item) => {
+                const style = getCareerSeriesStyle(styleSlots.get(item.id) ?? 0);
+                const color = style.color;
+                const paths = segments(item.values, xPositions, yPosition);
+                return (
+                  <g
+                    key={item.id}
+                    aria-label={item.label}
+                    className={
+                      activeCareerId === null
+                        ? undefined
+                        : activeCareerId === item.id
+                          ? styles.highlightedSeries
+                          : styles.dimmedSeries
+                    }
+                  >
+                    {paths.map((path, index) => (
+                      <path
+                        key={index}
+                        d={path}
+                        fill="none"
+                        stroke={color}
+                        strokeWidth="2.5"
+                        strokeDasharray={style.dash}
+                      />
+                    ))}
+                    {item.values.map((value, index) =>
+                      value === null ? null : (
+                        <g key={orderedProcesses[index].id}>
+                          {marker(style.markerIndex, xPositions[index], yPosition(value), color)}
+                        </g>
+                      ),
+                    )}
+                  </g>
+                );
+              })}
+              <rect
+                x={PAD_LEFT}
+                y={PAD.top}
+                width={plotWidth}
+                height={plotHeight}
+                fill="transparent"
+                role="slider"
+                tabIndex={0}
+                aria-label="Proceso histórico"
+                aria-valuemin={1}
+                aria-valuemax={Math.max(1, orderedProcesses.length)}
+                aria-valuenow={(activeIndex ?? 0) + 1}
+                aria-describedby="history-chart-instructions"
+                aria-valuetext={
+                  activeProcess
+                    ? formatProcessLabel(activeProcess)
+                    : "Usa las flechas izquierda y derecha para elegir un proceso"
+                }
+                onKeyDown={(event) => {
+                  if (event.key === "ArrowLeft" || event.key === "ArrowDown") {
+                    event.preventDefault();
+                    moveActive(-1);
+                  } else if (event.key === "ArrowRight" || event.key === "ArrowUp") {
+                    event.preventDefault();
+                    moveActive(1);
+                  } else if (event.key === "Home") {
+                    event.preventDefault();
+                    setPinnedProcess({ contextId, processId: orderedProcesses[0].id });
+                  } else if (event.key === "End") {
+                    event.preventDefault();
+                    setPinnedProcess({
+                      contextId,
+                      processId: orderedProcesses[orderedProcesses.length - 1].id,
+                    });
+                  } else if (event.key === "Enter")
+                    setPinnedProcess({
+                      contextId,
+                      processId: activeProcess?.id ?? orderedProcesses[0].id,
+                    });
+                  else if (event.key === "Escape") setPinnedProcess(null);
+                }}
+                onPointerLeave={() => setHoveredProcess(null)}
+                onPointerMove={indexAtPointer}
+                onPointerDown={indexAtPointer}
+                onClick={indexAtPointer}
+              />
+            </svg>
+          </div>
+        ) : null)}
+      {view === "chart" && (
+        <p className={styles.instructions} id="history-chart-instructions">
+          Flechas: cambiar proceso. Toca o haz clic: fijar valores.
+        </p>
       )}
-      {hasValues && activeProcess && !tooltipDismissed && (
-        <div className={styles.tooltip} role="status" aria-live="polite">
-          <strong>{formatProcessLabel(activeProcess)}</strong>
+      {view === "chart" && hasValues && panelIndex !== null && orderedProcesses[panelIndex] && (
+        <div className={styles.processPanel} role="status" aria-live="polite">
+          <div className={styles.panelHeader}>
+            <strong className={styles.processTitle}>
+              {formatProcessLabel(orderedProcesses[panelIndex])} · {metricOption.label}
+            </strong>
+            {pinnedProcess?.contextId === contextId && (
+              <button
+                type="button"
+                className={styles.clearSelection}
+                onClick={() => {
+                  setPinnedProcess(null);
+                  setHoveredProcess(null);
+                }}
+              >
+                Quitar selección
+              </button>
+            )}
+          </div>
           <ul>
             {orderedSeries.map((item) => {
-              const value = item.values[activeIndex!];
+              const value = item.values[panelIndex];
+              const style = getCareerSeriesStyle(styleSlots.get(item.id) ?? 0);
+              const availableProcesses = item.values.flatMap((historicalValue, processIndex) =>
+                historicalValue !== null && Number.isFinite(historicalValue)
+                  ? [formatProcessLabel(orderedProcesses[processIndex])]
+                  : [],
+              );
               return (
                 <li key={item.id}>
-                  <span>{item.label}</span>
+                  <span>
+                    <i style={{ backgroundColor: style.color }} aria-hidden="true" />
+                    {item.label}
+                  </span>
                   <strong>
-                    {value === null ? "Sin datos" : formatCareerComparisonMetric(value, metric)}
+                    {value === null ? "—" : formatCareerComparisonMetric(value, metric)}
                   </strong>
+                  {availableProcesses.length === 1 && (
+                    <small>
+                      Datos disponibles para esta métrica en {availableProcesses[0]}. Un solo
+                      proceso no permite evaluar su evolución.
+                    </small>
+                  )}
                 </li>
               );
             })}
           </ul>
         </div>
       )}
-      {orderedProcesses.length > 0 && (
-        <details className={styles.tableDisclosure}>
-          <summary>Ver tabla de datos históricos</summary>
+      {view === "table" && orderedProcesses.length > 0 && (
+        <div className={styles.tableView}>
           <div
             className={styles.tableScroller}
             role="region"
@@ -403,9 +578,9 @@ export function CareerComparisonHistory({
                   <tr key={process.id}>
                     <th scope="row">{formatProcessLabel(process)}</th>
                     {orderedSeries.map((item) => (
-                      <td key={item.id}>
+                      <td key={item.id} data-label={item.label}>
                         {item.values[index] === null
-                          ? "Sin datos"
+                          ? "—"
                           : formatCareerComparisonMetric(item.values[index], metric)}
                       </td>
                     ))}
@@ -414,7 +589,10 @@ export function CareerComparisonHistory({
               </tbody>
             </table>
           </div>
-        </details>
+          <p className={styles.scrollCue}>
+            Desliza horizontalmente para ver todos los procesos y carreras.
+          </p>
+        </div>
       )}
     </section>
   );

@@ -7,7 +7,9 @@ import {
   buildComparisonInsights,
   canCompareMinimumScores,
   getCareerComparisonMetricValue,
+  getCareerHistoryDomain,
   getComparableCareerMetricValues,
+  buildCareerHistoryInsight,
   getCareerSeriesStyle,
   getSharedHistoryMinimumInsight,
   mergeCareerHistory,
@@ -215,6 +217,149 @@ describe("career comparison metric helpers", () => {
     expect(slots.get(7)).toBe(secondSlot);
     expect(slots.get(12)).not.toBe(firstSlot);
     expect(getCareerSeriesStyle(firstSlot!).dash).not.toBe(getCareerSeriesStyle(secondSlot!).dash);
+  });
+});
+
+describe("career historical evolution helpers", () => {
+  it("scales admission rates from zero to a rounded bound that contains all selected series", () => {
+    const aligned = alignCareerHistory(
+      [
+        { id: 1, label: "A", items: [row(1, 2024, "I", 100, 31)] },
+        { id: 2, label: "B", items: [row(1, 2024, "I", 100, 16)] },
+      ],
+      [row(1, 2024, "I", 100, 31).process],
+      "admission_rate",
+    );
+    expect(getCareerHistoryDomain(aligned, "admission_rate")).toEqual({
+      min: 0,
+      max: 40,
+      ticks: [40, 30, 20, 10, 0],
+    });
+  });
+
+  it("keeps valid zero observations in the historical domain", () => {
+    const aligned = alignCareerHistory(
+      [{ id: 1, label: "A", items: [row(1, 2024, "I", 10, 0)] }],
+      [row(1, 2024, "I", 10, 0).process],
+      "admission_rate",
+    );
+    expect(aligned.series[0].values).toEqual([0]);
+    expect(getCareerHistoryDomain(aligned, "admission_rate").min).toBe(0);
+  });
+
+  it("sorts processes chronologically and describes admission-rate change in percentage points", () => {
+    const early = row(2, 2024, "II", 100, 18);
+    const late = row(3, 2026, "II", 100, 31);
+    const aligned = alignCareerHistory(
+      [{ id: 1, label: "Administración", items: [late, early] }],
+      [late.process, early.process],
+      "admission_rate",
+    );
+    expect(aligned.processes.map(({ year }) => year)).toEqual([2024, 2026]);
+    expect(buildCareerHistoryInsight(aligned, "admission_rate")?.text).toContain(
+      "aumento de 13 puntos porcentuales",
+    );
+  });
+
+  it("avoids an insight for too few observations or zero change, and describes tied largest changes", () => {
+    const one = row(1, 2024, "I", 100, 20);
+    const two = row(2, 2025, "I", 100, 20);
+    const three = row(3, 2026, "I", 100, 30);
+    const single = alignCareerHistory(
+      [{ id: 1, label: "A", items: [one] }],
+      [one.process],
+      "admission_rate",
+    );
+    const tied = alignCareerHistory(
+      [
+        { id: 1, label: "A", items: [one, three] },
+        { id: 2, label: "B", items: [one, three] },
+      ],
+      [one.process, three.process],
+      "admission_rate",
+    );
+    expect(buildCareerHistoryInsight(single, "admission_rate")).toBeNull();
+    expect(buildCareerHistoryInsight(tied, "admission_rate")?.text).toContain(
+      "La tasa de ingreso de A pasó de 20% en 2024-I a 30% en 2026-I",
+    );
+    expect(buildCareerHistoryInsight(tied, "admission_rate")?.text).not.toMatch(/mayor|única/i);
+    expect(
+      buildCareerHistoryInsight(
+        alignCareerHistory(
+          [{ id: 1, label: "A", items: [one, two] }],
+          [one.process, two.process],
+          "admission_rate",
+        ),
+        "admission_rate",
+      ),
+    ).toBeNull();
+  });
+
+  it("uses process dates for endpoint comparison and skips one-observation careers", () => {
+    const early = row(1, 2024, "I", 100, 18);
+    const late = row(2, 2025, "I", 100, 31);
+    const oneRecord = row(2, 2025, "I", 100, 45);
+    const aligned = alignCareerHistory(
+      [
+        { id: 1, label: "Solo un proceso", items: [oneRecord] },
+        { id: 2, label: "Dos procesos", items: [early, late] },
+      ],
+      [early.process, late.process],
+      "admission_rate",
+    );
+    const insight = buildCareerHistoryInsight(aligned, "admission_rate");
+    expect(insight?.text).toContain("Dos procesos pasó de 18%");
+    expect(insight?.text).not.toContain("Solo un proceso");
+    expect(insight?.text).not.toMatch(/sostenid|continuamente/i);
+    expect(insight?.text).toContain("Dos procesos pasó de 18% en 2024-I a 31% en 2025-I");
+  });
+
+  it("uses grammatical wording for applicants per admitted in an endpoint comparison", () => {
+    const early = row(1, 2024, "I", 100, 20);
+    const later = row(2, 2025, "I", 100, 25);
+    const aligned = alignCareerHistory(
+      [
+        { id: 1, label: "A", items: [early, later] },
+        {
+          id: 2,
+          label: "B",
+          items: [row(1, 2024, "I", 100, 22), row(2, 2025, "I", 100, 21)],
+        },
+      ],
+      [early.process, later.process],
+      "applicants_per_admitted",
+    );
+    const insight = buildCareerHistoryInsight(aligned, "applicants_per_admitted");
+    expect(insight?.text).toContain(
+      "La relación de postulantes por ingresante de A pasó de 5 en 2024-I a 4 en 2025-I",
+    );
+    expect(insight?.text).not.toMatch(/El Postulantes/i);
+  });
+
+  it("generates mixed-coverage insights only from careers with enough chronological observations", () => {
+    const p1 = row(1, 2024, "I", 100, 10);
+    const p2 = row(2, 2024, "II", 100, 10);
+    const p3 = row(3, 2025, "I", 100, 20);
+    const p4 = row(4, 2025, "II", 100, 40);
+    const aligned = alignCareerHistory(
+      [
+        { id: 1, label: "Nueva", items: [row(4, 2025, "II", 100, 95)] },
+        { id: 2, label: "Reciente", items: [p3, p4] },
+        { id: 3, label: "En crecimiento", items: [p2, p3, p4] },
+        { id: 4, label: "Completa", items: [p1, p2, p3, row(4, 2025, "II", 100, 30)] },
+      ],
+      [p4.process, p2.process, p1.process, p3.process],
+      "admission_rate",
+    );
+    expect(aligned.series.map((item) => item.values)).toEqual([
+      [null, null, null, 95],
+      [null, null, 20, 40],
+      [null, 10, 20, 40],
+      [10, 10, 20, 30],
+    ]);
+    expect(buildCareerHistoryInsight(aligned, "admission_rate")?.text).toContain(
+      "En crecimiento pasó de 10% en 2024-II a 40% en 2025-II",
+    );
   });
 });
 

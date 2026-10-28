@@ -668,6 +668,12 @@ function ComparisonResults(props: {
           onMetricChange={props.onMetricChange}
           selectedProcessId={process?.id}
           seriesSlots={props.seriesSlots}
+          loading={isPending}
+          failed={hasFailure}
+          expectedCareers={selected.map(({ id, item }) => ({
+            id,
+            label: item?.name ?? `Carrera ${id}`,
+          }))}
           insightsEnabled={
             !isPending && !hasFailure && props.mergedSeries.length === selected.length
           }

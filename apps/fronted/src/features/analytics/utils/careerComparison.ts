@@ -287,6 +287,121 @@ export type AlignedCareerHistory = {
   series: Array<{ id: number | string; label: string; values: Array<number | null> }>;
 };
 
+export type CareerHistoryDomain = { min: number; max: number; ticks: number[] };
+
+function niceStep(rawStep: number) {
+  if (!Number.isFinite(rawStep) || rawStep <= 0) return 1;
+  const power = 10 ** Math.floor(Math.log10(rawStep));
+  const fraction = rawStep / power;
+  const niceFraction =
+    fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 2.5 ? 2.5 : fraction <= 5 ? 5 : 10;
+  return niceFraction * power;
+}
+
+/** Stable chart scale derived from every selected series, independent of interaction state. */
+export function getCareerHistoryDomain(
+  aligned: AlignedCareerHistory,
+  metric: CareerComparisonMetricKey,
+): CareerHistoryDomain {
+  const values = aligned.series.flatMap((series) =>
+    series.values.filter((value): value is number => value !== null && Number.isFinite(value)),
+  );
+  const minValue = values.length ? Math.min(...values) : 0;
+  const maxValue = values.length ? Math.max(...values) : 1;
+  const isRate = metric === "admission_rate";
+  const nonNegative =
+    isRate ||
+    ["total_results", "admitted_count", "absent_count", "applicants_per_admitted"].includes(metric);
+  if (isRate) {
+    const max = maxValue <= 0 ? 1 : maxValue;
+    const step = niceStep(max / 4);
+    const roundedMax = Math.ceil(max / step) * step;
+    const ticks: number[] = [];
+    for (let value = roundedMax; value >= -step * 0.01; value -= step)
+      ticks.push(Number(value.toPrecision(12)));
+    return { min: 0, max: roundedMax, ticks };
+  }
+  const min = nonNegative ? 0 : minValue;
+  const rawSpan = maxValue - min || Math.max(Math.abs(maxValue) * 0.1, 1);
+  const step = niceStep(rawSpan / 4);
+  const lower = nonNegative ? 0 : Math.floor((min - rawSpan * 0.08) / step) * step;
+  const upper = Math.ceil((maxValue + rawSpan * 0.08) / step) * step || step;
+  const ticks: number[] = [];
+  for (let value = upper; value >= lower - step * 0.01; value -= step)
+    ticks.push(Number(value.toPrecision(12)));
+  return { min: lower, max: upper, ticks };
+}
+
+export type CareerHistoryInsight = { text: string; metric: CareerComparisonMetricKey };
+
+/** Describe one defensible earliest-to-latest endpoint change in the selected metric. */
+export function buildCareerHistoryInsight(
+  aligned: AlignedCareerHistory,
+  metric: CareerComparisonMetricKey,
+): CareerHistoryInsight | null {
+  const observations = aligned.series.flatMap((series) => {
+    const points = series.values.flatMap((value, index) =>
+      value === null || !Number.isFinite(value)
+        ? []
+        : [{ value, process: aligned.processes[index] }],
+    );
+    if (points.length < 2) return [];
+    const first = points[0];
+    const last = points.at(-1)!;
+    return [{ series, first, last, change: last.value - first.value }];
+  });
+  if (!observations.length) return null;
+  const magnitude = Math.max(...observations.map(({ change }) => Math.abs(change)));
+  const minimumChange =
+    metric === "admission_rate"
+      ? 1
+      : metric === "applicants_per_admitted"
+        ? 0.1
+        : metric.includes("score")
+          ? 0.1
+          : 1;
+  if (magnitude < minimumChange) return null;
+  const leaders = observations.filter(
+    ({ change }) => Math.abs(Math.abs(change) - magnitude) < 1e-8,
+  );
+  const processLabel = (process: AdmissionProcess) => {
+    const sequence = process.sequence.includes("-")
+      ? process.sequence.slice(process.sequence.lastIndexOf("-") + 1)
+      : process.sequence;
+    return `${process.year}-${sequence}`;
+  };
+  // Select a stable representative when endpoint changes tie. The copy reports
+  // only that series' observed endpoints and makes no claim of a unique leader.
+  const { series, first, last, change } = leaders[0];
+  const firstLabel = formatCareerComparisonMetric(first.value, metric);
+  const lastLabel = formatCareerComparisonMetric(last.value, metric);
+  const difference = formatCareerComparisonMetric(Math.abs(change), metric);
+  const comparison =
+    metric === "admission_rate"
+      ? `${formatNumber(Math.abs(change), 1)} puntos porcentuales`
+      : difference;
+  const direction = change > 0 ? "un aumento" : "una disminución";
+  const metricLabel = CAREER_COMPARISON_METRICS.find(
+    (item) => item.key === metric,
+  )?.label.toLowerCase();
+  const subject =
+    metric === "admission_rate"
+      ? `La tasa de ingreso de ${series.label} pasó`
+      : metric === "total_results"
+        ? `Los postulantes registrados de ${series.label} pasaron`
+        : metric === "admitted_count"
+          ? `Los ingresantes de ${series.label} pasaron`
+          : metric === "absent_count"
+            ? `Los ausentes de ${series.label} pasaron`
+            : metric === "applicants_per_admitted"
+              ? `La relación de postulantes por ingresante de ${series.label} pasó`
+              : `El ${metricLabel} de ${series.label} pasó`;
+  return {
+    metric,
+    text: `${subject} de ${firstLabel} en ${processLabel(first.process)} a ${lastLabel} en ${processLabel(last.process)}, ${direction} de ${comparison}.`,
+  };
+}
+
 const SERIES_COLORS = ["#8f5658", "#2e8b57", "#c58a2b", "#c54b4b", "#6f4043", "#6e5e5f"];
 
 /** Assign a never-reused session slot so removing or reordering careers keeps their identity. */
