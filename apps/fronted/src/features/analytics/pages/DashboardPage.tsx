@@ -160,7 +160,7 @@ export function DashboardPage() {
   return (
     <section className={styles.page}>
       <PageBanner
-        eyebrow="Admisión UNMSM"
+        eyebrow="Últimos resultados de admisión"
         title="Resultados por proceso"
         titleId="process-results-title"
         description="Explora los resultados de admisión y su evolución entre procesos."
