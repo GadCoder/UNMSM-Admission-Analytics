@@ -1,3 +1,72 @@
+import type { MajorDetailProcess } from "../api/analytics.types";
+import {
+  canCompareAdmittedScores,
+  formatCareerComparisonMetric,
+  getCareerComparisonMetricValue,
+} from "../utils/careerComparison";
+
+export const scoreKeys = ["minimum_admitted_score", "average_score", "highest_score"] as const;
+export type ScoreKey = (typeof scoreKeys)[number];
+export const scoreLabels: Record<ScoreKey, string> = {
+  minimum_admitted_score: "Mínimo",
+  average_score: "Promedio",
+  highest_score: "Máximo",
+};
+
+export type CareerScoreSelection = {
+  id: number;
+  label: string;
+  current?: MajorDetailProcess;
+};
+
+export type CareerScoreRow = CareerScoreSelection & {
+  values: Record<ScoreKey, number | null>;
+  status: string | null;
+  inconsistent: boolean;
+};
+
+export function prepareCareerScoreRows(selected: CareerScoreSelection[]): CareerScoreRow[] {
+  const anchor = selected
+    .map(({ current }) => current)
+    .find((record) => record && canCompareAdmittedScores(record, record));
+  return selected.map((career) => {
+    const current = career.current;
+    const hasPopulation = Boolean(current && canCompareAdmittedScores(current, current));
+    const comparable = Boolean(
+      current && anchor && hasPopulation && canCompareAdmittedScores(anchor, current),
+    );
+    const values = Object.fromEntries(
+      scoreKeys.map((key) => [
+        key,
+        comparable && current ? getCareerComparisonMetricValue(current, key) : null,
+      ]),
+    ) as Record<ScoreKey, number | null>;
+    return {
+      ...career,
+      values,
+      status:
+        !current || current.total_results === 0
+          ? "Sin datos"
+          : !hasPopulation
+            ? "—"
+            : !comparable
+              ? "No comparable"
+              : null,
+      inconsistent:
+        values.minimum_admitted_score !== null &&
+        values.highest_score !== null &&
+        (values.minimum_admitted_score > values.highest_score ||
+          (values.average_score !== null &&
+            (values.average_score < values.minimum_admitted_score ||
+              values.average_score > values.highest_score))),
+    };
+  });
+}
+
+export function formatCareerScore(value: number | null, key: ScoreKey) {
+  return value === null ? "—" : formatCareerComparisonMetric(value, key);
+}
+
 export type CareerScoreDomain = { min: number; max: number; ticks: number[] };
 
 export function getCareerScoreDomain(values: number[]): CareerScoreDomain {
