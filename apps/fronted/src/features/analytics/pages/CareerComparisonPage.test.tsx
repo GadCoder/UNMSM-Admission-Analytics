@@ -125,6 +125,22 @@ describe("CareerComparisonPage", () => {
   });
   afterEach(cleanup);
 
+  it("only offers modalities with results in the selected process", () => {
+    vi.mocked(api.usePublishedProcesses).mockReturnValue({
+      data: processes.map((process, index) => ({
+        ...process,
+        available_modality_ids: index === 0 ? [1] : [1, 2],
+      })),
+      isPending: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as never);
+    renderPage();
+    expect(within(screen.getByLabelText("Modalidad")).getAllByRole("option")).toHaveLength(1);
+    fireEvent.change(screen.getByLabelText("Proceso analizado"), { target: { value: "1" } });
+    expect(within(screen.getByLabelText("Modalidad")).getAllByRole("option")).toHaveLength(2);
+  });
+
   it("shows setup guidance for zero careers without comparative sections", () => {
     renderPage("/comparar-carreras?process=2&modality=1");
     expect(screen.getByRole("heading", { name: "Compara carreras" })).toBeInTheDocument();

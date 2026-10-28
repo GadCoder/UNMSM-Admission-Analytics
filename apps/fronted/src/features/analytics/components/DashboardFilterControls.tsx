@@ -105,9 +105,6 @@ export function DashboardFilterControls({
     item.name,
     formatAdmissionModalityLabel(item.name),
   ]);
-  const allModalityOptions = modalityOptions.some(([value]) => value === filters.modality)
-    ? modalityOptions
-    : [[filters.modality, formatAdmissionModalityLabel(filters.modality)], ...modalityOptions];
 
   return (
     <ResponsiveFilterControls
@@ -165,7 +162,7 @@ export function DashboardFilterControls({
           idSuffix="mobile-modality"
           label="Modalidad"
           value={draftFilters.modality}
-          options={allModalityOptions}
+          options={modalityOptions}
           includeAll={false}
           onChange={(value) => updateFilter("modality", value)}
         />
