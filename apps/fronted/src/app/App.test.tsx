@@ -36,10 +36,10 @@ describe("App shell", () => {
 
     expect(screen.getByRole("main")).toBeInTheDocument();
     expect(screen.getByRole("banner")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Resultados de admisión" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Resultados UNMSM" })).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.",
+        "Explora los resultados de admisión, las tendencias y la demanda de cada carrera.",
       ),
     ).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "UNMSM" })).toHaveAttribute(
@@ -106,7 +106,7 @@ describe("App shell", () => {
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(
       screen.getByText(
-        "Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.",
+        "Explora los resultados de admisión, las tendencias y la demanda de cada carrera.",
       ),
     ).toBeInTheDocument();
   });

@@ -10,13 +10,11 @@ import styles from "./App.module.css";
 const headerByPage = {
   processes: {
     compact: false,
-    description:
-      "Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.",
+    description: "Explora los resultados de admisión, las tendencias y la demanda de cada carrera.",
   },
   careers: {
     compact: true,
-    description:
-      "Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.",
+    description: "Explora los resultados de admisión, las tendencias y la demanda de cada carrera.",
   },
   comparison: {
     compact: true,
@@ -77,7 +75,7 @@ export function App() {
         </Link>
         <div>
           <HeaderTitle className={header.compact ? styles.title : undefined}>
-            Resultados de admisión
+            Resultados UNMSM
           </HeaderTitle>
           <p>{header.description}</p>
         </div>
