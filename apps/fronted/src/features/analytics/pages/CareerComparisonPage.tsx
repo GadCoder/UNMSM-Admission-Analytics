@@ -268,7 +268,15 @@ export function CareerComparisonPage() {
   return (
     <div className={styles.page}>
       <section className={styles.selectionPanel} aria-label="Espacio de comparación">
-        <h1 id="comparison-page-title">Compara carreras</h1>
+        <header className={styles.selectionHeader}>
+          <h1 id="comparison-page-title">Compara carreras</h1>
+          <p
+            className={styles.selectionCount}
+            aria-label={`${url.careerIds.length} de 4 carreras seleccionadas`}
+          >
+            {url.careerIds.length} de 4
+          </p>
+        </header>
         <section className={styles.controls} aria-label="Controles de comparación">
           <div className={styles.selectors}>
             <DashboardControls
@@ -314,14 +322,6 @@ export function CareerComparisonPage() {
           >
             Añadir carrera
           </button>
-        </div>
-        <span id="selection-limit" className={styles.srOnly} aria-live="polite">
-          {url.careerIds.length >= MAX_COMPARISON_CAREERS
-            ? "Puedes comparar hasta cuatro carreras."
-            : `${MAX_COMPARISON_CAREERS - url.careerIds.length} espacios disponibles.`}
-        </span>
-        <footer className={styles.selectionFooter}>
-          <p>{url.careerIds.length} de 4 carreras seleccionadas</p>
           <button
             type="button"
             className={styles.reset}
@@ -334,6 +334,14 @@ export function CareerComparisonPage() {
           >
             Limpiar selección
           </button>
+        </div>
+        <span id="selection-limit" className={styles.srOnly} aria-live="polite">
+          {url.careerIds.length >= MAX_COMPARISON_CAREERS
+            ? "Puedes comparar hasta cuatro carreras."
+            : `${MAX_COMPARISON_CAREERS - url.careerIds.length} espacios disponibles.`}
+        </span>
+        <footer className={styles.selectionFooter}>
+          <p>{url.careerIds.length} de 4 carreras seleccionadas</p>
         </footer>
       </section>
 

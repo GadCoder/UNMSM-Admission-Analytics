@@ -59,6 +59,33 @@
   font-size: clamp(1.2rem, 2vw, 1.55rem);
   line-height: 1.2;
 }
+.selectionHeader {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.selectionCount {
+  display: none;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  white-space: nowrap;
+}
+.selectionFooter {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  justify-content: flex-end;
+}
+.selectionFooter p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.76rem;
+}
 .selectionHelp {
   margin: 0;
   color: var(--color-muted);
@@ -169,19 +196,6 @@
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 0.2em;
-}
-.selectionFooter {
-  display: flex;
-  width: 100%;
-  min-width: 0;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-.selectionFooter p {
-  margin: 0;
-  color: var(--color-muted);
-  font-size: 0.76rem;
 }
 .validation {
   display: grid;
@@ -677,6 +691,32 @@
   .selectors,
   .dialogFilters {
     grid-template-columns: minmax(0, 1fr);
+  }
+  .selectors {
+    grid-template-columns: 6.25rem minmax(0, 1fr);
+    gap: 0.5rem;
+  }
+  .selectionHeader {
+    align-items: baseline;
+    gap: 0.5rem;
+  }
+  .selectionCount {
+    display: block;
+  }
+  .selectionFooter p {
+    display: none;
+  }
+  .selectionPanel > .controls {
+    width: 100%;
+  }
+  .selectionPanel > .chipRow {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+  }
+  .chipRow .reset {
+    font-size: 0.69rem;
+    font-weight: 500;
   }
   .sectionHeader {
     align-items: start;
