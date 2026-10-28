@@ -129,27 +129,30 @@ describe("CareerComparisonPage", () => {
     renderPage("/comparar-carreras?process=2&modality=1");
     expect(screen.getByRole("heading", { name: "Compara carreras" })).toBeInTheDocument();
     expect(screen.getByText("Compara tus opciones")).toBeInTheDocument();
-    expect(
-      screen.getByText("Compara tasas de ingreso, demanda y puntajes entre carreras."),
-    ).toBeInTheDocument();
+    expect(screen.getByText("Compara resultados de admisión entre carreras.")).toBeInTheDocument();
+    expect(screen.getByText("0 de 4")).toBeInTheDocument();
+    expect(screen.getByLabelText("Filtros activos")).toHaveTextContent("Proceso: 2026-II");
+    expect(screen.getByLabelText("Filtros activos")).toHaveTextContent("Modalidad: EBR");
+    expect(screen.getByLabelText("Filtros activos").tagName).toBe("P");
     expect(screen.queryByRole("heading", { name: "Resumen rápido" })).not.toBeInTheDocument();
     const selectionPanel = screen.getByRole("region", { name: "Panel de selección de carreras" });
+    const selectionHeading = within(selectionPanel).getByRole("heading", {
+      name: "Carreras seleccionadas",
+    });
+    expect(screen.getByText("0 de 4").parentElement).toContainElement(selectionHeading);
     expect(within(selectionPanel).getAllByRole("button", { name: "Añadir carrera" })).toHaveLength(
       1,
     );
     expect(
-      within(selectionPanel).getByText(
-        "Selecciona entre 2 y 4 carreras para comparar sus resultados.",
-      ),
+      within(selectionPanel).getByText("Selecciona entre 2 y 4 carreras para comparar."),
     ).toBeInTheDocument();
     expect(
-      within(selectionPanel).getByRole("button", { name: "Reiniciar comparación" }),
+      within(selectionPanel).getByRole("button", { name: "Limpiar selección" }),
     ).toBeInTheDocument();
     expect(
-      within(screen.getByRole("region", { name: "Controles de comparación" })).queryByRole(
-        "button",
-        { name: "Reiniciar comparación" },
-      ),
+      within(screen.getByRole("group", { name: "Filtros de comparación" })).queryByRole("button", {
+        name: "Limpiar selección",
+      }),
     ).not.toBeInTheDocument();
     expect(
       within(selectionPanel).queryByRole("button", { name: /Quitar .* de la comparación/ }),
@@ -160,22 +163,41 @@ describe("CareerComparisonPage", () => {
     expect(api.getMajorDetail).not.toHaveBeenCalled();
   });
 
-  it("shows available single-career data and prompts for another career without conclusions", async () => {
-    renderPage("/comparar-carreras?careers=11&process=2&modality=1");
-    expect(await screen.findByRole("heading", { name: "Medicina" })).toBeInTheDocument();
+  it.each([
+    ["11,22", 2],
+    ["11,22,33", 3],
+    ["11,22,33,44", 4],
+  ] as const)("keeps the selected count beside the career heading for %s", (careerIds, count) => {
+    renderPage(`/comparar-carreras?careers=${careerIds}&process=2&modality=1`);
+    const selectionPanel = screen.getByRole("region", { name: "Panel de selección de carreras" });
+    const heading = within(selectionPanel).getByRole("heading", { name: "Carreras seleccionadas" });
+    const countLabel = screen.getByText(`${count} de 4`);
+    const careerRows = within(selectionPanel).getByLabelText("Carreras seleccionadas");
+
+    expect(countLabel.parentElement).toContainElement(heading);
     expect(
-      screen.getByText("Agrega otra carrera para ver comparaciones y conclusiones."),
-    ).toBeInTheDocument();
+      within(careerRows).getAllByRole("button", { name: /Quitar .* de la comparación/ }),
+    ).toHaveLength(count);
+  });
+
+  it("shows available single-career data and keeps selection actions below the career row", async () => {
+    renderPage("/comparar-carreras?careers=11&process=2&modality=1");
+    const selectionRow = screen.getByLabelText("Carreras seleccionadas");
+    expect(within(selectionRow).getByText("Medicina")).toBeInTheDocument();
     const selectionPanel = screen.getByRole("region", { name: "Panel de selección de carreras" });
     const addButton = within(selectionPanel).getByRole("button", { name: "Añadir carrera" });
     expect(addButton).toBeInTheDocument();
-    const selectionRow = within(selectionPanel).getByLabelText("Carreras seleccionadas");
     const chipRemove = screen.getByRole("button", { name: "Quitar Medicina de la comparación" });
     expect(selectionRow).toContainElement(chipRemove);
-    expect(selectionRow).toContainElement(addButton);
+    expect(
+      within(selectionPanel).getByRole("group", { name: "Acciones de selección" }),
+    ).toContainElement(addButton);
     expect(
       chipRemove.compareDocumentPosition(addButton) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
+    expect(screen.getByRole("heading", { name: "Carreras seleccionadas" })).toBeInTheDocument();
+    expect(screen.getByText("1 de 4")).toBeInTheDocument();
+    expect(screen.getByLabelText("Filtros activos")).toHaveTextContent("Proceso: 2026-II");
     expect(screen.getAllByRole("button", { name: "Añadir carrera" })).toHaveLength(1);
     expect(screen.queryByRole("heading", { name: "Resumen rápido" })).not.toBeInTheDocument();
   });

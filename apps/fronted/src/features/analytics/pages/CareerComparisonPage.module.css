@@ -43,40 +43,42 @@
   background: var(--color-surface);
   box-shadow: 0 4px 16px rgb(60 30 30 / 3%);
 }
-.controls {
-  display: grid;
-  gap: var(--space-4);
-}
 .selectionPanel {
-  --selection-item-height: 2.625rem;
   display: grid;
   justify-items: start;
   gap: var(--space-2);
 }
-.selectionPanel h1 {
-  margin: 0;
-  color: var(--color-text);
-  font-size: clamp(1.2rem, 2vw, 1.55rem);
-  line-height: 1.2;
-}
 .selectionCount {
-  display: none;
-  margin: 0;
-  color: var(--color-muted);
-  font-size: 0.72rem;
-  white-space: nowrap;
-}
-.selectionFooter {
-  display: flex;
-  width: 100%;
-  min-width: 0;
-  align-items: center;
-  justify-content: flex-end;
-}
-.selectionFooter p {
+  display: block;
   margin: 0;
   color: var(--color-muted);
   font-size: 0.76rem;
+  font-weight: 650;
+  white-space: nowrap;
+}
+.selectionHeading {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.activeContext {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+.selectionLabel {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  font-weight: 700;
 }
 .selectionHelp {
   margin: 0;
@@ -92,22 +94,6 @@
   align-items: center;
   gap: 0.55rem;
 }
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.55rem;
-  max-width: 100%;
-  min-height: var(--selection-item-height);
-  overflow-wrap: anywhere;
-  padding: 0.35rem 0.45rem 0.35rem 0.8rem;
-  border: 1px solid #d8c2c4;
-  border-radius: 999px;
-  background: #faf4f4;
-  color: #55393b;
-  font-size: 0.79rem;
-  font-weight: 700;
-}
-.chip button,
 .dialogHeader > button {
   display: grid;
   flex: none;
@@ -122,31 +108,32 @@
   font: inherit;
   font-size: 1.2rem;
 }
-.chip button:hover,
 .dialogHeader > button:hover {
   background: #eadcdd;
 }
 .addButton {
-  display: inline-flex;
-  align-items: center;
-  min-height: var(--selection-item-height, 2.625rem);
-  padding: 0.4rem 0.8rem;
-  border: 1px dashed var(--color-primary-dark);
-  border-radius: 999px;
-  background: transparent;
-  color: var(--color-primary-dark);
-  cursor: pointer;
-  font: inherit;
-  font-size: 0.79rem;
-  font-weight: 700;
-  white-space: nowrap;
-}
-.addButton:hover:not(:disabled) {
-  background: var(--color-primary-soft);
+  composes: action from "../components/ResultsControls.module.css";
 }
 .addButton:disabled {
   opacity: 0.55;
   cursor: not-allowed;
+}
+.selectionActions {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: end;
+  gap: var(--space-3);
+}
+.comparisonFilter {
+  flex: 1 1 auto;
+  min-width: 0;
+}
+.resetRow {
+  display: flex;
+  width: 100%;
+  justify-content: flex-start;
 }
 .validation button,
 .state button,
@@ -162,6 +149,7 @@
   font-size: 0.79rem;
   font-weight: 700;
 }
+
 .selectors {
   display: grid;
   grid-template-columns: 12.5rem minmax(0, 1fr);
@@ -658,20 +646,32 @@
   }
 }
 @media (max-width: 600px) {
+  .selectionPanel {
+    gap: 0.55rem;
+  }
+  .selectionCount {
+    align-self: center;
+    font-size: 0.72rem;
+  }
+  .activeContext {
+    font-size: 0.69rem;
+  }
   .chipRow {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     gap: 0.4rem;
   }
-  .chip {
-    min-height: 2.125rem;
-    gap: 0.35rem;
-    padding: 0.2rem 0.3rem 0.2rem 0.65rem;
-    font-size: 0.76rem;
+  .chipRow > .careerChip {
+    box-sizing: border-box;
+    width: 100%;
+    min-height: 2.75rem;
+    justify-content: space-between;
+    border-radius: var(--radius-md);
+    padding-block: 0.15rem;
     line-height: 1.35;
   }
-  .chip button {
-    width: 1.5rem;
-    height: 1.5rem;
-    font-size: 1.1rem;
+  .chipRow > .careerChip > span:first-child {
+    flex: 1 1 auto;
   }
   .section,
   .selectionPanel,
@@ -684,25 +684,25 @@
   .dialogFilters {
     grid-template-columns: minmax(0, 1fr);
   }
-  .selectors {
-    grid-template-columns: 6.25rem minmax(0, 1fr);
+  .selectionActions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: stretch;
     gap: 0.5rem;
   }
-  .selectionCount {
-    display: block;
+  .comparisonFilter {
+    flex: 0 0 auto;
   }
-  .selectionFooter p {
-    display: none;
+  .comparisonFilter > button {
+    width: auto;
   }
-  .selectionPanel > .controls {
+  .selectionActions > .addButton {
     width: 100%;
   }
-  .selectionPanel > .chipRow {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
+  .selectionActions > .comparisonFilter {
+    width: auto;
   }
-  .chipRow .reset {
+  .resetRow .reset {
     font-size: 0.69rem;
     font-weight: 500;
   }
@@ -741,5 +741,14 @@
   .dialog {
     width: calc(100vw - 1rem);
     max-height: 94vh;
+  }
+}
+@media (max-width: 340px) {
+  .selectionActions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .selectionActions > .comparisonFilter,
+  .selectionActions > .comparisonFilter > button {
+    width: 100%;
   }
 }

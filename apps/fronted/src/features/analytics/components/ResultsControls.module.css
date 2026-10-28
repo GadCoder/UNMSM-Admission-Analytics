@@ -33,28 +33,6 @@
   max-width: 100%;
   min-width: 0;
 }
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: var(--space-2);
-  max-width: 100%;
-  min-height: 2rem;
-  padding: 0.3rem 0.65rem;
-  border: 1px solid var(--color-border);
-  border-radius: 999px;
-  background: var(--color-primary-soft);
-  color: var(--color-primary);
-  font: inherit;
-  font-size: 0.72rem;
-  cursor: pointer;
-}
-.chip span:first-child {
-  overflow-wrap: anywhere;
-  text-align: left;
-}
-.chip:hover {
-  border-color: var(--color-primary);
-}
 @media (max-width: 600px) {
   .toolbar {
     grid-template-columns: minmax(0, 1fr) auto;
@@ -62,9 +40,6 @@
   }
   .filterAction {
     justify-self: stretch;
-  }
-  .chip {
-    min-height: 2.75rem;
   }
 }
 @media (max-width: 900px) {

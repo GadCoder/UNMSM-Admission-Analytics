@@ -1,0 +1,22 @@
+.wrapper {
+  position: relative;
+  display: flex;
+  min-width: 0;
+}
+.desktopContent {
+  width: 100%;
+  min-width: 0;
+}
+.trigger {
+  display: none;
+  composes: action from "./ResultsControls.module.css";
+}
+@media (max-width: 600px) {
+  .desktopContent {
+    display: none;
+  }
+  .trigger {
+    display: inline-flex;
+    width: 100%;
+  }
+}
