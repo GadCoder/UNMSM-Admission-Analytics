@@ -80,7 +80,8 @@ describe("MajorDetailContent", () => {
     renderContent();
     expect(api.useMajorDetail).toHaveBeenCalledWith("42", "2", [], modality);
     expect(screen.getByRole("heading", { name: "Ingeniería de Sistemas" })).toBeInTheDocument();
-    expect(screen.getByText("Facultad · Ingenierías")).toBeInTheDocument();
+    expect(screen.getByText("Facultad")).toBeInTheDocument();
+    expect(screen.getByText("Área de Ingenierías")).toBeInTheDocument();
   });
 
   it("focuses the career heading when requested", () => {

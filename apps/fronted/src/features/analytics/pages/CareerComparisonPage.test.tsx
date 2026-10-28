@@ -147,8 +147,8 @@ describe("CareerComparisonPage", () => {
       within(selectionPanel).getByText("Selecciona entre 2 y 4 carreras para comparar."),
     ).toBeInTheDocument();
     expect(
-      within(selectionPanel).getByRole("button", { name: "Limpiar selección" }),
-    ).toBeInTheDocument();
+      within(selectionPanel).queryByRole("button", { name: "Limpiar selección" }),
+    ).not.toBeInTheDocument();
     expect(
       within(screen.getByRole("group", { name: "Filtros de comparación" })).queryByRole("button", {
         name: "Limpiar selección",
@@ -180,18 +180,18 @@ describe("CareerComparisonPage", () => {
     ).toHaveLength(count);
   });
 
-  it("shows available single-career data and keeps selection actions below the career row", async () => {
+  it("shows available single-career data and places Añadir carrera after the selected career", async () => {
     renderPage("/comparar-carreras?careers=11&process=2&modality=1");
     const selectionRow = screen.getByLabelText("Carreras seleccionadas");
     expect(within(selectionRow).getByText("Medicina")).toBeInTheDocument();
     const selectionPanel = screen.getByRole("region", { name: "Panel de selección de carreras" });
     const addButton = within(selectionPanel).getByRole("button", { name: "Añadir carrera" });
     expect(addButton).toBeInTheDocument();
+    expect(
+      within(selectionPanel).getByRole("button", { name: "Limpiar selección" }),
+    ).toBeInTheDocument();
     const chipRemove = screen.getByRole("button", { name: "Quitar Medicina de la comparación" });
     expect(selectionRow).toContainElement(chipRemove);
-    expect(
-      within(selectionPanel).getByRole("group", { name: "Acciones de selección" }),
-    ).toContainElement(addButton);
     expect(
       chipRemove.compareDocumentPosition(addButton) & Node.DOCUMENT_POSITION_FOLLOWING,
     ).toBeTruthy();
@@ -241,6 +241,7 @@ describe("CareerComparisonPage", () => {
       await waitFor(() => expect(document.activeElement).toBe(input));
       fireEvent.change(input, { target: { value: "Derecho" } });
       expect(within(dialog).getByRole("button", { name: /Derecho/ })).toBeInTheDocument();
+      expect(within(dialog).queryByText("033")).not.toBeInTheDocument();
       expect(within(dialog).queryByRole("button", { name: /Ingeniería/ })).not.toBeInTheDocument();
       fireEvent.click(within(dialog).getByRole("button", { name: "Limpiar búsqueda" }));
       expect(input).toHaveValue("");

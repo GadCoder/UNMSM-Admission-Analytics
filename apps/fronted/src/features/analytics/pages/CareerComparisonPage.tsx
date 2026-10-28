@@ -13,7 +13,7 @@ import type {
 import { ResponsiveFilterControls } from "../components/ResponsiveFilterControls";
 import { RemovableChip } from "../components/RemovableChip";
 import { SelectField } from "../components/SelectField";
-import { PageBannerHeading } from "../components/PageBannerHeading";
+import { PageBanner } from "../components/PageBanner";
 import { CareerComparisonHistory } from "../components/CareerComparisonHistory";
 import { CareerComparisonScores } from "../components/CareerComparisonScores";
 import { CareerSearch } from "../components/CareerSearch";
@@ -298,57 +298,12 @@ export function CareerComparisonPage() {
 
   return (
     <div className={styles.page}>
-      <section className={styles.selectionPanel} aria-label="Panel de selección de carreras">
-        <PageBannerHeading
-          eyebrow="Compara tus opciones"
-          title="Compara carreras"
-          titleId="comparison-page-title"
-          description="Compara resultados de admisión entre carreras."
-          compact
-        />
-        <p className={styles.activeContext} aria-label="Filtros activos">
-          <span>Proceso: {selectedProcess ? formatProcessLabel(selectedProcess) : "—"}</span>
-          <span aria-hidden="true"> · </span>
-          <span>
-            Modalidad: {modality ? compactModalityLabel(modality) : "Modalidad no disponible"}
-          </span>
-        </p>
-        <div className={styles.selectionHeading}>
-          <h2 className={styles.selectionLabel}>Carreras seleccionadas</h2>
-          <p
-            className={styles.selectionCount}
-            aria-label={`${url.careerIds.length} de 4 carreras seleccionadas`}
-          >
-            {url.careerIds.length} de 4
-          </p>
-        </div>
-        {url.careerIds.length < 2 && (
-          <p className={styles.selectionHelp}>Selecciona entre 2 y 4 carreras para comparar.</p>
-        )}
-        <div className={styles.chipRow} aria-label="Carreras seleccionadas">
-          {selected.map(({ id, item }) => (
-            <RemovableChip
-              key={id}
-              className={styles.careerChip}
-              label={item?.name ?? `Carrera ${id}`}
-              accessibleName={`Quitar ${item?.name ?? `carrera ${id}`} de la comparación`}
-              onRemove={() => writeCareerIds(url.careerIds.filter((careerId) => careerId !== id))}
-            />
-          ))}
-        </div>
-        <div className={styles.selectionActions} role="group" aria-label="Acciones de selección">
-          <button
-            type="button"
-            className={styles.addButton}
-            onClick={openDialog}
-            disabled={url.careerIds.length >= MAX_COMPARISON_CAREERS}
-            aria-describedby="selection-limit"
-          >
-            <svg viewBox="0 0 24 24" aria-hidden="true">
-              <path d="M12 5v14M5 12h14" />
-            </svg>
-            <span>Añadir carrera</span>
-          </button>
+      <PageBanner
+        eyebrow="Compara tus opciones"
+        title="Compara carreras"
+        titleId="comparison-page-title"
+        description="Compara resultados de admisión entre carreras."
+        filters={
           <ResponsiveFilterControls
             className={styles.comparisonFilter}
             label="Filtros de comparación"
@@ -358,20 +313,75 @@ export function CareerComparisonPage() {
           >
             {renderComparisonFilters("panel")}
           </ResponsiveFilterControls>
-        </div>
-        <div className={styles.resetRow}>
-          <button
-            type="button"
-            className={styles.reset}
-            onClick={() => {
-              const next = new URLSearchParams(params);
-              next.delete("careers");
-              next.delete("metric");
-              updateParams(next);
-            }}
-          >
-            Limpiar selección
-          </button>
+        }
+      >
+        <p className={styles.activeContext} aria-label="Filtros activos">
+          <span>Proceso: {selectedProcess ? formatProcessLabel(selectedProcess) : "—"}</span>
+          <span aria-hidden="true"> · </span>
+          <span>
+            Modalidad: {modality ? compactModalityLabel(modality) : "Modalidad no disponible"}
+          </span>
+        </p>
+      </PageBanner>
+      <section className={styles.selectionPanel} aria-label="Panel de selección de carreras">
+        <div className={styles.careerGroup}>
+          <div className={styles.selectionHeading}>
+            <h2 className={styles.selectionLabel}>Carreras seleccionadas</h2>
+            <p
+              className={styles.selectionCount}
+              aria-label={`${url.careerIds.length} de 4 carreras seleccionadas`}
+            >
+              {url.careerIds.length} de 4
+            </p>
+          </div>
+          {url.careerIds.length < 2 && (
+            <p className={styles.selectionHelp}>Selecciona entre 2 y 4 carreras para comparar.</p>
+          )}
+          <div className={styles.careerItems}>
+            <div className={styles.chipRow} aria-label="Carreras seleccionadas">
+              {selected.map(({ id, item }) => (
+                <RemovableChip
+                  key={id}
+                  className={styles.careerChip}
+                  label={item?.name ?? `Carrera ${id}`}
+                  accessibleName={`Quitar ${item?.name ?? `carrera ${id}`} de la comparación`}
+                  onRemove={() =>
+                    writeCareerIds(url.careerIds.filter((careerId) => careerId !== id))
+                  }
+                />
+              ))}
+            </div>
+            <button
+              type="button"
+              className={`${styles.addButton} ${
+                url.careerIds.length === 0 ? styles.addButtonPrimary : ""
+              }`}
+              onClick={openDialog}
+              disabled={url.careerIds.length >= MAX_COMPARISON_CAREERS}
+              aria-describedby="selection-limit"
+            >
+              <svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 5v14M5 12h14" />
+              </svg>
+              <span>Añadir carrera</span>
+            </button>
+          </div>
+          {url.careerIds.length > 0 && (
+            <div className={styles.resetRow}>
+              <button
+                type="button"
+                className={styles.reset}
+                onClick={() => {
+                  const next = new URLSearchParams(params);
+                  next.delete("careers");
+                  next.delete("metric");
+                  updateParams(next);
+                }}
+              >
+                Limpiar selección
+              </button>
+            </div>
+          )}
         </div>
         <span id="selection-limit" className={styles.srOnly} aria-live="polite">
           {url.careerIds.length >= MAX_COMPARISON_CAREERS
@@ -534,7 +544,6 @@ export function CareerComparisonPage() {
             <li key={item.id}>
               <button type="button" onClick={() => addCareer(item.id)}>
                 <span>{item.name}</span>
-                <small>{item.code}</small>
               </button>
             </li>
           ))}

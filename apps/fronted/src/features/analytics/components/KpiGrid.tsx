@@ -15,12 +15,13 @@ type KpiGridProps = {
 
 export function KpiGrid({ overview, previous, variant = "process" }: KpiGridProps) {
   const career = variant === "career";
+  const headingId = useId();
   const averageNoteId = useId();
   const { metrics, previousLabel } = buildKpiGridModel(overview, previous, variant, averageNoteId);
 
   const grid = (
     <div
-      className={`${styles.kpis} ${career ? "" : styles.processKpiGrid}`}
+      className={`${styles.kpis} ${styles.processKpiGrid}`}
       role="group"
       aria-label={career ? "Indicadores de la carrera" : "Indicadores del proceso"}
     >
@@ -37,19 +38,11 @@ export function KpiGrid({ overview, previous, variant = "process" }: KpiGridProp
     </p>
   );
 
-  if (career)
-    return (
-      <>
-        {grid}
-        {footnote}
-      </>
-    );
-
   return (
-    <AnalyticsSurface className={styles.processKpiSection} aria-labelledby="process-kpi-heading">
+    <AnalyticsSurface className={styles.processKpiSection} aria-labelledby={headingId}>
       <header className={styles.processKpiHeader}>
-        <h2 id="process-kpi-heading" className={surfaceStyles.sectionTitle}>
-          Resumen del proceso
+        <h2 id={headingId} className={surfaceStyles.sectionTitle}>
+          {career ? "Resumen de la carrera" : "Resumen del proceso"}
         </h2>
         {previous && (
           <p className={styles.kpiComparisonContext}>Variaciones respecto a {previousLabel}</p>

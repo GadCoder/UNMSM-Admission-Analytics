@@ -9,6 +9,8 @@ from contextvars import ContextVar
 
 from django.core.cache import cache
 
+from config.observability import CACHE_FAILURES, CACHE_LOOKUPS
+
 logger = logging.getLogger(__name__)
 
 CACHE_TIMEOUT = 60
@@ -32,7 +34,9 @@ def suspend_invalidation():
 
 def _key(view_name, params):
     # A fresh namespace after eviction must not resurrect an older default key.
-    generation = cache.get_or_set(GENERATION_KEY, lambda: uuid.uuid4().hex, timeout=None)
+    generation = cache.get_or_set(
+        GENERATION_KEY, lambda: uuid.uuid4().hex, timeout=None
+    )
     payload = json.dumps(
         [view_name, generation, params], sort_keys=True, separators=(",", ":")
     )
@@ -45,10 +49,14 @@ def get_or_compute(view_name, params, compute):
         key = _key(view_name, params)
         value = cache.get(key)
     except Exception:
+        CACHE_FAILURES.labels("read").inc()
+        CACHE_LOOKUPS.labels(view_name, "bypass").inc()
         logger.warning("Analytics cache read failed; computing response", exc_info=True)
         return compute()
     if value is not None:
+        CACHE_LOOKUPS.labels(view_name, "hit").inc()
         return value
+    CACHE_LOOKUPS.labels(view_name, "miss").inc()
     value = compute()
     if value is None:
         return None
@@ -57,6 +65,7 @@ def get_or_compute(view_name, params, compute):
         value = json.loads(json.dumps(value))
         cache.set(key, value, timeout=CACHE_TIMEOUT)
     except Exception:
+        CACHE_FAILURES.labels("write").inc()
         logger.warning("Analytics cache write failed", exc_info=True)
     return value
 
@@ -68,4 +77,5 @@ def invalidate_analytics_cache():
     except Exception:
         # Public API requests must survive a cache outage. The 60-second entry TTL
         # bounds staleness until the cache recovers.
+        CACHE_FAILURES.labels("invalidation").inc()
         logger.warning("Analytics cache invalidation failed", exc_info=True)

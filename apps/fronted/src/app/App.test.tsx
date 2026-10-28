@@ -36,10 +36,10 @@ describe("App shell", () => {
 
     expect(screen.getByRole("main")).toBeInTheDocument();
     expect(screen.getByRole("banner")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Resultados de admisión" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Resultados UNMSM" })).toBeInTheDocument();
     expect(
       screen.getByText(
-        "Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.",
+        "Explora los resultados de admisión, las tendencias y la demanda de cada carrera.",
       ),
     ).toBeInTheDocument();
     expect(screen.getByRole("img", { name: "UNMSM" })).toHaveAttribute(
@@ -47,6 +47,18 @@ describe("App shell", () => {
       "https://assets.resultados-unmsm.com/brand/unmsm-2e787805.png",
     );
     expect(screen.getByRole("navigation", { name: "Navegación principal" })).toBeInTheDocument();
+    expect(screen.getByRole("contentinfo")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Explora y comprende los resultados de admisión de San Marcos."),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Contribuir en GitHub/ })).toHaveAttribute(
+      "href",
+      "https://github.com/GadCoder/UNMSM-Admission-Analytics",
+    );
+    expect(screen.getByRole("link", { name: /GadCoder/ })).toHaveAttribute(
+      "href",
+      "https://github.com/GadCoder",
+    );
     expect(screen.getByRole("link", { name: "Resultados por proceso" })).toHaveAttribute(
       "aria-current",
       "page",
@@ -94,7 +106,7 @@ describe("App shell", () => {
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(
       screen.getByText(
-        "Consulta los resultados de cada proceso: postulantes, ingresantes y demanda por carrera.",
+        "Explora los resultados de admisión, las tendencias y la demanda de cada carrera.",
       ),
     ).toBeInTheDocument();
   });

@@ -2,7 +2,7 @@
   min-width: 0;
   display: grid;
   gap: var(--space-3);
-  padding: var(--space-3) 0 var(--space-8);
+  padding: var(--space-3) 0;
 }
 .eyebrow {
   color: var(--color-primary);
@@ -45,7 +45,14 @@
 }
 .selectionPanel {
   display: grid;
-  justify-items: start;
+  min-width: 0;
+  gap: var(--space-4);
+}
+.careerGroup {
+  display: grid;
+  width: 100%;
+  min-width: 0;
+  align-content: start;
   gap: var(--space-2);
 }
 .selectionCount {
@@ -65,7 +72,7 @@
   gap: var(--space-3);
 }
 .activeContext {
-  display: block;
+  display: none;
   width: 100%;
   min-width: 0;
   margin: 0;
@@ -88,7 +95,18 @@
 }
 .chipRow {
   display: flex;
-  width: 100%;
+  width: auto;
+  min-width: 0;
+  flex: 1 1 18rem;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.55rem;
+}
+.chipRow:empty {
+  display: none;
+}
+.careerItems {
+  display: flex;
   min-width: 0;
   flex-wrap: wrap;
   align-items: center;
@@ -114,25 +132,46 @@
 .addButton {
   composes: action from "../components/ResultsControls.module.css";
 }
+.addButton.addButtonPrimary {
+  border-color: var(--color-primary);
+  background: var(--color-primary);
+  color: var(--color-surface);
+}
+.addButton.addButtonPrimary:hover {
+  border-color: var(--color-primary-dark);
+  background: var(--color-primary-dark);
+}
+.addButton.addButtonPrimary:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+@media (min-width: 901px) {
+  .careerItems {
+    row-gap: 0.25rem;
+  }
+
+  .chipRow {
+    flex-basis: 100%;
+  }
+
+  .addButton {
+    justify-self: start;
+    min-width: 12.5rem;
+  }
+}
 .addButton:disabled {
   opacity: 0.55;
   cursor: not-allowed;
 }
-.selectionActions {
-  display: flex;
+.comparisonFilter {
   width: 100%;
   min-width: 0;
-  flex-wrap: wrap;
-  align-items: end;
-  gap: var(--space-3);
-}
-.comparisonFilter {
-  flex: 1 1 auto;
-  min-width: 0;
+  max-width: none;
 }
 .resetRow {
   display: flex;
   width: 100%;
+  min-width: 0;
   justify-content: flex-start;
 }
 .validation button,
@@ -152,7 +191,7 @@
 
 .selectors {
   display: grid;
-  grid-template-columns: 12.5rem minmax(0, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   align-items: end;
   gap: var(--space-4);
 }
@@ -615,7 +654,6 @@
   font-size: 0.82rem;
   font-weight: 700;
 }
-.searchResults button small,
 .noResults {
   color: var(--color-muted);
   font-size: 0.72rem;
@@ -646,8 +684,8 @@
   }
 }
 @media (max-width: 600px) {
-  .selectionPanel {
-    gap: 0.55rem;
+  .activeContext {
+    display: block;
   }
   .selectionCount {
     align-self: center;
@@ -659,6 +697,7 @@
   .chipRow {
     display: grid;
     grid-template-columns: minmax(0, 1fr);
+    width: 100%;
     gap: 0.4rem;
   }
   .chipRow > .careerChip {
@@ -684,27 +723,16 @@
   .dialogFilters {
     grid-template-columns: minmax(0, 1fr);
   }
-  .selectionActions {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) auto;
-    align-items: stretch;
-    gap: 0.5rem;
-  }
-  .comparisonFilter {
-    flex: 0 0 auto;
-  }
-  .comparisonFilter > button {
-    width: auto;
-  }
-  .selectionActions > .addButton {
+  .addButton {
     width: 100%;
-  }
-  .selectionActions > .comparisonFilter {
-    width: auto;
+    min-width: 0;
   }
   .resetRow .reset {
     font-size: 0.69rem;
     font-weight: 500;
+  }
+  .resetRow {
+    width: 100%;
   }
   .sectionHeader {
     align-items: start;
@@ -744,11 +772,7 @@
   }
 }
 @media (max-width: 340px) {
-  .selectionActions {
-    grid-template-columns: minmax(0, 1fr);
-  }
-  .selectionActions > .comparisonFilter,
-  .selectionActions > .comparisonFilter > button {
+  .addButton {
     width: 100%;
   }
 }

@@ -8,6 +8,7 @@ import { MetricHistoryChart } from "../components/MetricHistoryChart";
 import { MajorDetailLoadingSkeleton } from "../components/LoadingSkeletons";
 import { KpiGrid } from "../components/KpiGrid";
 import { NewMajorBadge } from "../components/NewMajorBadge";
+import { PageBanner } from "../components/PageBanner";
 import surfaceStyles from "../components/AnalyticsSurface.module.css";
 import styles from "./DashboardPage.module.css";
 
@@ -40,6 +41,7 @@ type MajorDetailContentProps = {
   onSelectProcess: (id: number) => void;
   focusHeading?: boolean;
   headerControls?: ReactNode;
+  headerNavigation?: ReactNode;
 };
 
 export function MajorDetailContent({
@@ -49,6 +51,7 @@ export function MajorDetailContent({
   onSelectProcess,
   focusHeading = false,
   headerControls,
+  headerNavigation,
 }: MajorDetailContentProps) {
   const query = api.useMajorDetail(majorId, processId, [], modality);
   const detail = query.data;
@@ -68,6 +71,7 @@ export function MajorDetailContent({
             isNew={detail.major.is_new}
             focusHeading={focusHeading}
             controls={headerControls}
+            navigation={headerNavigation}
           />
         )}
         <p className={styles.state}>
@@ -136,6 +140,7 @@ export function MajorDetailContent({
         isNew={detail.major.is_new}
         focusHeading={focusHeading}
         controls={headerControls}
+        navigation={headerNavigation}
       />
       {selectedProcess ? (
         <KpiGrid
@@ -188,6 +193,7 @@ function CareerIdentity({
   isNew,
   focusHeading,
   controls,
+  navigation,
 }: {
   name: string;
   faculty: string;
@@ -195,6 +201,7 @@ function CareerIdentity({
   isNew: boolean;
   focusHeading: boolean;
   controls?: ReactNode;
+  navigation?: ReactNode;
 }) {
   const headingRef = useRef<HTMLHeadingElement>(null);
   useEffect(() => {
@@ -202,17 +209,16 @@ function CareerIdentity({
   }, [focusHeading, name]);
 
   return (
-    <header className={`${styles.hero} ${styles.careerIdentity}`}>
-      <div>
-        <h1 ref={headingRef} tabIndex={-1}>
-          {name}
-          {isNew && <NewMajorBadge />}
-        </h1>
-        <p className={styles.intro}>
-          {faculty} · {area}
-        </p>
-      </div>
-      {controls}
-    </header>
+    <PageBanner
+      eyebrow={faculty}
+      title={name}
+      titleId="major-detail-title"
+      titleRef={headingRef}
+      titleAddon={isNew && <NewMajorBadge />}
+      description={`Área de ${area}`}
+      filters={controls}
+      rightContent={navigation}
+      detailLayout
+    />
   );
 }
