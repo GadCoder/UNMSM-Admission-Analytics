@@ -31,23 +31,69 @@
 .metricControl {
   min-width: 13rem;
 }
+.viewToggle {
+  display: inline-flex;
+  width: fit-content;
+  gap: 0.35rem;
+  border-bottom: 1px solid var(--color-border);
+}
+.viewButton {
+  position: relative;
+  min-height: 2.75rem;
+  border: 0;
+  padding: 0.4rem 0.65rem;
+  background: transparent;
+  color: var(--color-muted);
+  font: inherit;
+  font-size: 0.88rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: color 140ms ease;
+}
+.viewButton:hover {
+  color: var(--color-primary-dark);
+}
+.viewButton[aria-pressed="true"] {
+  color: var(--color-primary-dark);
+}
+.viewButton[aria-pressed="true"]::after {
+  position: absolute;
+  right: 0.35rem;
+  bottom: -1px;
+  left: 0.35rem;
+  height: 2px;
+  background: var(--color-primary);
+  content: "";
+}
+.viewButton:focus-visible {
+  border-radius: var(--radius-sm);
+  outline: 2px solid var(--color-primary);
+  outline-offset: 1px;
+}
 .insight {
-  margin: 0;
-  padding: 0.75rem 1rem;
-  border-left: 3px solid var(--color-success);
-  border-radius: 0.3rem;
-  background: #f1f7f2;
+  display: grid;
+  grid-template-columns: 1.15rem minmax(0, 1fr);
+  align-items: start;
+  gap: 0.65rem;
+  padding: 0.7rem 0.85rem;
+  border-radius: var(--radius-md);
+  background: var(--color-primary-soft);
   color: var(--color-text);
   line-height: 1.5;
 }
-.coverageNote {
+.insightIcon {
+  width: 1.1rem;
+  height: 1.1rem;
+  margin-top: 0.15rem;
+  color: var(--color-primary-dark);
+}
+.insight strong {
+  display: block;
+  margin-bottom: 0.12rem;
+}
+.insight p {
   margin: 0;
-  padding: 0.75rem 1rem;
-  border-left: 3px solid var(--color-warning);
-  border-radius: 0.3rem;
-  background: var(--color-primary-soft);
-  color: var(--color-muted);
-  line-height: 1.5;
+  min-width: 0;
 }
 .legend {
   display: flex;
@@ -59,10 +105,32 @@
 }
 .legend li {
   display: flex;
+  min-width: 0;
   align-items: center;
   gap: 0.45rem;
   color: var(--color-text);
   font-size: 0.88rem;
+  overflow-wrap: anywhere;
+}
+.legendButton {
+  display: inline-flex;
+  min-width: 0;
+  min-height: 2.75rem;
+  align-items: center;
+  gap: 0.45rem;
+  border: 0;
+  border-radius: var(--radius-sm);
+  padding: 0.35rem 0.3rem;
+  margin: -0.35rem -0.3rem;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.legendButton:focus-visible {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
 }
 .legendMark {
   display: block;
@@ -73,15 +141,26 @@
 }
 .chartScroller {
   min-width: 0;
-  overflow-x: auto;
+  width: 100%;
+  overflow: hidden;
   overscroll-behavior-inline: contain;
 }
 .chart {
   display: block;
   width: 100%;
-  min-width: 36rem;
-  max-height: 22rem;
+  height: 300px;
   overflow: visible;
+}
+.dimmedSeries {
+  opacity: 0.3;
+  transition: opacity 140ms ease;
+}
+.highlightedSeries {
+  opacity: 1;
+  transition: opacity 140ms ease;
+}
+.highlightedSeries path {
+  stroke-width: 3.5;
 }
 .gridLine {
   stroke: var(--color-border);
@@ -100,31 +179,75 @@
   fill: var(--color-muted);
   font-size: 11px;
 }
-.tooltip {
-  width: fit-content;
-  max-width: 100%;
-  padding: 0.75rem 0.9rem;
-  border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
-  background: var(--color-primary-soft);
+.processPanel {
+  width: 100%;
+  padding: 0.65rem 0;
+  border-top: 1px solid var(--color-border);
   color: var(--color-text);
 }
-.tooltip > strong {
+.panelHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.35rem;
+}
+.clearSelection {
+  border: 0;
+  padding: 0.25rem 0;
+  background: transparent;
+  color: var(--color-primary-dark);
+  font: inherit;
+  font-size: 0.82rem;
+  cursor: pointer;
+}
+.instructions,
+.requestStatus {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+}
+.processTitle {
   display: block;
   margin-bottom: 0.35rem;
 }
-.tooltip ul {
+.processPanel ul {
   display: grid;
-  gap: 0.25rem;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
+  gap: 0.35rem 1rem;
   margin: 0;
   padding: 0;
   list-style: none;
 }
-.tooltip li {
+.processPanel li {
   display: grid;
-  grid-template-columns: minmax(8rem, 1fr) auto;
-  gap: 1rem;
+  grid-template-columns: minmax(0, max-content) auto;
+  justify-content: start;
+  align-items: start;
+  gap: 0.5rem;
   font-size: 0.9rem;
+}
+.processPanel li > span {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 0.45rem;
+  overflow-wrap: anywhere;
+}
+.processPanel li i {
+  flex: 0 0 0.55rem;
+  width: 0.55rem;
+  height: 0.55rem;
+  margin-top: 0.35rem;
+  border-radius: 50%;
+}
+.processPanel li > strong {
+  white-space: nowrap;
+}
+.processPanel li > small {
+  grid-column: 1 / -1;
+  color: var(--color-muted);
+  line-height: 1.4;
 }
 .empty {
   margin: 0;
@@ -133,17 +256,23 @@
   background: var(--color-primary-soft);
   color: var(--color-muted);
 }
-.tableDisclosure {
+.tableView {
+  width: 100%;
+  min-width: 0;
   border-top: 1px solid var(--color-border);
   padding-top: 0.8rem;
 }
-.tableDisclosure summary {
-  width: fit-content;
-  color: var(--color-primary-dark);
-  font-weight: 650;
-  cursor: pointer;
+.scrollCue {
+  max-width: 100%;
+  margin: 0.4rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.78rem;
+  overflow-wrap: anywhere;
 }
 .tableScroller {
+  width: 100%;
+  box-sizing: border-box;
+  min-width: 0;
   max-width: 100%;
   overflow: auto;
   margin-top: 0.7rem;
@@ -151,8 +280,7 @@
   border-radius: var(--radius-sm);
 }
 .tableScroller:focus-visible,
-.chart:focus-visible,
-.tableDisclosure summary:focus-visible {
+.chart:focus-visible {
   outline: 3px solid var(--color-primary);
   outline-offset: 2px;
 }
@@ -171,11 +299,22 @@
   min-width: 8rem;
   padding: 0.65rem 0.8rem;
   border-top: 1px solid var(--color-border);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+.tableScroller tr > :first-child {
+  position: sticky;
+  left: 0;
+  z-index: 1;
   text-align: left;
+  background: var(--color-surface);
 }
 .tableScroller thead th {
   background: var(--color-primary-soft);
   color: var(--color-text);
+}
+.tableScroller thead th:first-child {
+  background: var(--color-primary-soft);
 }
 .tableScroller tbody th {
   font-weight: 600;
@@ -190,9 +329,86 @@
   }
   .metricControl {
     min-width: 0;
+    width: 100%;
   }
   .chart {
-    width: 840px;
-    max-width: none;
+    width: 100%;
+    height: 300px;
+  }
+  .processPanel ul {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .tableScroller {
+    overflow: visible;
+    border: 0;
+  }
+  .tableScroller caption {
+    display: block;
+    width: 100%;
+    box-sizing: border-box;
+  }
+  .tableScroller table,
+  .tableScroller tbody {
+    display: block;
+    width: 100%;
+  }
+  .tableScroller thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .tableScroller tbody tr {
+    display: block;
+    min-width: 0;
+    margin-bottom: 0.75rem;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-sm);
+  }
+  .tableScroller tbody th[scope="row"] {
+    position: static;
+    z-index: auto;
+    display: block;
+    min-width: 0;
+    padding: 0.65rem 0.75rem;
+    border-top: 0;
+    background: var(--color-primary-soft);
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+  .tableScroller tbody td {
+    position: static;
+    z-index: auto;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: start;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: 0.55rem 0.75rem;
+    border-top: 1px solid var(--color-border);
+    text-align: left;
+  }
+  .tableScroller tbody td::before {
+    min-width: 0;
+    color: var(--color-muted);
+    content: attr(data-label);
+    text-align: left;
+    overflow-wrap: anywhere;
+  }
+  .tableScroller tbody td,
+  .tableScroller tbody th {
+    background: var(--color-surface);
+  }
+  .tableScroller tbody td {
+    font-variant-numeric: tabular-nums;
+  }
+  .scrollCue {
+    display: none;
   }
 }
