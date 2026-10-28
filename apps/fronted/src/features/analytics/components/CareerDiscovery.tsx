@@ -1,5 +1,7 @@
 import { useMemo, useRef, type KeyboardEvent, type ReactNode } from "react";
 
+import { useSearchUsage } from "../../../shared/telemetry/hooks";
+
 import type { CareerNavigationContext } from "../utils/careerNavigation";
 import type { ProcessOverview } from "../api/analytics.types";
 import { PageBanner } from "./PageBanner";
@@ -59,6 +61,7 @@ export function CareerDiscovery({
       })
     : [];
   const hasQuery = terms.length > 0;
+  useSearchUsage(query, matches.length, status === "ready", "careers");
 
   const handleSearchKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
     if ((event.key === "ArrowDown" || event.key === "ArrowUp") && matches.length) {

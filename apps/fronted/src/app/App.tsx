@@ -1,6 +1,8 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 
+import { trackUsage, type UsagePage } from "../shared/telemetry/usage";
+
 import * as api from "../features/analytics/api/analytics";
 import { readDashboardView } from "../features/analytics/utils/dashboardSessionState";
 import { buildAppNavigation } from "./appNavigation";
@@ -27,6 +29,20 @@ export function App() {
   const menuButtonRef = useRef<HTMLButtonElement>(null);
   const { pathname, search } = useLocation();
   const modalitiesQuery = api.useModalities();
+  const page: UsagePage =
+    pathname === "/" || pathname === "/resultados"
+      ? "processes"
+      : /^\/carreras\/\d+\/?$/.test(pathname)
+        ? "career_detail"
+        : pathname === "/carreras"
+          ? "careers"
+          : pathname === "/comparar-carreras"
+            ? "comparison"
+            : "not_found";
+  useEffect(() => {
+    trackUsage("page_viewed", { page });
+  }, [page]);
+
   const navigation = buildAppNavigation({
     pathname,
     search,

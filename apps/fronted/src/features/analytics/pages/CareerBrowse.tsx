@@ -1,5 +1,7 @@
 import { useSearchParams } from "react-router-dom";
 
+import { trackUsage } from "../../../shared/telemetry/usage";
+
 import * as api from "../api/analytics";
 import type { CareerNavigationContext } from "../utils/careerNavigation";
 import type { AdmissionProcess } from "../api/analytics.types";
@@ -65,6 +67,11 @@ export function CareerBrowse({
     faculty: string;
     modality: string;
   }) => {
+    const previous = { academicArea, faculty, modality };
+    for (const field of ["academicArea", "faculty", "modality"] as const) {
+      if (previous[field] !== nextFilters[field])
+        trackUsage("filter_changed", { page: "careers", filter: field, value: nextFilters[field] });
+    }
     const next = new URLSearchParams(params);
     if (nextFilters.academicArea) next.set("academic_area", nextFilters.academicArea);
     else next.delete("academic_area");

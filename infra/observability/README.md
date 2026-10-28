@@ -76,8 +76,8 @@ request IDs and query properties must stay in log content, not labels.
 
 Configure Grafana contact points, alert rules, and notification policies; verify a
 real test notification. Use an external uptime monitor for host-wide outages.
-This phase does not yet implement frontend usage events, traces, or import/data
-quality instrumentation. API calls include bots, retries and caching effects and
+Frontend usage collection is described below. Traces and import/data-quality
+instrumentation require separate rollout. API calls include bots, retries and caching effects and
 must not be interpreted as distinct user actions. Gunicorn lifecycle lines remain
 in Gunicorn's own format; Django/application logs use JSON.
 
@@ -87,3 +87,41 @@ The Compose file has passed `docker compose config --quiet`; the user verified
 infrastructure targets and Docker logs in the deployed stack. Backend unit and
 multiprocess checks run via `cd apps/backend && uv run pytest`. The updated app
 still needs deployment and the authenticated backend scrape verified in Dokploy.
+
+## Frontend usage events (Faro)
+
+1. In monitoring's Environment, set `FRONTEND_ORIGIN` to the exact public frontend
+   origin, e.g. `https://resultados-unmsm.com` (no path or trailing slash). The
+   default only permits local development. Update the Raw Compose and redeploy.
+2. Add a Dokploy HTTPS domain such as `telemetry.example.com` pointing to the
+   **alloy** service, container port **12347**. Keep port 12345 (Alloy management)
+   private. The Faro SDK endpoint is `https://telemetry.example.com/collect`.
+   CORS permits the configured frontend origin, payloads are capped at 256 KiB,
+   and the receiver is globally limited to 10 requests/s with burst 20. CORS is
+   not authentication; non-browser callers can forge events. Do not use these
+   events for billing or audit trails. Add edge abuse controls if traffic grows.
+3. Set frontend Docker **build argument** `VITE_FARO_URL` to that HTTPS `/collect`
+   URL and rebuild/redeploy the frontend. Both frontend Dockerfiles accept it.
+   Setting only a runtime container variable cannot change a built Vite bundle.
+   No Grafana password, service-account token, or backend scrape token belongs in
+   frontend build variables. If using CSP, allow this origin in `connect-src`.
+4. Browse careers, search, change filters and add/remove comparison careers.
+   In Loki Explore start with `{job="frontend"} | json`; inspect a line to find
+   the receiver's flattened event fields, then filter by event name. Example
+   event counts: `sum(count_over_time({job="frontend"} |= "career_viewed" [1h]))`.
+
+Events: `page_viewed`, `career_viewed`, `comparison_updated`, `filter_changed`,
+`search_completed`, and `results_empty`. Searches emit result counts after 600 ms
+without changes, never the typed text. Career events wait for a successful current
+result and are deduplicated across refetches. Explicit comparison/filter events
+represent actions rather than API requests. Empty search results are instrumented;
+other empty-data states can be added separately.
+
+Collection is disabled without `VITE_FARO_URL` and respects Do Not Track. SDK code
+is lazy-loaded; import/transport failure must not affect application behavior.
+Default browser URL/referrer/console instrumentation, persistent sessions and
+personal identity collection are disabled. No automatic click tracking or replay.
+Usage events are best-effort and subject to blockers, navigation and rate limits;
+counts represent collected actions, not unique users. Seven-day Loki retention
+also applies to these events. Self-hosted Faro uses ordinary Loki dashboards;
+Grafana Cloud's Frontend Observability UI is not installed by this setup.
