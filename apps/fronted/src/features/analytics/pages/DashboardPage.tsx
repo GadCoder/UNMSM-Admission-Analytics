@@ -1,6 +1,8 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
+import { trackUsage } from "../../../shared/telemetry/usage";
+
 import { SelectField } from "../components/SelectField";
 import {
   formatAdmissionModalityLabel,
@@ -124,12 +126,31 @@ export function DashboardPage() {
   const primary = selected.find((item) => String(item.process.id) === primaryId);
   const previous = selected.find((item) => String(item.process.id) === previousId);
   const updateSelection = (process: string) => {
+    trackUsage("filter_changed", { page: "processes", filter: "process", value: process });
     const next = new URLSearchParams(process ? { process } : {});
     setParams(next);
   };
 
   const updateFilters = useCallback(
     (nextFilters: { academicArea: string; faculty: string; modality: string }) => {
+      if (nextFilters.academicArea !== filters.academicArea)
+        trackUsage("filter_changed", {
+          page: "processes",
+          filter: "academicArea",
+          value: nextFilters.academicArea,
+        });
+      if (nextFilters.faculty !== filters.faculty)
+        trackUsage("filter_changed", {
+          page: "processes",
+          filter: "faculty",
+          value: nextFilters.faculty,
+        });
+      if (nextFilters.modality !== filters.modality)
+        trackUsage("filter_changed", {
+          page: "processes",
+          filter: "modality",
+          value: nextFilters.modality,
+        });
       const next = new URLSearchParams(primaryId ? { process: primaryId } : {});
       const nextView = {
         filters: { ...nextFilters, modality: resolveAdmissionModality(nextFilters.modality) },
@@ -138,7 +159,7 @@ export function DashboardPage() {
       saveDashboardView(nextView);
       setParams(next);
     },
-    [primaryId, setParams],
+    [primaryId, setParams, filters.academicArea, filters.faculty, filters.modality],
   );
 
   const returnParams = new URLSearchParams({ process: primaryId });

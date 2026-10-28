@@ -61,13 +61,14 @@ services:
     environment:
       LOG_PROJECT_REGEX: ${LOG_PROJECT_REGEX:-.+}
       LOG_SWARM_SERVICE_REGEX: ${LOG_SWARM_SERVICE_REGEX:-.+}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - alloy_data:/var/lib/alloy/data
     configs:
       - source: alloy
         target: /etc/alloy/config.alloy
-    networks: [telemetry]
+    networks: [telemetry, dokploy-network]
 
   node-exporter:
     image: prom/node-exporter:v1.12.1
@@ -182,6 +183,28 @@ configs:
 
   alloy:
     content: |
+      faro.receiver "frontend" {
+        log_format = "json"
+        extra_log_labels = { job = "frontend", app = "unmsm-frontend" }
+        server {
+          listen_address = "0.0.0.0"
+          listen_port = 12347
+          cors_allowed_origins = [sys.env("FRONTEND_ORIGIN")]
+          max_allowed_payload_size = "256KiB"
+          rate_limiting {
+            enabled = true
+            rate = 10
+            burst_size = 20
+          }
+        }
+        // Browser input is untrusted; never fetch client-supplied sourcemaps.
+        sourcemaps {
+          download = false
+        }
+        output {
+          logs = [loki.write.local.receiver]
+        }
+      }
       logging {
         level = "info"
       }

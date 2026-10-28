@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { Link, useLocation, useParams, useSearchParams } from "react-router-dom";
 
+import { trackUsage } from "../../../shared/telemetry/usage";
+
 import * as api from "../api/analytics";
 import { DashboardControls } from "../components/DashboardControls";
 import { SelectField } from "../components/SelectField";
@@ -47,6 +49,11 @@ export function CareerExplorerPage() {
   }, [location.state, modalityParam, params, processId, setParams]);
 
   const updateContext = (name: "process" | "modality", value: string) => {
+    trackUsage("filter_changed", {
+      page: majorId ? "career_detail" : "careers",
+      filter: name,
+      value,
+    });
     const next = new URLSearchParams(params);
     next.set(name, value);
     setParams(next, { preventScrollReset: true });

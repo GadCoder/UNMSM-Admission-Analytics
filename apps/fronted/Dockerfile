@@ -7,6 +7,9 @@ RUN corepack pnpm install --frozen-lockfile
 
 COPY . .
 
+ARG VITE_FARO_URL
+ENV VITE_FARO_URL=$VITE_FARO_URL
+
 ARG VITE_API_BASE_URL
 ENV VITE_API_BASE_URL=$VITE_API_BASE_URL
 

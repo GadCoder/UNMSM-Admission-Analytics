@@ -3,6 +3,9 @@ import { useQueries, type UseQueryResult } from "@tanstack/react-query";
 import type { MouseEvent } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 
+import { trackUsage } from "../../../shared/telemetry/usage";
+import { useSearchUsage } from "../../../shared/telemetry/hooks";
+
 import * as api from "../api/analytics";
 import type {
   AdmissionProcess,
@@ -98,11 +101,17 @@ export function CareerComparisonPage() {
   const updateParams = (next: URLSearchParams, replace = false) =>
     setParams(next, { replace, preventScrollReset: true });
   const setContext = (key: "process" | "modality", value: string) => {
+    trackUsage("filter_changed", { page: "comparison", filter: key, value });
     const next = new URLSearchParams(params);
     next.set(key, value);
     updateParams(next);
   };
   const writeCareerIds = (ids: number[]) => {
+    trackUsage("comparison_updated", {
+      major_ids: ids.join(","),
+      process_id: processId,
+      modality: resolvedModalityId,
+    });
     const next = new URLSearchParams(params);
     if (ids.length) next.set("careers", ids.join(","));
     else next.delete("careers");
@@ -202,6 +211,12 @@ export function CareerComparisonPage() {
     const needle = search.trim().toLocaleLowerCase("es-PE");
     return !needle || `${item.name} ${item.code}`.toLocaleLowerCase("es-PE").includes(needle);
   });
+  useSearchUsage(
+    search,
+    filteredCareers.length,
+    catalogReady && !catalogQuery.isFetching,
+    "comparison",
+  );
   const openDialog = (event: MouseEvent<HTMLButtonElement>) => {
     if (url.careerIds.length >= MAX_COMPARISON_CAREERS) return;
     dialogOpenerRef.current = event.currentTarget;

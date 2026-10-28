@@ -1,6 +1,8 @@
 import { useEffect, useRef } from "react";
 import type { ReactNode } from "react";
 
+import { useCareerView } from "../../../shared/telemetry/hooks";
+
 import type { MajorDetailProcess, ProcessOverview } from "../api/analytics.types";
 import * as api from "../api/analytics";
 import { MajorDetailHistory } from "../components/MajorDetailHistory";
@@ -59,6 +61,8 @@ export function MajorDetailContent({
   const current = [...selected, ...(detail?.history ?? [])].find(
     (item) => String(item.process.id) === processId,
   );
+
+  useCareerView(majorId, processId, modality, Boolean(current) && !query.isPlaceholderData);
 
   if (!processId)
     return (
