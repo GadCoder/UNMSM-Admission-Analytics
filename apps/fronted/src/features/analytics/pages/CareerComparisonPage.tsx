@@ -548,7 +548,6 @@ export function CareerComparisonPage() {
             <li key={item.id}>
               <button type="button" onClick={() => addCareer(item.id)}>
                 <span>{item.name}</span>
-                <small>{item.code}</small>
               </button>
             </li>
           ))}
