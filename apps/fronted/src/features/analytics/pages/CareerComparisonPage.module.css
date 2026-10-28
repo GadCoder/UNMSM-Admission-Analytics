@@ -1,7 +1,7 @@
 .page {
   min-width: 0;
   display: grid;
-  gap: var(--space-5);
+  gap: var(--space-3);
   padding: var(--space-3) 0 var(--space-8);
 }
 .eyebrow {
@@ -51,33 +51,19 @@
   --selection-item-height: 2.625rem;
   display: grid;
   justify-items: start;
-  gap: var(--space-3);
+  gap: var(--space-2);
 }
-.selectionPanel h2 {
+.selectionPanel h1 {
   margin: 0;
-  font-size: 1rem;
-}
-.workspaceHeader {
-  display: flex;
-  width: 100%;
-  min-width: 0;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--space-3);
-}
-.workspaceHeader p {
-  margin: 0.2rem 0 0;
-  color: var(--color-muted);
-  font-size: 0.76rem;
+  color: var(--color-text);
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+  line-height: 1.2;
 }
 .selectionHelp {
   margin: 0;
   color: var(--color-muted);
-  font-size: 0.82rem;
-  line-height: 1.55;
-}
-.mobileHelp {
-  display: none;
+  font-size: 0.78rem;
+  line-height: 1.4;
 }
 .chipRow {
   display: flex;
@@ -159,7 +145,7 @@
 }
 .selectors {
   display: grid;
-  grid-template-columns: minmax(13rem, 1fr) minmax(13rem, 1fr);
+  grid-template-columns: 12.5rem minmax(0, 1fr);
   align-items: end;
   gap: var(--space-4);
 }
@@ -183,6 +169,19 @@
   font-weight: 600;
   text-decoration: underline;
   text-underline-offset: 0.2em;
+}
+.selectionFooter {
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+}
+.selectionFooter p {
+  margin: 0;
+  color: var(--color-muted);
+  font-size: 0.76rem;
 }
 .validation {
   display: grid;
@@ -653,10 +652,21 @@
   }
 }
 @media (max-width: 600px) {
-  .workspaceHeader {
-    align-items: flex-start;
+  .chipRow {
+    gap: 0.4rem;
   }
-  .controls,
+  .chip {
+    min-height: 2.125rem;
+    gap: 0.35rem;
+    padding: 0.2rem 0.3rem 0.2rem 0.65rem;
+    font-size: 0.76rem;
+    line-height: 1.35;
+  }
+  .chip button {
+    width: 1.5rem;
+    height: 1.5rem;
+    font-size: 1.1rem;
+  }
   .section,
   .selectionPanel,
   .validation,
@@ -667,12 +677,6 @@
   .selectors,
   .dialogFilters {
     grid-template-columns: minmax(0, 1fr);
-  }
-  .desktopHelp {
-    display: none;
-  }
-  .mobileHelp {
-    display: inline;
   }
   .sectionHeader {
     align-items: start;
