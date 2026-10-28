@@ -1,0 +1,218 @@
+# Requires Docker Compose >= 2.23.1 (inline configs).
+services:
+  grafana:
+    image: grafana/grafana:13.3.0
+    restart: unless-stopped
+    mem_limit: 384m
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_ADMIN_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_ADMIN_PASSWORD:?Set a strong Grafana password}
+      GF_SERVER_ROOT_URL: https://${GRAFANA_DOMAIN:?Set the Grafana hostname}
+      GF_USERS_ALLOW_SIGN_UP: "false"
+      GF_AUTH_ANONYMOUS_ENABLED: "false"
+      GF_SECURITY_COOKIE_SECURE: "true"
+    volumes:
+      - grafana_data:/var/lib/grafana
+    configs:
+      - source: datasources
+        target: /etc/grafana/provisioning/datasources/default.yml
+    networks:
+      - telemetry
+      - dokploy-network
+
+  prometheus:
+    image: prom/prometheus:v3.15.1
+    restart: unless-stopped
+    mem_limit: 512m
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --storage.tsdb.retention.time=15d
+      - --storage.tsdb.retention.size=3GB
+    volumes:
+      - prometheus_data:/prometheus
+    configs:
+      - source: prometheus
+        target: /etc/prometheus/prometheus.yml
+    networks: [telemetry]
+
+  loki:
+    image: grafana/loki:3.7.9
+    restart: unless-stopped
+    mem_limit: 768m
+    command: [-config.file=/etc/loki/config.yml]
+    volumes:
+      - loki_data:/loki
+    configs:
+      - source: loki
+        target: /etc/loki/config.yml
+    networks: [telemetry]
+
+  alloy:
+    image: grafana/alloy:v1.21.2
+    restart: unless-stopped
+    user: "0:0"
+    mem_limit: 256m
+    command:
+      - run
+      - --storage.path=/var/lib/alloy/data
+      - --server.http.listen-addr=0.0.0.0:12345
+      - /etc/alloy/config.alloy
+    environment:
+      LOG_PROJECT_REGEX: ${LOG_PROJECT_REGEX:-.+}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - alloy_data:/var/lib/alloy/data
+    configs:
+      - source: alloy
+        target: /etc/alloy/config.alloy
+    networks: [telemetry]
+
+  node-exporter:
+    image: prom/node-exporter:v1.12.1
+    restart: unless-stopped
+    mem_limit: 128m
+    pid: host
+    command:
+      - --path.rootfs=/host/root
+      - --path.procfs=/host/proc
+      - --path.sysfs=/host/sys
+      - --collector.filesystem.mount-points-exclude=^/(dev|proc|sys|var/lib/docker/.+|var/lib/containers/storage/.+)($$|/)
+    volumes:
+      - /:/host/root:ro,rslave
+      - /proc:/host/proc:ro
+      - /sys:/host/sys:ro
+    networks: [telemetry]
+
+networks:
+  telemetry:
+  dokploy-network:
+    external: true
+
+volumes:
+  grafana_data:
+  prometheus_data:
+  loki_data:
+  alloy_data:
+
+configs:
+  datasources:
+    content: |
+      apiVersion: 1
+      datasources:
+        - name: Prometheus
+          uid: prometheus
+          type: prometheus
+          access: proxy
+          url: http://prometheus:9090
+          isDefault: true
+          editable: false
+        - name: Loki
+          uid: loki
+          type: loki
+          access: proxy
+          url: http://loki:3100
+          editable: false
+
+  prometheus:
+    content: |
+      global:
+        scrape_interval: 30s
+        evaluation_interval: 30s
+      scrape_configs:
+        - job_name: prometheus
+          static_configs:
+            - targets: ["prometheus:9090"]
+        - job_name: node
+          static_configs:
+            - targets: ["node-exporter:9100"]
+        - job_name: loki
+          static_configs:
+            - targets: ["loki:3100"]
+        - job_name: alloy
+          static_configs:
+            - targets: ["alloy:12345"]
+
+  loki:
+    content: |
+      auth_enabled: false
+      server:
+        http_listen_port: 3100
+      common:
+        path_prefix: /loki
+        replication_factor: 1
+        ring:
+          instance_addr: 127.0.0.1
+          kvstore:
+            store: inmemory
+        storage:
+          filesystem:
+            chunks_directory: /loki/chunks
+            rules_directory: /loki/rules
+      schema_config:
+        configs:
+          - from: 2024-01-01
+            store: tsdb
+            object_store: filesystem
+            schema: v13
+            index:
+              prefix: index_
+              period: 24h
+      ingester:
+        chunk_encoding: snappy
+      compactor:
+        working_directory: /loki/compactor
+        retention_enabled: true
+        delete_request_store: filesystem
+      limits_config:
+        retention_period: 168h
+        ingestion_rate_mb: 2
+        ingestion_burst_size_mb: 4
+        max_query_parallelism: 2
+      analytics:
+        reporting_enabled: false
+
+  alloy:
+    content: |
+      logging {
+        level = "info"
+      }
+      discovery.docker "local" {
+        host = "unix:///var/run/docker.sock"
+        refresh_interval = "30s"
+      }
+      discovery.relabel "containers" {
+        targets = discovery.docker.local.targets
+        rule {
+          source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+          regex = sys.env("LOG_PROJECT_REGEX")
+          action = "keep"
+        }
+        rule {
+          source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+          target_label = "project"
+        }
+        rule {
+          source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+          target_label = "service"
+        }
+        rule {
+          source_labels = ["__meta_docker_container_name"]
+          regex = "/(.*)"
+          target_label = "container"
+        }
+        rule {
+          target_label = "job"
+          replacement = "docker"
+        }
+      }
+      loki.source.docker "local" {
+        host = "unix:///var/run/docker.sock"
+        targets = discovery.relabel.containers.output
+        forward_to = [loki.write.local.receiver]
+      }
+      loki.write "local" {
+        endpoint {
+          url = "http://loki:3100/loki/api/v1/push"
+        }
+      }

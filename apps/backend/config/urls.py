@@ -23,10 +23,13 @@ from drf_spectacular.views import (
     SpectacularSwaggerView,
 )
 
-from config.views import HealthCheckView
+from config.observability import metrics_view
+from config.views import HealthCheckView, ReadinessView
 
 urlpatterns = [
     path("admin/", admin.site.urls),
+    path("metrics/", metrics_view, name="metrics"),
+    path("ready/", ReadinessView.as_view(), name="readiness"),
     path("health/", HealthCheckView.as_view(), name="health-check"),
     path("api/v1/", include("config.api_urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="api-schema"),

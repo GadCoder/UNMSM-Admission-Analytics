@@ -33,6 +33,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    "config.observability.RequestObservabilityMiddleware",
     "config.middleware.PublicApiCacheHeadersMiddleware",
     "django.middleware.security.SecurityMiddleware",
     "django.middleware.gzip.GZipMiddleware",
@@ -160,3 +161,17 @@ CORS_ALLOWED_ORIGINS = [
     for origin in os.getenv("CORS_ALLOWED_ORIGINS", "http://localhost:5173").split(",")
     if origin.strip()
 ]
+
+# Metrics are disabled until a dedicated scrape token is configured.
+METRICS_BEARER_TOKEN = os.getenv("METRICS_BEARER_TOKEN", "")
+APP_RELEASE = os.getenv("APP_RELEASE", "unknown")
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {"json": {"()": "config.observability.JsonFormatter"}},
+    "handlers": {"console": {"class": "logging.StreamHandler", "formatter": "json"}},
+    "root": {"handlers": ["console"], "level": "INFO"},
+    "loggers": {
+        "django": {"handlers": ["console"], "level": "INFO", "propagate": False}
+    },
+}
