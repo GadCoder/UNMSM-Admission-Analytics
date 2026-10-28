@@ -17,6 +17,7 @@ import { PageBanner } from "../components/PageBanner";
 import { CareerSearch } from "../components/CareerSearch";
 import {
   canCompareAdmittedScores,
+  buildComparisonInsights,
   compareAdmissionProcesses,
   formatCareerComparisonMetric,
   getCareerComparisonMetricValue,
@@ -25,6 +26,7 @@ import {
   rankCareerMetric,
   useCareerSeriesSlots,
   type CareerComparisonMetricKey,
+  type ComparisonInsightType,
 } from "../utils/careerComparison";
 import { MAX_COMPARISON_CAREERS, parseCareerComparisonUrl } from "../utils/careerComparisonUrl";
 import {
@@ -135,17 +137,6 @@ export function CareerComparisonPage() {
     "admission_rate",
     selected.length,
   );
-  const demandRanking = rankCareerMetric(
-    scopeByMetric("total_results"),
-    "total_results",
-    selected.length,
-  );
-  const minScoreRanking = rankCareerMetric(
-    scopeByMetric("minimum_admitted_score"),
-    "minimum_admitted_score",
-    selected.length,
-  );
-  const maxRateRanking = admissionRanking;
   const mergedSeries = selected.flatMap(({ id, item, detail }) =>
     detail
       ? [
@@ -453,9 +444,6 @@ export function CareerComparisonPage() {
             hasFailure={hasFailure}
             isPending={isPending}
             admissionRanking={admissionRanking}
-            demandRanking={demandRanking}
-            minScoreRanking={minScoreRanking}
-            maxRateRanking={maxRateRanking}
             mergedSeries={mergedSeries}
             historyProcesses={historyProcesses}
             seriesSlots={seriesSlots}
@@ -562,9 +550,6 @@ function ComparisonResults(props: {
   hasFailure: boolean;
   isPending: boolean;
   admissionRanking: ReturnType<typeof rankCareerMetric>;
-  demandRanking: ReturnType<typeof rankCareerMetric>;
-  minScoreRanking: ReturnType<typeof rankCareerMetric>;
-  maxRateRanking: ReturnType<typeof rankCareerMetric>;
   mergedSeries: Array<{
     id: number;
     label: string;
@@ -583,21 +568,15 @@ function ComparisonResults(props: {
   const { selected, records, process, modality, metric, hasFailure, isPending } = props;
   const enoughCareers = selected.length > 1;
   const conclusionsReady = enoughCareers && !isPending && !hasFailure;
-  const leaders = (item: NonNullable<ReturnType<typeof summaryItem>>) => item.names.join(", ");
-  const summaryItems = conclusionsReady
-    ? [
-        summaryItem("Menor tasa de ingreso", props.admissionRanking, "admission_rate"),
-        ...(props.admissionRanking.tied
-          ? []
-          : [summaryItem("Mayor tasa de ingreso", props.maxRateRanking, "admission_rate", true)]),
-        summaryItem("Mayor demanda registrada", props.demandRanking, "total_results", true),
-        summaryItem(
-          "Puntaje mínimo de ingreso más alto",
-          props.minScoreRanking,
-          "minimum_admitted_score",
-          true,
-        ),
-      ].filter(Boolean)
+  const insights = conclusionsReady
+    ? buildComparisonInsights(
+        selected.map(({ item, current, id }) => ({
+          name: item?.name ?? `Carrera ${id}`,
+          admissionRate: current ? getCareerComparisonMetricValue(current, "admission_rate") : null,
+          applicants: current ? getCareerComparisonMetricValue(current, "total_results") : null,
+          admitted: current ? getCareerComparisonMetricValue(current, "admitted_count") : null,
+        })),
+      )
     : [];
   return (
     <>
@@ -618,75 +597,68 @@ function ComparisonResults(props: {
         </p>
       )}
       {enoughCareers && (
-        <section className={styles.section} aria-labelledby="summary-title">
+        <section
+          className={`${styles.section} ${styles.comparisonSection}`}
+          aria-labelledby="summary-title"
+        >
           <header className={styles.sectionHeader}>
             <div>
-              <h2 id="summary-title">Resumen rápido</h2>
+              <h2 id="summary-title">Comparación de carreras</h2>
               <p>
                 {process
-                  ? `${formatProcessLabel(process)} · ${formatAdmissionModalityLabel(modality)}`
+                  ? `${formatProcessLabel(process)} · ${compactModalityLabel(modality)}`
                   : "Proceso y modalidad seleccionados"}
               </p>
             </div>
           </header>
-          {conclusionsReady && summaryItems.length ? (
-            <ul className={styles.summaryGrid}>
-              {summaryItems.map((item) => (
-                <li key={item!.title}>
-                  <span>{item!.title}</span>
-                  <strong>{leaders(item!)}</strong>
-                  <small className={styles.summaryValue}>
-                    {renderSummaryMetricValue(item!.value, item!.metric, item!.ranking.precision)}
-                  </small>
-                  {item!.ranking.scope && <em>{item!.ranking.scope}</em>}
-                </li>
+          {conclusionsReady && insights.length ? (
+            <div className={styles.comparisonSummary}>
+              <strong>Lo más destacado</strong>
+              {insights.map((insight) => (
+                <div className={styles.insightRow} key={`${insight.type}-${insight.text}`}>
+                  <ComparisonInsightIcon type={insight.type} />
+                  <p>{insight.text}</p>
+                </div>
               ))}
-            </ul>
+            </div>
           ) : (
             <p className={styles.muted}>
               {isPending
                 ? "Esperando los resultados de todas las carreras…"
                 : hasFailure
                   ? "Las conclusiones se habilitarán cuando se completen las solicitudes."
-                  : "Se necesitan al menos dos carreras con datos comparables para generar conclusiones."}
+                  : conclusionsReady
+                    ? "No hay diferencias destacables en los datos disponibles para resumir."
+                    : "Se necesitan al menos dos carreras con datos comparables para generar conclusiones."}
             </p>
           )}
-          <p className={styles.disclaimer}>
-            Estas tasas describen resultados del proceso seleccionado; no representan tu
-            probabilidad personal de ingreso.
-          </p>
+          <h3 className={styles.resultsHeading}>Resultados por carrera</h3>
+          <div
+            className={styles.cards}
+            style={
+              {
+                "--career-count": Math.max(1, Math.min(4, selected.length)),
+              } as React.CSSProperties
+            }
+          >
+            {selected.map(({ id, item, detail, current, query }) => (
+              <CareerCard
+                key={id}
+                id={id}
+                item={item}
+                detail={detail}
+                current={current}
+                query={query}
+                rateRanking={props.admissionRanking}
+                href={careerDetailHref(id, Number(props.processId), {
+                  modalityId: props.modalityId,
+                  comparisonReturnTo: props.returnUrl,
+                })}
+              />
+            ))}
+          </div>
         </section>
       )}
-
-      <section className={styles.section} aria-labelledby="cards-title">
-        <header className={styles.sectionHeader}>
-          <div>
-            <h2 id="cards-title">Resultados del proceso</h2>
-            <p>Datos observados para cada carrera seleccionada.</p>
-          </div>
-        </header>
-        <div
-          className={styles.cards}
-          style={
-            {
-              "--career-count": Math.max(1, Math.min(4, selected.length)),
-            } as React.CSSProperties
-          }
-        >
-          {selected.map(({ id, item, detail, current, query }) => (
-            <CareerCard
-              key={id}
-              id={id}
-              item={item}
-              detail={detail}
-              current={current}
-              query={query}
-              rateRanking={props.admissionRanking}
-              conclusionsReady={conclusionsReady}
-            />
-          ))}
-        </div>
-      </section>
 
       {enoughCareers && (
         <CareerComparisonHistory
@@ -797,20 +769,6 @@ function ComparisonResults(props: {
           </div>
         )}
       </section>
-      <nav className={styles.nextActions} aria-label="Siguientes acciones">
-        <h2>Explora en detalle</h2>
-        {records.map(({ id, name }) => (
-          <Link
-            key={id}
-            to={careerDetailHref(id, Number(props.processId), {
-              modalityId: props.modalityId,
-              comparisonReturnTo: props.returnUrl,
-            })}
-          >
-            Ver detalle de {name}
-          </Link>
-        ))}
-      </nav>
     </>
   );
 }
@@ -822,7 +780,7 @@ function CareerCard({
   current,
   query,
   rateRanking,
-  conclusionsReady,
+  href,
 }: {
   id: number;
   item?: MajorCatalogItem;
@@ -830,14 +788,18 @@ function CareerCard({
   current?: MajorDetailProcess;
   query?: UseQueryResult<MajorDetail, Error>;
   rateRanking: ReturnType<typeof rankCareerMetric>;
-  conclusionsReady: boolean;
+  href: string;
 }) {
+  const [ratioHintOpen, setRatioHintOpen] = useState(false);
   const name = item?.name ?? detail?.major.name ?? `Carrera ${id}`;
   if (query?.isPending && !detail)
     return (
       <article className={styles.careerCard} aria-busy="true">
         <h3>{name}</h3>
         <p role="status">Cargando resultados…</p>
+        <Link className={styles.cardDetailLink} to={href} aria-label={`Ver detalle de ${name}`}>
+          Ver detalle →
+        </Link>
       </article>
     );
   if (query?.isError && !detail)
@@ -845,6 +807,9 @@ function CareerCard({
       <article className={styles.careerCard}>
         <h3>{name}</h3>
         <p role="alert">No pudimos cargar sus resultados.</p>
+        <Link className={styles.cardDetailLink} to={href} aria-label={`Ver detalle de ${name}`}>
+          Ver detalle →
+        </Link>
       </article>
     );
   if (!current || current.total_results === 0)
@@ -852,18 +817,16 @@ function CareerCard({
       <article className={styles.careerCard}>
         <h3>{name}</h3>
         <p className={styles.muted}>Sin datos para este proceso y modalidad.</p>
+        <Link className={styles.cardDetailLink} to={href} aria-label={`Ver detalle de ${name}`}>
+          Ver detalle →
+        </Link>
       </article>
     );
   const values: Array<[string, CareerComparisonMetricKey]> = [
     ["Postulantes registrados", "total_results"],
     ["Ingresantes", "admitted_count"],
     ["Postulantes por ingresante", "applicants_per_admitted"],
-    ["Puntaje mínimo de ingreso", "minimum_admitted_score"],
   ];
-  const isLowest =
-    conclusionsReady &&
-    rateRanking.minimum.some((row) => row.id === id) &&
-    rateRanking.eligible.length > 1;
   return (
     <article className={styles.careerCard}>
       <h3>{name}</h3>
@@ -881,82 +844,112 @@ function CareerCard({
         const value = getCareerComparisonMetricValue(current, key);
         return (
           <dl key={key}>
-            <dt>{label}</dt>
+            <dt>
+              {label}
+              {key === "applicants_per_admitted" && (
+                <span className={styles.metricHintWrap}>
+                  <button
+                    type="button"
+                    className={styles.metricHintButton}
+                    aria-label="Qué significa postulantes por ingresante"
+                    aria-describedby={`ratio-hint-${id}`}
+                    aria-expanded={ratioHintOpen}
+                    onClick={() => setRatioHintOpen((open) => !open)}
+                    onFocus={() => setRatioHintOpen(true)}
+                    onBlur={() => setRatioHintOpen(false)}
+                  >
+                    i
+                  </button>
+                  {ratioHintOpen && (
+                    <span className={styles.metricTooltip} id={`ratio-hint-${id}`} role="tooltip">
+                      Cantidad de postulantes por cada persona que ingresó en este proceso y
+                      modalidad.
+                    </span>
+                  )}
+                </span>
+              )}
+            </dt>
             <dd>{value === null ? "—" : formatCareerComparisonMetric(value, key)}</dd>
           </dl>
         );
       })}
-      {isLowest && (
-        <p className={styles.cardInterpretation}>
-          {rateRanking.minimum.length > 1
-            ? "Comparte la menor tasa de ingreso"
-            : "Registró la menor tasa de ingreso"}{" "}
-          {rateRanking.scope
-            ? `${rateRanking.scope.toLocaleLowerCase("es-PE")} `
-            : "entre las carreras comparadas "}
-          en este proceso.
-        </p>
-      )}
+      <Link className={styles.cardDetailLink} to={href} aria-label={`Ver detalle de ${name}`}>
+        Ver detalle →
+      </Link>
     </article>
   );
 }
 
-function summaryItem(
-  title: string,
-  ranking: ReturnType<typeof rankCareerMetric>,
-  metric: CareerComparisonMetricKey,
-  maximum = false,
-) {
-  const eligible = ranking?.eligible ?? [];
-  if (eligible.length < 2) return null;
-  const winners = maximum ? ranking.maximum : ranking.minimum;
-  if (!winners.length) return null;
-  const value = winners[0].value!;
-  const tiedTitle: Partial<Record<CareerComparisonMetricKey, string>> = {
-    admission_rate: "Misma tasa de ingreso",
-    total_results: "Misma demanda registrada",
-    minimum_admitted_score: "Mismo puntaje mínimo de ingreso",
+function ComparisonInsightIcon({ type }: { type: ComparisonInsightType }) {
+  const common = {
+    width: 17,
+    height: 17,
+    viewBox: "0 0 24 24",
+    fill: "none",
+    stroke: "currentColor",
+    strokeWidth: 1.8,
+    strokeLinecap: "round" as const,
+    strokeLinejoin: "round" as const,
+    "aria-hidden": true as const,
+    focusable: false,
   };
-  return {
-    title: ranking.tied ? (tiedTitle[metric] ?? title) : title,
-    ranking,
-    metric,
-    value,
-    names: winners.map(({ name }) => name),
-  };
+  switch (type) {
+    case "admission_rate":
+      return (
+        <svg {...common}>
+          <path d="M16 3h5v5" />
+          <path d="m21 3-7 7-4-4-7 7" />
+          <path d="M3 17v4h18" />
+          <path d="m8 17 4-4 3 3" />
+        </svg>
+      );
+    case "demand":
+      return (
+        <svg {...common}>
+          <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75" />
+        </svg>
+      );
+    case "admitted":
+      return (
+        <svg {...common}>
+          <path d="m22 10-10 5L2 10l10-5 10 5Z" />
+          <path d="M6 12v5c3 3 9 3 12 0v-5M22 10v6" />
+        </svg>
+      );
+    case "applicants_per_admitted":
+      return (
+        <svg {...common}>
+          <circle cx="9" cy="8" r="3" />
+          <path d="M3 20v-1a6 6 0 0 1 12 0v1M16 11a3 3 0 1 0 0-6M18 14a5 5 0 0 1 3 5v1" />
+        </svg>
+      );
+    case "score":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="12" r="9" />
+          <circle cx="12" cy="12" r="5" />
+          <circle cx="12" cy="12" r="1" />
+          <path d="m16 8 5-5" />
+        </svg>
+      );
+    default:
+      return (
+        <svg {...common}>
+          <path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3" />
+          <path d="M12 17h.01" />
+          <path d="M12 22a10 10 0 1 0 0-20 10 10 0 0 0 0 20Z" />
+        </svg>
+      );
+  }
 }
 
-function formatSummaryMetric(
-  value: number | null,
-  metric: CareerComparisonMetricKey,
-  precision: number,
-) {
-  const formatted = formatCareerComparisonMetric(value, metric, precision);
-  if (value === null || !Number.isFinite(value)) return formatted;
-
-  const suffix =
-    metric === "total_results"
-      ? " postulantes"
-      : metric === "minimum_admitted_score"
-        ? " puntos"
-        : "";
-  return `${formatted}${suffix}`;
-}
-
-function renderSummaryMetricValue(
-  value: number | null,
-  metric: CareerComparisonMetricKey,
-  precision: number,
-) {
-  const formatted = formatSummaryMetric(value, metric, precision);
-  if (metric !== "admission_rate" || !formatted.endsWith("%")) return formatted;
-
-  return (
-    <>
-      {formatted.slice(0, -1)}
-      <span className={styles.summaryValueUnit}>%</span>
-    </>
-  );
+function compactModalityLabel(modality: string) {
+  const normalized = modality.toLocaleLowerCase("es-PE");
+  return normalized.includes("ebr") && normalized.includes("eba")
+    ? "EBR y EBA"
+    : formatAdmissionModalityLabel(modality);
 }
 
 function findCurrent(detail: MajorDetail, processId: string) {

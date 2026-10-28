@@ -4,6 +4,7 @@ import {
   assignCareerSeriesSlots,
   alignCareerHistory,
   canCompareAdmittedScores,
+  buildComparisonInsights,
   canCompareMinimumScores,
   getCareerComparisonMetricValue,
   getComparableCareerMetricValues,
@@ -214,5 +215,55 @@ describe("career comparison metric helpers", () => {
     expect(slots.get(7)).toBe(secondSlot);
     expect(slots.get(12)).not.toBe(firstSlot);
     expect(getCareerSeriesStyle(firstSlot!).dash).not.toBe(getCareerSeriesStyle(secondSlot!).dash);
+  });
+});
+
+describe("buildComparisonInsights", () => {
+  it("describes rate and demand differences and ties", () => {
+    expect(
+      buildComparisonInsights([
+        { name: "A", admissionRate: 20, applicants: 100, admitted: 20 },
+        { name: "B", admissionRate: 30, applicants: 100, admitted: 30 },
+      ]),
+    ).toEqual([
+      {
+        type: "admission_rate",
+        text: "A registró una tasa de ingreso de 20%, frente al 30% de B: una diferencia de 10 puntos porcentuales.",
+      },
+    ]);
+  });
+  it("avoids minor differences and ignores unavailable measurements", () => {
+    expect(
+      buildComparisonInsights([
+        { name: "A", admissionRate: 20, applicants: null, admitted: 0 },
+        { name: "B", admissionRate: 20.5, applicants: null, admitted: 1 },
+        { name: "C", admissionRate: null, applicants: null, admitted: 2 },
+      ]),
+    ).toEqual([]);
+  });
+  it("handles tied rates and zero counts without division", () => {
+    expect(
+      buildComparisonInsights([
+        { name: "A", admissionRate: 25, applicants: 0, admitted: 0 },
+        { name: "B", admissionRate: 25, applicants: 0, admitted: 0 },
+      ]),
+    ).toEqual([]);
+  });
+  it("uses correct singular and plural agreement for insight leaders", () => {
+    expect(
+      buildComparisonInsights([
+        { name: "Administración", admissionRate: 20, applicants: 694, admitted: 100 },
+        { name: "Derecho", admissionRate: 30, applicants: 161, admitted: 40 },
+      ]),
+    ).toEqual([
+      {
+        type: "admission_rate",
+        text: "Administración registró una tasa de ingreso de 20%, frente al 30% de Derecho: una diferencia de 10 puntos porcentuales.",
+      },
+      {
+        type: "demand",
+        text: "Administración registró la mayor demanda, con 694 postulantes, frente a 161 en Derecho.",
+      },
+    ]);
   });
 });

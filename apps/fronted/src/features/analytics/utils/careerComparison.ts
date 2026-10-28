@@ -112,6 +112,55 @@ export function formatCareerComparisonMetric(
 }
 
 export type CareerMetricValue = { id: number; name: string; value: number | null };
+export type ComparisonInsightRecord = {
+  name: string;
+  admissionRate: number | null;
+  applicants: number | null;
+  admitted: number | null;
+};
+export type ComparisonInsightType =
+  "admission_rate" | "demand" | "admitted" | "applicants_per_admitted" | "score" | "generic";
+export type ComparisonInsight = { type: ComparisonInsightType; text: string };
+export function buildComparisonInsights(records: ComparisonInsightRecord[]): ComparisonInsight[] {
+  const insights: ComparisonInsight[] = [];
+  const rates = records.filter(
+    (record) => record.admissionRate !== null && Number.isFinite(record.admissionRate),
+  );
+  if (rates.length >= 2) {
+    const lowest = Math.min(...rates.map(({ admissionRate }) => admissionRate!));
+    const highest = Math.max(...rates.map(({ admissionRate }) => admissionRate!));
+    if (highest - lowest >= 1) {
+      const low = rates.filter(({ admissionRate }) => admissionRate === lowest);
+      const high = rates.filter(({ admissionRate }) => admissionRate === highest);
+      const names = (items: typeof rates) => items.map(({ name }) => name).join(", ");
+      insights.push({
+        type: "admission_rate",
+        text: `${names(low)} ${low.length > 1 ? "registraron" : "registró"} una tasa de ingreso de ${formatCareerComparisonMetric(lowest, "admission_rate")}, frente al ${formatCareerComparisonMetric(highest, "admission_rate")} de ${names(high)}: una diferencia de ${formatNumber(highest - lowest, 1)} puntos porcentuales.`,
+      });
+    }
+  }
+  const demand = records.filter(
+    ({ applicants }) => applicants !== null && Number.isFinite(applicants),
+  );
+  if (demand.length >= 2) {
+    const highest = Math.max(...demand.map(({ applicants }) => applicants!));
+    const lowest = Math.min(...demand.map(({ applicants }) => applicants!));
+    if (highest > lowest) {
+      const lowestMajors = demand
+        .filter(({ applicants }) => applicants === lowest)
+        .map(({ name }) => name)
+        .join(", ");
+      const highNames = demand.filter(({ applicants }) => applicants === highest);
+      const highNameText = highNames.map(({ name }) => name).join(", ");
+      const verb = highNames.length > 1 ? "registraron" : "registró";
+      insights.push({
+        type: "demand",
+        text: `${highNameText} ${verb} la mayor demanda, con ${formatNumber(highest, 0)} postulantes, frente a ${formatNumber(lowest, 0)} en ${lowestMajors}.`,
+      });
+    }
+  }
+  return insights.slice(0, 2);
+}
 export type MetricRanking = {
   eligible: CareerMetricValue[];
   minimum: CareerMetricValue[];

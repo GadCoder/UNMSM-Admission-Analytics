@@ -248,6 +248,45 @@
   padding: 0;
   list-style: none;
 }
+.comparisonSection {
+  gap: var(--space-4);
+}
+.comparisonSummary {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0.7rem var(--space-4);
+  border-radius: var(--radius-md);
+  background: #fcf8f8;
+  color: var(--color-text);
+}
+.comparisonSummary > strong {
+  color: var(--color-primary-dark);
+  font-size: 0.85rem;
+}
+.comparisonSummary p {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+.insightRow {
+  display: flex;
+  min-width: 0;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+.insightRow > svg {
+  flex: none;
+  margin-top: 0.12rem;
+  color: var(--color-primary-dark);
+}
+.insightRow > p {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+.resultsHeading {
+  margin: 0;
+  font-size: 0.95rem;
+}
 .summaryGrid li {
   display: grid;
   grid-template-rows: minmax(2.1em, auto) minmax(2.4em, 1fr) auto auto;
@@ -305,20 +344,19 @@
 }
 .cards {
   display: grid;
-  grid-template-columns: repeat(var(--career-count), minmax(0, 1fr));
-  grid-template-rows: repeat(7, auto);
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr));
   grid-auto-rows: auto;
   column-gap: var(--space-4);
   row-gap: var(--space-3);
 }
 .careerCard {
   display: grid;
-  grid-row: span 7;
+  grid-row: span 6;
   grid-template-rows: subgrid;
   align-content: start;
-  row-gap: inherit;
+  gap: 0.65rem;
   min-width: 0;
-  padding: var(--space-4);
+  padding: 0.9rem;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   background: #fff;
@@ -364,7 +402,7 @@
   gap: var(--space-2);
   min-width: 0;
   margin: 0;
-  padding: 0.48rem 0;
+  padding: 0.42rem 0;
   border-bottom: 1px solid #f0e9e9;
 }
 .scoreCard dl {
@@ -387,6 +425,49 @@
   color: var(--color-muted);
   font-size: 0.73rem;
 }
+.metricHintWrap {
+  position: relative;
+  display: inline-block;
+  margin-left: 0.3rem;
+  vertical-align: text-top;
+}
+.metricHintButton {
+  display: inline-grid;
+  width: 1.1rem;
+  height: 1.1rem;
+  place-items: center;
+  padding: 0;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+  background: #fff;
+  color: var(--color-primary-dark);
+  cursor: pointer;
+  font: inherit;
+  font-size: 0.67rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.metricHintButton:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+.metricTooltip {
+  position: absolute;
+  z-index: 3;
+  left: 50%;
+  bottom: calc(100% + 0.55rem);
+  width: min(15rem, calc(100vw - 3rem));
+  padding: 0.65rem 0.75rem;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  background: #fff;
+  box-shadow: 0 6px 18px rgb(60 30 30 / 12%);
+  color: var(--color-text);
+  font-size: 0.75rem;
+  font-weight: 400;
+  line-height: 1.45;
+  transform: translateX(-50%);
+}
 .careerCard dd,
 .scoreCard dd {
   margin: 0;
@@ -400,6 +481,17 @@
   color: #176b55;
   font-size: 0.75rem;
   line-height: 1.5;
+}
+.cardDetailLink {
+  justify-self: end;
+  margin-top: 0.2rem;
+  color: var(--color-primary-dark);
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+.cardDetailLink:hover {
+  text-decoration: underline;
 }
 .scoreGrid {
   display: grid;
