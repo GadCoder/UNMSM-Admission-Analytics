@@ -60,6 +60,7 @@ services:
       - /etc/alloy/config.alloy
     environment:
       LOG_PROJECT_REGEX: ${LOG_PROJECT_REGEX:-.+}
+      LOG_SWARM_SERVICE_REGEX: ${LOG_SWARM_SERVICE_REGEX:-.+}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - alloy_data:/var/lib/alloy/data
@@ -190,17 +191,43 @@ configs:
       }
       discovery.relabel "containers" {
         targets = discovery.docker.local.targets
+        // Retain matching Compose projects OR Swarm services.
         rule {
           source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
           regex = sys.env("LOG_PROJECT_REGEX")
+          target_label = "__tmp_collect"
+          replacement = "yes"
+        }
+        rule {
+          source_labels = ["__meta_docker_container_label_com_docker_swarm_service_name"]
+          regex = sys.env("LOG_SWARM_SERVICE_REGEX")
+          target_label = "__tmp_collect"
+          replacement = "yes"
+        }
+        rule {
+          source_labels = ["__tmp_collect"]
+          regex = "yes"
           action = "keep"
         }
         rule {
+          source_labels = ["__meta_docker_container_label_com_docker_swarm_service_name"]
+          regex = "(.+)"
+          target_label = "project"
+          replacement = "swarm"
+        }
+        rule {
+          source_labels = ["__meta_docker_container_label_com_docker_swarm_service_name"]
+          regex = "(.+)"
+          target_label = "service"
+        }
+        rule {
           source_labels = ["__meta_docker_container_label_com_docker_compose_project"]
+          regex = "(.+)"
           target_label = "project"
         }
         rule {
           source_labels = ["__meta_docker_container_label_com_docker_compose_service"]
+          regex = "(.+)"
           target_label = "service"
         }
         rule {

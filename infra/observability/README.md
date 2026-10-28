@@ -12,32 +12,32 @@ Metrics retain up to 15 days / 3 GB (whichever limit is reached first); Loki ret
 limits total 2 GiB; monitor for OOM/restarts and tune after measuring real traffic.
 
 Alloy's Docker socket mount grants privileged Docker access despite `:ro`.
-`LOG_PROJECT_REGEX=.+` collects all Compose projects by default; restrict it to
-actual `com.docker.compose.project` label values when ready. Swarm-only containers
-are excluded by that filter. Loki labels are project/service/container/job;
+`LOG_PROJECT_REGEX=.+` collects all Compose projects by default, and
+`LOG_SWARM_SERVICE_REGEX=.+` collects all local Swarm service containers, including
+Dokploy Applications. Narrow these independently to actual Compose project / Swarm
+service names; setting only the Compose filter does not restrict Swarm collection.
+Use a nonmatching pattern such as `a^` to disable either source. A Swarm container
+gets `project="swarm"` and its full Swarm service name as `service`. Collection is
+local to this Docker host; other Swarm nodes need their own collector.
+Loki labels are project/service/container/job;
 request IDs and query properties must stay in log content, not labels.
 
 ## Connect the instrumented backend
 
 1. Generate a dedicated token locally with `openssl rand -hex 32`.
-2. In the backend's Dokploy environment set `METRICS_BEARER_TOKEN` to that token.
-   `env_file: .env` in the base Compose forwards it into the backend. Keep
-   `DJANGO_ALLOWED_HOSTS` set to your existing API hostnames. Leave `APP_RELEASE`
-   unset for now; it defaults to `unknown` until deployment automation supplies it.
-3. Configure the backend's Dokploy Compose deployment to load **both files**, in
-   this order: `compose.yml`, then `compose.dokploy.yml`. The equivalent CLI is:
-
-   ```sh
-   docker compose -f compose.yml -f compose.dokploy.yml up -d --build
-   ```
-
-   Use Dokploy's Compose file selection or configure its command to include both
-   files while retaining its generated project name and other deployment flags.
-   Preview the resulting configuration: backend must retain the `default` network
-   for PostgreSQL/Valkey and join `dokploy-network` with alias `unmsm-api-metrics`.
-   The override appends that alias to `DJANGO_ALLOWED_HOSTS` automatically. This
-   alias must be unique across the shared network; do not reuse it for staging.
-   Local development continues to use `compose.yml` alone without Dokploy.
+2. The backend is a Dokploy **Application** built from its Dockerfile, not a
+   Compose deployment. Keep its Dockerfile, context, image, and normal startup
+   settings unchanged. In its **Environment**, set `METRICS_BEARER_TOKEN` to that
+   token and append `unmsm-api-metrics` to the existing `DJANGO_ALLOWED_HOSTS`
+   value. Dokploy Application environment settings enter the running container
+   directly; no Compose `env_file` is involved. Leave `APP_RELEASE` unset for now.
+3. In the backend Application's **Advanced → Swarm Settings → Network**, edit
+   its existing `dokploy-network` attachment and add alias `unmsm-api-metrics`.
+   Preserve other network attachments and aliases, especially database/cache
+   connectivity. If your Dokploy version has a separate Networks panel, use that
+   to manage the same attachment. This alias must be unique on the shared network;
+   do not reuse it for staging. No backend Compose override is needed. The root
+   `compose.yml` remains for local development.
 4. Deploy the updated backend image using its normal entrypoint. It prepares fresh
    Prometheus multiprocess storage before Gunicorn starts. Do not override that
    entrypoint or set `PROMETHEUS_MULTIPROC_DIR` manually. `/metrics/` is disabled
@@ -64,7 +64,10 @@ request IDs and query properties must stay in log content, not labels.
    scrapes. Exclude admin routes if building public-API-only panels.
 
    In Loki use `{job="docker"} | json | message="http_request"`. Scope to the
-   backend project/service labels when other apps also emit JSON logs. Response
+   backend service label when other apps also emit JSON logs. For a Dokploy
+   Application, start with `{job="docker", project="swarm"}` and select the
+   backend's full Swarm `service` label. Do not mistake monitoring-stack logs
+   for proof that the backend is being collected. Response
    `X-Request-ID` values correlate with the `request_id` JSON field. Routine
    health/readiness/metrics requests are omitted from request metrics/logs. HTTP
    labels use resolved view names, never IDs, raw paths, or query parameters.
