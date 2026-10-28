@@ -313,8 +313,13 @@ export function CareerComparisonPage() {
         }
       />
 
-      <section className={styles.selectionPanel} aria-label="Panel de selección de carreras">
-        <h2>Carreras para comparar</h2>
+      <section className={styles.selectionPanel} aria-label="Espacio de comparación">
+        <header className={styles.workspaceHeader}>
+          <div>
+            <h2>Compara carreras</h2>
+            <p>{url.careerIds.length} de 4 carreras seleccionadas</p>
+          </div>
+        </header>
         <p className={styles.selectionHelp}>
           <span className={styles.desktopHelp}>
             Selecciona entre 2 y 4 carreras para comparar sus resultados.
