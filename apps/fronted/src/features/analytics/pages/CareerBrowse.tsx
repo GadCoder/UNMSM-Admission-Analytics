@@ -2,7 +2,7 @@ import { useSearchParams } from "react-router-dom";
 
 import * as api from "../api/analytics";
 import type { CareerNavigationContext } from "../utils/careerNavigation";
-import type { AdmissionProcess } from "../api/analytics.types";
+import type { AdmissionProcess, Modality } from "../api/analytics.types";
 import { CareerDiscovery } from "../components/CareerDiscovery";
 import { DashboardControls } from "../components/DashboardControls";
 import { DashboardFilterControls } from "../components/DashboardFilterControls";
@@ -20,6 +20,7 @@ type CareerBrowseProps = {
   areasQuery: ReturnType<typeof api.useAcademicAreas>;
   facultiesQuery: ReturnType<typeof api.useFaculties>;
   modalitiesQuery: ReturnType<typeof api.useModalities>;
+  modalities: Modality[];
   processes: AdmissionProcess[];
   processId: string;
   onSelectProcess: (id: string) => void;
@@ -31,6 +32,7 @@ export function CareerBrowse({
   areasQuery,
   facultiesQuery,
   modalitiesQuery,
+  modalities,
   processes,
   processId,
   onSelectProcess,
@@ -114,12 +116,7 @@ export function CareerBrowse({
                     })
                   }
                 >
-                  {!(modalitiesQuery.data ?? []).some((item) => item.name === modality) && (
-                    <option value={modalityUrlValue(modality, modalitiesQuery.data) ?? ""}>
-                      {formatAdmissionModalityLabel(modality)}
-                    </option>
-                  )}
-                  {(modalitiesQuery.data ?? []).map((item) => (
+                  {modalities.map((item) => (
                     <option key={item.id} value={String(item.id)}>
                       {formatAdmissionModalityLabel(item.name)}
                     </option>
@@ -130,7 +127,7 @@ export function CareerBrowse({
                 <DashboardFilterControls
                   areas={areas}
                   faculties={faculties}
-                  modalities={modalitiesQuery.data ?? []}
+                  modalities={modalities}
                   filters={{ academicArea, faculty, modality }}
                   onChange={updateFilters}
                   onReset={resetBrowseFilters}

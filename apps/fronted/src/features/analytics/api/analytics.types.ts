@@ -3,6 +3,8 @@ export type AdmissionProcess = {
   year: number;
   sequence: string;
   name: string;
+  // Included by the process catalog; embedded analytics process records omit it.
+  available_modality_ids?: number[];
 };
 
 export type AcademicArea = { id: number; code: string; name: string };
