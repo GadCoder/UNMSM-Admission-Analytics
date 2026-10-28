@@ -20,58 +20,37 @@ request IDs and query properties must stay in log content, not labels.
 ## Connect the instrumented backend
 
 1. Generate a dedicated token locally with `openssl rand -hex 32`.
-2. In the backend's Dokploy environment set `METRICS_BEARER_TOKEN` to that token,
-   and `APP_RELEASE` to the deployed commit or release identifier. Make sure your
-   backend Compose `environment` explicitly forwards those variables, or uses
-   `env_file: .env`; Dokploy UI variables alone do not enter containers otherwise.
-3. Deploy the updated backend image using its normal entrypoint. It prepares fresh
+2. In the backend's Dokploy environment set `METRICS_BEARER_TOKEN` to that token.
+   `env_file: .env` in the base Compose forwards it into the backend. Keep
+   `DJANGO_ALLOWED_HOSTS` set to your existing API hostnames. Leave `APP_RELEASE`
+   unset for now; it defaults to `unknown` until deployment automation supplies it.
+3. Configure the backend's Dokploy Compose deployment to load **both files**, in
+   this order: `compose.yml`, then `compose.dokploy.yml`. The equivalent CLI is:
+
+   ```sh
+   docker compose -f compose.yml -f compose.dokploy.yml up -d --build
+   ```
+
+   Use Dokploy's Compose file selection or configure its command to include both
+   files while retaining its generated project name and other deployment flags.
+   Preview the resulting configuration: backend must retain the `default` network
+   for PostgreSQL/Valkey and join `dokploy-network` with alias `unmsm-api-metrics`.
+   The override appends that alias to `DJANGO_ALLOWED_HOSTS` automatically. This
+   alias must be unique across the shared network; do not reuse it for staging.
+   Local development continues to use `compose.yml` alone without Dokploy.
+4. Deploy the updated backend image using its normal entrypoint. It prepares fresh
    Prometheus multiprocess storage before Gunicorn starts. Do not override that
    entrypoint or set `PROMETHEUS_MULTIPROC_DIR` manually. `/metrics/` is disabled
    without a token and rejects unauthorized scrapes. `/health/` is liveness;
    `/ready/` executes a PostgreSQL query and returns 503 if it fails. Readiness
    does not validate dataset completeness or require the optional Valkey cache.
-4. Join backend and Prometheus to a shared Docker network. For an app already on
-   `dokploy-network`, add that network to Prometheus while retaining `telemetry`:
-
-   ```yaml
-   prometheus:
-     # Keep all existing settings.
-     networks: [telemetry, dokploy-network]
-   ```
-
-   Give the backend a unique alias on the same network, e.g. `unmsm-api-metrics`:
-
-   ```yaml
-   backend:
-     # Merge with its existing networks; preserve database/cache connectivity.
-     networks:
-       dokploy-network:
-         aliases: [unmsm-api-metrics]
-   networks:
-     dokploy-network:
-       external: true
-   ```
-
-   Use your actual backend service name. This alias points to port 8000 inside
-   Docker; do not publish an additional host port. Add `unmsm-api-metrics` to
-   `DJANGO_ALLOWED_HOSTS`. A dedicated shared network can be used instead if
-   desired; it must exist before either Compose project attaches to it.
 5. In monitoring's Dokploy environment add `BACKEND_METRICS_TOKEN` with the same
-   token. In the embedded Prometheus `scrape_configs`, append:
-
-   ```yaml
-   - job_name: unmsm-backend
-     metrics_path: /metrics/
-     authorization:
-       type: Bearer
-       credentials: ${BACKEND_METRICS_TOKEN:?Set the backend scrape token}
-     static_configs:
-       - targets: ["unmsm-api-metrics:8000"]
-   ```
-
-   This placeholder is expanded by Compose in the inline config. Keep tokens out
-   of Git. Redeploy monitoring to apply config changes; never paste resolved
-   Compose output containing credentials into tickets/chat.
+   token. Update its Raw Compose from `infra/observability/compose.yml` and
+   redeploy. It now connects Prometheus to `dokploy-network` and includes the
+   authenticated `unmsm-backend` scrape job. Both projects must run on the same
+   Docker host, and Dokploy's external network must already exist. No additional
+   host ports are needed. Keep secrets in Dokploy; do not commit token values or
+   share resolved Compose output. Existing named volumes must be retained.
 6. Browse the app to produce requests, then verify in Grafana Explore:
 
    ```promql
