@@ -4,6 +4,7 @@ import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 import * as api from "../features/analytics/api/analytics";
 import { readDashboardView } from "../features/analytics/utils/dashboardSessionState";
 import { buildAppNavigation } from "./appNavigation";
+import { Footer } from "./Footer";
 import styles from "./App.module.css";
 
 const headerByPage = {
@@ -143,6 +144,7 @@ export function App() {
       <main className={styles.main}>
         <Outlet />
       </main>
+      <Footer />
     </div>
   );
 }

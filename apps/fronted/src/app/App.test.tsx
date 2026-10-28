@@ -47,6 +47,18 @@ describe("App shell", () => {
       "https://assets.resultados-unmsm.com/brand/unmsm-2e787805.png",
     );
     expect(screen.getByRole("navigation", { name: "Navegación principal" })).toBeInTheDocument();
+    expect(screen.getByRole("contentinfo")).toBeInTheDocument();
+    expect(
+      screen.queryByText("Explora y comprende los resultados de admisión de San Marcos."),
+    ).not.toBeInTheDocument();
+    expect(screen.getByRole("link", { name: /Contribuir en GitHub/ })).toHaveAttribute(
+      "href",
+      "https://github.com/GadCoder/UNMSM-Admission-Analytics",
+    );
+    expect(screen.getByRole("link", { name: /GadCoder/ })).toHaveAttribute(
+      "href",
+      "https://github.com/GadCoder",
+    );
     expect(screen.getByRole("link", { name: "Resultados por proceso" })).toHaveAttribute(
       "aria-current",
       "page",
