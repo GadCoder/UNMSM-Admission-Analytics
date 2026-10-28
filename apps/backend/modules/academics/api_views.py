@@ -11,9 +11,9 @@ class ActiveAcademicAreaListView(ListAPIView):
 
 class ActiveFacultyListView(ListAPIView):
     serializer_class = FacultySerializer
-    queryset = Faculty.objects.filter(is_active=True).select_related("academic_area")
+    queryset = Faculty.objects.filter(is_active=True)
 
 
 class ActiveMajorListView(ListAPIView):
     serializer_class = MajorSerializer
-    queryset = Major.objects.filter(is_active=True).select_related("faculty")
+    queryset = Major.objects.filter(is_active=True)
