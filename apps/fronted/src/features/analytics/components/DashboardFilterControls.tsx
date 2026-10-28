@@ -5,7 +5,7 @@ import {
   DEFAULT_ADMISSION_MODALITY,
   formatAdmissionModalityLabel,
 } from "../utils/admissionModality";
-import { ResponsiveControlPanel } from "./ResponsiveControlPanel";
+import { ResponsiveFilterControls } from "./ResponsiveFilterControls";
 import { SelectField } from "./SelectField";
 import styles from "./DashboardFilterControls.module.css";
 
@@ -35,13 +35,11 @@ export function DashboardFilterControls({
   onChange,
   onReset,
 }: DashboardFilterControlsProps) {
-  const triggerRef = useRef<HTMLButtonElement>(null);
   const timerRef = useRef<number | undefined>(undefined);
   const onChangeRef = useRef(onChange);
   const lastEmittedRef = useRef<DashboardFilters | null>(null);
   const incomingRef = useRef(filters);
   const draftRef = useRef(filters);
-  const [open, setOpen] = useState(false);
   const [draftFilters, setDraftFilters] = useState(filters);
   useLayoutEffect(() => {
     onChangeRef.current = onChange;
@@ -96,7 +94,6 @@ export function DashboardFilterControls({
     draftRef.current = cleared;
     setDraftFilters(cleared);
     onReset();
-    setOpen(false);
   };
 
   const selectedArea = areas.find((area) => area.code === draftFilters.academicArea);
@@ -113,8 +110,12 @@ export function DashboardFilterControls({
     : [[filters.modality, formatAdmissionModalityLabel(filters.modality)], ...modalityOptions];
 
   return (
-    <div className={styles.wrapper} role="group" aria-label="Filtros de carreras">
-      {!open && (
+    <ResponsiveFilterControls
+      label="Filtros de carreras"
+      title="Filtrar resultados"
+      triggerLabel="Abrir filtros de carreras"
+      activeCount={activeCount}
+      desktopContent={
         <div className={styles.desktopFields}>
           <FilterSelect
             idSuffix="desktop-area"
@@ -131,64 +132,45 @@ export function DashboardFilterControls({
             onChange={(value) => updateFilter("faculty", value)}
           />
         </div>
+      }
+      footer={(close) => (
+        <button
+          className={styles.reset}
+          type="button"
+          onClick={() => {
+            reset();
+            close();
+          }}
+        >
+          ↻ Restablecer filtros
+        </button>
       )}
-      <button
-        ref={triggerRef}
-        className={styles.trigger}
-        type="button"
-        aria-expanded={open}
-        aria-haspopup="dialog"
-        aria-label={
-          activeCount > 0
-            ? `Abrir filtros de carreras, ${activeCount} ${activeCount === 1 ? "filtro activo" : "filtros activos"}`
-            : "Abrir filtros de carreras"
-        }
-        onClick={() => {
-          setOpen((current) => !current);
-        }}
-      >
-        <svg viewBox="0 0 24 24" aria-hidden="true">
-          <path d="M4 5h16M7 12h10m-7 7h4" />
-        </svg>
-        <span>Filtros{activeCount > 0 ? ` (${activeCount})` : ""}</span>
-      </button>
-      <ResponsiveControlPanel
-        open={open}
-        onClose={() => setOpen(false)}
-        title="Filtrar resultados"
-        triggerRef={triggerRef}
-        footer={
-          <button className={styles.reset} type="button" onClick={reset}>
-            ↻ Restablecer filtros
-          </button>
-        }
-      >
-        <div className={styles.fields}>
-          <FilterSelect
-            idSuffix="mobile-area"
-            label="Área académica"
-            value={draftFilters.academicArea}
-            options={areas.map((item) => [item.code, item.name])}
-            onChange={(value) => updateFilter("academicArea", value)}
-          />
-          <FilterSelect
-            idSuffix="mobile-faculty"
-            label="Facultad"
-            value={draftFilters.faculty}
-            options={availableFaculties.map((item) => [item.code, item.name])}
-            onChange={(value) => updateFilter("faculty", value)}
-          />
-          <FilterSelect
-            idSuffix="mobile-modality"
-            label="Modalidad"
-            value={draftFilters.modality}
-            options={allModalityOptions}
-            includeAll={false}
-            onChange={(value) => updateFilter("modality", value)}
-          />
-        </div>
-      </ResponsiveControlPanel>
-    </div>
+    >
+      <div className={styles.fields}>
+        <FilterSelect
+          idSuffix="mobile-area"
+          label="Área académica"
+          value={draftFilters.academicArea}
+          options={areas.map((item) => [item.code, item.name])}
+          onChange={(value) => updateFilter("academicArea", value)}
+        />
+        <FilterSelect
+          idSuffix="mobile-faculty"
+          label="Facultad"
+          value={draftFilters.faculty}
+          options={availableFaculties.map((item) => [item.code, item.name])}
+          onChange={(value) => updateFilter("faculty", value)}
+        />
+        <FilterSelect
+          idSuffix="mobile-modality"
+          label="Modalidad"
+          value={draftFilters.modality}
+          options={allModalityOptions}
+          includeAll={false}
+          onChange={(value) => updateFilter("modality", value)}
+        />
+      </div>
+    </ResponsiveFilterControls>
   );
 }
 

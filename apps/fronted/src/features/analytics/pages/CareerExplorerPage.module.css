@@ -84,16 +84,23 @@
   .careerToolbar {
     grid-template-columns: minmax(0, 1fr) auto;
     gap: var(--space-3);
+    align-items: end;
   }
   .careerToolbar .modalityControl {
     display: none;
   }
   .careerToolbar .filterControl {
+    align-self: end;
     justify-self: end;
     width: auto;
   }
-  .careerToolbar .filterControl > div,
+  .careerToolbar .filterControl > div {
+    align-items: end;
+    width: auto;
+  }
   .careerToolbar .filterControl > div > button {
     width: auto;
+    min-height: 2.9rem;
+    margin: 0;
   }
 }

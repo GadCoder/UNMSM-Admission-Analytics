@@ -2287,15 +2287,22 @@ tbody tr:hover {
   text-overflow: ellipsis;
 }
 @media (max-width: 600px) {
-  .page .processToolbar,
+  .page .processToolbar {
+    grid-template-columns: minmax(0, 1fr) auto;
+  }
   .page .careerToolbar {
     grid-template-columns: minmax(0, 1fr);
   }
-  .processToolbar > div {
-    width: 100%;
-  }
   .processToolbar .modalityControl {
     display: none;
+  }
+  .processToolbar .filterControl {
+    justify-self: end;
+    width: auto;
+  }
+  .processToolbar .filterControl > div,
+  .processToolbar .filterControl > div > button {
+    width: auto;
   }
   .majorBreakdownSurface,
   .demandChart {

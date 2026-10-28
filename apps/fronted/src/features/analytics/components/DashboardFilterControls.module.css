@@ -1,17 +1,8 @@
-.wrapper {
-  position: relative;
-  display: flex;
-  min-width: 0;
-}
 .desktopFields {
   display: grid;
   width: 100%;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: var(--space-3);
-}
-.trigger {
-  display: none;
-  composes: action from "./ResultsControls.module.css";
 }
 .reset:focus-visible {
   outline: 2px solid var(--color-primary);
@@ -40,16 +31,6 @@
   }
 }
 @media (max-width: 600px) {
-  .wrapper {
-    width: 100%;
-  }
-  .desktopFields {
-    display: none;
-  }
-  .trigger {
-    display: inline-flex;
-    width: 100%;
-  }
   .fields {
     grid-template-columns: minmax(0, 1fr);
   }

@@ -10,7 +10,8 @@ import type {
   MajorDetail,
   MajorDetailProcess,
 } from "../api/analytics.types";
-import { DashboardControls } from "../components/DashboardControls";
+import { ResponsiveFilterControls } from "../components/ResponsiveFilterControls";
+import { RemovableChip } from "../components/RemovableChip";
 import { SelectField } from "../components/SelectField";
 import { PageBannerHeading } from "../components/PageBannerHeading";
 import { CareerComparisonHistory } from "../components/CareerComparisonHistory";
@@ -112,6 +113,35 @@ export function CareerComparisonPage() {
     else next.set("metric", nextMetric);
     updateParams(next);
   };
+  const renderComparisonFilters = (suffix: string) => (
+    <div className={styles.selectors}>
+      <SelectField
+        label="Proceso"
+        id={`comparison-process-${suffix}`}
+        aria-label="Proceso analizado"
+        value={processId}
+        onChange={(event) => setContext("process", event.target.value)}
+      >
+        {processes.map((process) => (
+          <option key={process.id} value={String(process.id)}>
+            {formatProcessLabel(process)}
+          </option>
+        ))}
+      </SelectField>
+      <SelectField
+        label="Modalidad"
+        id={`comparison-modality-${suffix}`}
+        value={resolvedModalityId}
+        onChange={(event) => setContext("modality", event.target.value)}
+      >
+        {modalities.map((item) => (
+          <option key={item.id} value={String(item.id)}>
+            {formatAdmissionModalityLabel(item.name)}
+          </option>
+        ))}
+      </SelectField>
+    </div>
+  );
 
   const seriesSlots = useCareerSeriesSlots(url.careerIds);
   const selected = url.careerIds.map((id, index): CareerResult => ({
@@ -268,58 +298,45 @@ export function CareerComparisonPage() {
 
   return (
     <div className={styles.page}>
-      <section className={styles.selectionPanel} aria-label="Espacio de comparación">
+      <section className={styles.selectionPanel} aria-label="Panel de selección de carreras">
         <PageBannerHeading
           eyebrow="Compara tus opciones"
           title="Compara carreras"
           titleId="comparison-page-title"
-          description="Compara tasas de ingreso, demanda y puntajes entre carreras."
+          description="Compara resultados de admisión entre carreras."
           compact
-          rightContent={
-            <p
-              className={styles.selectionCount}
-              aria-label={`${url.careerIds.length} de 4 carreras seleccionadas`}
-            >
-              {url.careerIds.length}/4
-            </p>
-          }
         />
-        <section className={styles.controls} aria-label="Controles de comparación">
-          <div className={styles.selectors}>
-            <DashboardControls
-              processes={processes}
-              primaryId={processId}
-              onChange={(id) => setContext("process", id)}
-            />
-            <SelectField
-              label="Modalidad"
-              value={resolvedModalityId}
-              onChange={(event) => setContext("modality", event.target.value)}
-            >
-              {modalities.map((item) => (
-                <option key={item.id} value={String(item.id)}>
-                  {formatAdmissionModalityLabel(item.name)}
-                </option>
-              ))}
-            </SelectField>
-          </div>
-        </section>
+        <p className={styles.activeContext} aria-label="Filtros activos">
+          <span>Proceso: {selectedProcess ? formatProcessLabel(selectedProcess) : "—"}</span>
+          <span aria-hidden="true"> · </span>
+          <span>
+            Modalidad: {modality ? compactModalityLabel(modality) : "Modalidad no disponible"}
+          </span>
+        </p>
+        <div className={styles.selectionHeading}>
+          <h2 className={styles.selectionLabel}>Carreras seleccionadas</h2>
+          <p
+            className={styles.selectionCount}
+            aria-label={`${url.careerIds.length} de 4 carreras seleccionadas`}
+          >
+            {url.careerIds.length} de 4
+          </p>
+        </div>
         {url.careerIds.length < 2 && (
           <p className={styles.selectionHelp}>Selecciona entre 2 y 4 carreras para comparar.</p>
         )}
         <div className={styles.chipRow} aria-label="Carreras seleccionadas">
           {selected.map(({ id, item }) => (
-            <span className={styles.chip} key={id}>
-              {item?.name ?? `Carrera ${id}`}
-              <button
-                type="button"
-                aria-label={`Quitar ${item?.name ?? `carrera ${id}`} de la comparación`}
-                onClick={() => writeCareerIds(url.careerIds.filter((careerId) => careerId !== id))}
-              >
-                ×
-              </button>
-            </span>
+            <RemovableChip
+              key={id}
+              className={styles.careerChip}
+              label={item?.name ?? `Carrera ${id}`}
+              accessibleName={`Quitar ${item?.name ?? `carrera ${id}`} de la comparación`}
+              onRemove={() => writeCareerIds(url.careerIds.filter((careerId) => careerId !== id))}
+            />
           ))}
+        </div>
+        <div className={styles.selectionActions} role="group" aria-label="Acciones de selección">
           <button
             type="button"
             className={styles.addButton}
@@ -327,8 +344,22 @@ export function CareerComparisonPage() {
             disabled={url.careerIds.length >= MAX_COMPARISON_CAREERS}
             aria-describedby="selection-limit"
           >
-            Añadir carrera
+            <svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 5v14M5 12h14" />
+            </svg>
+            <span>Añadir carrera</span>
           </button>
+          <ResponsiveFilterControls
+            className={styles.comparisonFilter}
+            label="Filtros de comparación"
+            title="Filtrar comparación"
+            triggerLabel="Abrir filtros de comparación"
+            desktopContent={renderComparisonFilters("desktop")}
+          >
+            {renderComparisonFilters("panel")}
+          </ResponsiveFilterControls>
+        </div>
+        <div className={styles.resetRow}>
           <button
             type="button"
             className={styles.reset}
@@ -347,9 +378,6 @@ export function CareerComparisonPage() {
             ? "Puedes comparar hasta cuatro carreras."
             : `${MAX_COMPARISON_CAREERS - url.careerIds.length} espacios disponibles.`}
         </span>
-        <footer className={styles.selectionFooter}>
-          <p>{url.careerIds.length} de 4 carreras seleccionadas</p>
-        </footer>
       </section>
 
       {(url.malformedCareerIds.length > 0 || url.tooManyCareers || url.invalidMetric) && (

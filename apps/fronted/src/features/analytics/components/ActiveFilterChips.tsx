@@ -1,5 +1,6 @@
 import type { AcademicArea, Faculty } from "../api/analytics.types";
 import type { DashboardFilters } from "./DashboardFilterControls";
+import { RemovableChip } from "./RemovableChip";
 import styles from "./ResultsControls.module.css";
 
 type ActiveFilterChipsProps = {
@@ -31,22 +32,18 @@ export function ActiveFilterChips({ filters, areas, faculties, onChange }: Activ
     <ul className={styles.chips} aria-label="Filtros activos">
       {selections.map(({ key, field, label }) => (
         <li key={key}>
-          <button
-            type="button"
-            className={styles.chip}
-            aria-label={`Quitar filtro ${field}: ${label}`}
+          <RemovableChip
+            label={label}
+            accessibleName={`Quitar filtro ${field}: ${label}`}
             title={`${field}: ${label}`}
-            onClick={() =>
+            onRemove={() =>
               onChange({
                 ...filters,
                 [key]: "",
                 ...(key === "academicArea" ? { faculty: "" } : {}),
               })
             }
-          >
-            <span>{label}</span>
-            <span aria-hidden="true">×</span>
-          </button>
+          />
         </li>
       ))}
     </ul>
