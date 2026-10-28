@@ -792,13 +792,6 @@
       "faculty_slug": "facultad-de-medicina-san-fernando",
       "academic_area_slug": "A",
       "code": "M92"
-    },
-    {
-      "name": "Ciencia de Materiales y Nanotecnología",
-      "slug": "ciencia-de-materiales-y-nanotecnologia",
-      "code": "M93",
-      "faculty_slug": "facultad-de-ciencias-fisicas",
-      "academic_area_slug": "B"
     }
   ]
 }
