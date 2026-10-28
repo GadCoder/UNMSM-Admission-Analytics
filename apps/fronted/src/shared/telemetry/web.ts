@@ -16,3 +16,12 @@ const faro = initializeFaro({
 export function sendUsage(name: string, attributes: Record<string, string>) {
   faro?.api.pushEvent(name, attributes, "usage");
 }
+
+// Optional tracing loads after usage initialization; usage collection is unsampled.
+if (faro && import.meta.env.VITE_TRACING_ENABLED === "true") {
+  void import("./tracing")
+    .then(({ enableTracing }) => enableTracing(faro))
+    .catch(() => {
+      // SDK loading/configuration failures leave ordinary API calls unaffected.
+    });
+}
