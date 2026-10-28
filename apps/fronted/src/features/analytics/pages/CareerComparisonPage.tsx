@@ -89,7 +89,6 @@ export function CareerComparisonPage() {
   const [search, setSearch] = useState("");
   const [areaId, setAreaId] = useState("");
   const [facultyId, setFacultyId] = useState("");
-  const [showDetails, setShowDetails] = useState(false);
   const dialogRef = useRef<HTMLDialogElement>(null);
   const dialogSearchRef = useRef<HTMLInputElement>(null);
   const dialogOpenerRef = useRef<HTMLElement | null>(null);
@@ -437,7 +436,6 @@ export function CareerComparisonPage() {
         allKnown && (
           <ComparisonResults
             selected={selected}
-            records={records}
             process={selectedProcess}
             modality={modality ?? ""}
             metric={metric}
@@ -448,8 +446,6 @@ export function CareerComparisonPage() {
             historyProcesses={historyProcesses}
             seriesSlots={seriesSlots}
             onMetricChange={chooseMetric}
-            showDetails={showDetails}
-            onToggleDetails={() => setShowDetails((value) => !value)}
             returnUrl={returnUrl}
             processId={processId}
             modalityId={resolvedModalityId}
@@ -539,11 +535,6 @@ export function CareerComparisonPage() {
 
 function ComparisonResults(props: {
   selected: CareerResult[];
-  records: Array<{
-    id: number;
-    name: string;
-    record: MajorDetailProcess | null;
-  }>;
   process?: { id: number; year: number; sequence: string; name: string };
   modality: string;
   metric: CareerComparisonMetricKey;
@@ -558,14 +549,12 @@ function ComparisonResults(props: {
   historyProcesses: MajorDetailProcess["process"][];
   seriesSlots: ReadonlyMap<number | string, number>;
   onMetricChange: (metric: CareerComparisonMetricKey) => void;
-  showDetails: boolean;
-  onToggleDetails: () => void;
   returnUrl: string;
   processId: string;
   modalityId: string;
   onRetry: () => void;
 }) {
-  const { selected, records, process, modality, metric, hasFailure, isPending } = props;
+  const { selected, process, modality, metric, hasFailure, isPending } = props;
   const enoughCareers = selected.length > 1;
   const conclusionsReady = enoughCareers && !isPending && !hasFailure;
   const insights = conclusionsReady
@@ -695,81 +684,6 @@ function ComparisonResults(props: {
           />
         </section>
       )}
-
-      <section className={styles.section} aria-labelledby="detail-title">
-        <button
-          type="button"
-          className={styles.disclosure}
-          aria-expanded={props.showDetails}
-          aria-controls="comparison-detail"
-          onClick={props.onToggleDetails}
-        >
-          <span>
-            <strong id="detail-title">Comparación detallada</strong>
-            <small>Postulantes, ingresantes, ausentes y puntajes</small>
-          </span>
-          <span aria-hidden="true">{props.showDetails ? "−" : "+"}</span>
-        </button>
-        {props.showDetails && (
-          <div
-            id="comparison-detail"
-            className={styles.tableWrap}
-            role="region"
-            aria-label="Comparación detallada"
-            tabIndex={0}
-          >
-            <p className={styles.note}>
-              Postulantes por ingresante se muestra como — cuando no hubo ingresantes; los puntajes
-              no disponibles también se muestran como —.
-            </p>
-            <table>
-              <thead>
-                <tr>
-                  <th scope="col">Indicador</th>
-                  {records.map((row) => (
-                    <th key={row.id} scope="col">
-                      {row.name}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {[
-                  ["Postulantes registrados", "total_results"],
-                  ["Ingresantes", "admitted_count"],
-                  ["Tasa de ingreso", "admission_rate"],
-                  ["Ausentes", "absent_count"],
-                  ["Postulantes por ingresante", "applicants_per_admitted"],
-                  ["Puntaje mínimo de ingreso", "minimum_admitted_score"],
-                  ["Puntaje promedio de ingresantes", "average_score"],
-                  ["Puntaje máximo de ingresantes", "highest_score"],
-                ].map(([label, key]) => (
-                  <tr key={key}>
-                    <th scope="row">{label}</th>
-                    {records.map(({ id, record }) => {
-                      const value = record
-                        ? getCareerComparisonMetricValue(record, key as CareerComparisonMetricKey)
-                        : null;
-                      return (
-                        <td key={id}>
-                          {!record || record.total_results === 0
-                            ? "Sin datos para este proceso y modalidad"
-                            : value === null
-                              ? "—"
-                              : formatCareerComparisonMetric(
-                                  value,
-                                  key as CareerComparisonMetricKey,
-                                )}
-                        </td>
-                      );
-                    })}
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </section>
     </>
   );
 }

@@ -129,9 +129,6 @@ describe("CareerComparisonPage", () => {
     renderPage("/comparar-carreras?process=2&modality=1");
     expect(screen.getByRole("heading", { name: "Carreras para comparar" })).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Resumen rápido" })).not.toBeInTheDocument();
-    expect(
-      screen.queryByRole("heading", { name: "Comparación detallada" }),
-    ).not.toBeInTheDocument();
     const selectionPanel = screen.getByRole("region", { name: "Panel de selección de carreras" });
     expect(within(selectionPanel).getAllByRole("button", { name: "Añadir carrera" })).toHaveLength(
       1,
@@ -293,7 +290,7 @@ describe("CareerComparisonPage", () => {
     expect(api.getMajorDetail).toHaveBeenCalledTimes(1);
   });
 
-  it("renders current metrics, tie-safe summaries, score references, and detailed absent counts", async () => {
+  it("renders current metrics, tie-safe summaries, and score references", async () => {
     renderPage();
     const summary = await screen.findByRole("region", { name: "Resumen rápido" });
     expect(await within(summary).findByText("Menor tasa de ingreso")).toBeInTheDocument();
@@ -312,9 +309,6 @@ describe("CareerComparisonPage", () => {
     expect(await within(scoreTable).findByText("750")).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Explorar carreras" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Explorar más carreras" })).not.toBeInTheDocument();
-    fireEvent.click(screen.getByRole("button", { name: /Comparación detallada/ }));
-    const detailed = document.getElementById("comparison-detail")!;
-    expect(within(detailed).getByRole("row", { name: /Ausentes/ })).toHaveTextContent("2");
   });
 
   it("reports tied rates once and keeps zero-result careers out of rate rankings", async () => {
