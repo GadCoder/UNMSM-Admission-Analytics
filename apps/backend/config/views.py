@@ -51,3 +51,26 @@ class ApiRootView(APIView):
                 },
             }
         )
+
+
+class ReadinessView(APIView):
+    authentication_classes = []
+    permission_classes = []
+
+    @extend_schema(exclude=True)
+    def get(self, request):
+        import logging
+
+        from django.db import connection
+
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute("SELECT 1")
+                cursor.fetchone()
+        except Exception:
+            logging.getLogger(__name__).exception("Readiness database check failed")
+            response = Response({"status": "unavailable"}, status=503)
+        else:
+            response = Response({"status": "ok"})
+        response["Cache-Control"] = "no-store"
+        return response
