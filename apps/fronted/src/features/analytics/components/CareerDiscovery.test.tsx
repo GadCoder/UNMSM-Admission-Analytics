@@ -119,7 +119,7 @@ describe("CareerDiscovery", () => {
     setup({ showAll: true });
     expect(screen.getAllByRole("list").at(-1)).toHaveTextContent("Odontología");
     await user.click(screen.getAllByRole("link", { name: /Medicina Humana/ })[0]);
-    expect(screen.getByTestId("location")).toHaveTextContent("/carreras/1?process=24&modality=7");
+    expect(screen.getByTestId("location")).toHaveTextContent("/majors/1?process=24&modality=7");
     expect(screen.getByTestId("location")).toHaveAttribute(
       "data-state",
       JSON.stringify({ fromDiscovery: true }),
@@ -133,14 +133,14 @@ describe("CareerDiscovery", () => {
     const results = screen.getByRole("list", { name: "Carreras coincidentes" });
     expect(within(results).getByRole("link", { name: /Medicina Humana/ })).toHaveAttribute(
       "href",
-      expect.stringContaining("/carreras/1"),
+      expect.stringContaining("/majors/1"),
     );
     await user.click(input);
     await user.keyboard("{ArrowDown}");
     const firstResult = within(results).getByRole("link", { name: /Medicina Humana/ });
     expect(firstResult).toHaveFocus();
     await user.keyboard("{Enter}");
-    expect(screen.getByTestId("location")).toHaveTextContent("/carreras/1");
+    expect(screen.getByTestId("location")).toHaveTextContent("/majors/1");
     expect(screen.getByTestId("location")).toHaveAttribute(
       "data-state",
       JSON.stringify({ fromDiscovery: true }),

@@ -4,7 +4,7 @@ import { buildCareerComparisonHref, parseCareerComparisonUrl } from "./careerCom
 
 describe("career comparison URL state", () => {
   it("keeps ordered unique positive ids and identifies malformed and excessive selections", () => {
-    const state = parseCareerComparisonUrl("?careers=12,12,0,bad,34,56,78,90");
+    const state = parseCareerComparisonUrl("?majors=12,12,0,bad,34,56,78,90");
     expect(state.careerIds).toEqual([12, 34, 56, 78, 90]);
     expect(state.malformedCareerIds).toEqual(["0", "bad"]);
     expect(state.tooManyCareers).toBe(true);
@@ -26,6 +26,6 @@ describe("career comparison URL state", () => {
         modalityId: "1",
         metric: "admission_rate",
       }),
-    ).toBe("/comparar-carreras?careers=12%2C34&process=9&modality=1");
+    ).toBe("/compare-majors?majors=12%2C34&process=9&modality=1");
   });
 });

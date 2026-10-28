@@ -62,7 +62,7 @@ export function CareerExplorerPage() {
   const discoveryParams = new URLSearchParams(params);
   if (processId) discoveryParams.set("process", processId);
   if (modalityParam) discoveryParams.set("modality", modalityParam);
-  const discoveryHref = `/carreras?${discoveryParams}`;
+  const discoveryHref = `/majors?${discoveryParams}`;
   const origin = params.get("returnTo");
   const processOrigin = origin?.startsWith("/?") ? origin : undefined;
   const comparisonOrigin = isValidComparisonReturnTo(origin) ? origin : undefined;

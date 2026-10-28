@@ -253,7 +253,7 @@ describe("DashboardPage", () => {
     const majorLink = within(firstPerformanceCard).getByRole("link", { name: "Ingeniería" });
     expect(majorLink).toHaveAttribute(
       "href",
-      `/carreras/1?${new URLSearchParams({ process: "1", returnTo: "/?process=1&modality=1", modality: "1" })}`,
+      `/majors/1?${new URLSearchParams({ process: "1", returnTo: "/?process=1&modality=1", modality: "1" })}`,
     );
     expect(within(firstPerformanceCard).queryByText("Ver más")).not.toBeInTheDocument();
     const metricsToggle = within(firstPerformanceCard).getByRole("button", {
@@ -763,7 +763,7 @@ describe("DashboardPage", () => {
     expect(rows[1]).toHaveTextContent("Derecho");
     expect(within(table).getByRole("link", { name: "Derecho" })).toHaveAttribute(
       "href",
-      `/carreras/2?${new URLSearchParams({ process: "1", returnTo: "/?process=1&modality=1", modality: "1" })}`,
+      `/majors/2?${new URLSearchParams({ process: "1", returnTo: "/?process=1&modality=1", modality: "1" })}`,
     );
   });
   it("shows visible feedback while refreshing existing analytics", async () => {
