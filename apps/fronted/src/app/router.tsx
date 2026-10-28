@@ -19,9 +19,9 @@ export const router = createBrowserRouter([
     errorElement: <RouteErrorPage />,
     children: [
       { index: true, element: <DashboardPage /> },
-      { path: "resultados", element: <ResultsPage /> },
-      { path: "carreras/:majorId?", element: <CareerExplorerPage /> },
-      { path: "comparar-carreras", element: <CareerComparisonPage /> },
+      { path: "results", element: <ResultsPage /> },
+      { path: "majors/:majorId?", element: <CareerExplorerPage /> },
+      { path: "compare-majors", element: <CareerComparisonPage /> },
       { path: "*", element: <NotFoundPage /> },
     ],
   },

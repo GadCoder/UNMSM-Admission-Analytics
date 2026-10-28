@@ -13,16 +13,16 @@ export type CareerNavigationContext = {
 export function isValidComparisonReturnTo(value: string | null | undefined): value is string {
   if (
     !value ||
-    !value.startsWith("/comparar-carreras") ||
+    !value.startsWith("/compare-majors") ||
     value.startsWith("//") ||
     value.includes("#")
   )
     return false;
   try {
     const parsed = new URL(value, "https://internal.invalid");
-    if (parsed.origin !== "https://internal.invalid" || parsed.pathname !== "/comparar-carreras")
+    if (parsed.origin !== "https://internal.invalid" || parsed.pathname !== "/compare-majors")
       return false;
-    const careers = parsed.searchParams.get("careers") ?? "";
+    const careers = parsed.searchParams.get("majors") ?? "";
     const ids = careers ? careers.split(",") : [];
     return (
       ids.length <= 4 &&
@@ -52,5 +52,5 @@ export function careerDetailHref(
   if (discovery?.faculty) params.set("faculty", discovery.faculty);
   if (discovery?.query) params.set("q", discovery.query);
   if (discovery?.showAll) params.set("view", "all");
-  return `/carreras/${majorId}?${params}`;
+  return `/majors/${majorId}?${params}`;
 }

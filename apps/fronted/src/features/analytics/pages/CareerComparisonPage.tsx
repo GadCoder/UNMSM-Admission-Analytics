@@ -113,8 +113,8 @@ export function CareerComparisonPage() {
       modality: resolvedModalityId,
     });
     const next = new URLSearchParams(params);
-    if (ids.length) next.set("careers", ids.join(","));
-    else next.delete("careers");
+    if (ids.length) next.set("majors", ids.join(","));
+    else next.delete("majors");
     updateParams(next);
   };
   const chooseMetric = (nextMetric: CareerComparisonMetricKey) => {
@@ -389,7 +389,7 @@ export function CareerComparisonPage() {
                 className={styles.reset}
                 onClick={() => {
                   const next = new URLSearchParams(params);
-                  next.delete("careers");
+                  next.delete("majors");
                   next.delete("metric");
                   updateParams(next);
                 }}

@@ -10,7 +10,7 @@ export type CareerComparisonUrlState = {
 
 export function parseCareerComparisonUrl(search: string): CareerComparisonUrlState {
   const params = new URLSearchParams(search);
-  const raw = params.get("careers");
+  const raw = params.get("majors");
   const careerIds: number[] = [];
   const malformedCareerIds: string[] = [];
   if (raw !== null && raw !== "") {
@@ -53,9 +53,9 @@ export function buildCareerComparisonHref(state: {
   metric?: string;
 }) {
   const params = new URLSearchParams();
-  if (state.careerIds.length) params.set("careers", state.careerIds.join(","));
+  if (state.careerIds.length) params.set("majors", state.careerIds.join(","));
   if (state.processId) params.set("process", state.processId);
   if (state.modalityId) params.set("modality", state.modalityId);
   if (state.metric && state.metric !== "admission_rate") params.set("metric", state.metric);
-  return `/comparar-carreras${params.size ? `?${params.toString()}` : ""}`;
+  return `/compare-majors${params.size ? `?${params.toString()}` : ""}`;
 }

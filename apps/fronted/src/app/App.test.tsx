@@ -71,8 +71,8 @@ describe("App shell", () => {
         <Routes>
           <Route element={<App />}>
             <Route index element={<div>Process page</div>} />
-            <Route path="carreras" element={<div>Career discovery</div>} />
-            <Route path="carreras/:majorId" element={<div>Career detail</div>} />
+            <Route path="majors" element={<div>Career discovery</div>} />
+            <Route path="majors/:majorId" element={<div>Career detail</div>} />
           </Route>
         </Routes>
       </MemoryRouter>,
@@ -80,16 +80,16 @@ describe("App shell", () => {
 
     expect(screen.getByRole("link", { name: "Explorar carreras" })).toHaveAttribute(
       "href",
-      "/carreras?process=12&modality=1",
+      "/majors?process=12&modality=1",
     );
   });
 
   it("marks careers active on a directly opened career detail and avoids a duplicate h1", () => {
     renderWithCatalog(
-      <MemoryRouter initialEntries={["/carreras/42?process=12&modality=1&faculty=99"]}>
+      <MemoryRouter initialEntries={["/majors/42?process=12&modality=1&faculty=99"]}>
         <Routes>
           <Route element={<App />}>
-            <Route path="carreras/:majorId" element={<h1>Ingeniería de Sistemas</h1>} />
+            <Route path="majors/:majorId" element={<h1>Ingeniería de Sistemas</h1>} />
           </Route>
         </Routes>
       </MemoryRouter>,
@@ -101,7 +101,7 @@ describe("App shell", () => {
     );
     expect(screen.getByRole("link", { name: "Explorar carreras" })).toHaveAttribute(
       "href",
-      "/carreras?process=12&modality=1&faculty=99",
+      "/majors?process=12&modality=1&faculty=99",
     );
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
     expect(
@@ -123,16 +123,16 @@ describe("App shell", () => {
     );
     expect(screen.getByRole("link", { name: "Explorar carreras" })).toHaveAttribute(
       "href",
-      "/carreras?process=12&modality=2",
+      "/majors?process=12&modality=2",
     );
   });
 
   it("leaves the discovery page as the sole primary heading", () => {
     renderWithCatalog(
-      <MemoryRouter initialEntries={["/carreras"]}>
+      <MemoryRouter initialEntries={["/majors"]}>
         <Routes>
           <Route element={<App />}>
-            <Route path="carreras" element={<h1>Encuentra tu carrera</h1>} />
+            <Route path="majors" element={<h1>Encuentra tu carrera</h1>} />
           </Route>
         </Routes>
       </MemoryRouter>,
@@ -143,13 +143,11 @@ describe("App shell", () => {
   it("preserves comparison context in primary navigation without adding a duplicate heading", () => {
     renderWithCatalog(
       <MemoryRouter
-        initialEntries={[
-          "/comparar-carreras?careers=11,22&process=9&modality=1&metric=highest_score",
-        ]}
+        initialEntries={["/compare-majors?majors=11,22&process=9&modality=1&metric=highest_score"]}
       >
         <Routes>
           <Route element={<App />}>
-            <Route path="comparar-carreras" element={<h1>Compara carreras</h1>} />
+            <Route path="compare-majors" element={<h1>Compara carreras</h1>} />
           </Route>
         </Routes>
       </MemoryRouter>,
@@ -160,7 +158,7 @@ describe("App shell", () => {
     );
     expect(screen.getByRole("link", { name: "Comparar carreras" })).toHaveAttribute(
       "href",
-      "/comparar-carreras?process=9&modality=1&careers=11%2C22&metric=highest_score",
+      "/compare-majors?process=9&modality=1&majors=11%2C22&metric=highest_score",
     );
     expect(screen.getAllByRole("heading", { level: 1 })).toHaveLength(1);
   });

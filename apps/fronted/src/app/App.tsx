@@ -30,13 +30,13 @@ export function App() {
   const { pathname, search } = useLocation();
   const modalitiesQuery = api.useModalities();
   const page: UsagePage =
-    pathname === "/" || pathname === "/resultados"
+    pathname === "/" || pathname === "/results"
       ? "processes"
-      : /^\/carreras\/\d+\/?$/.test(pathname)
+      : /^\/majors\/\d+\/?$/.test(pathname)
         ? "career_detail"
-        : pathname === "/carreras"
+        : pathname === "/majors"
           ? "careers"
-          : pathname === "/comparar-carreras"
+          : pathname === "/compare-majors"
             ? "comparison"
             : "not_found";
   useEffect(() => {
