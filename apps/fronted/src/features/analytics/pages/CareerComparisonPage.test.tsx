@@ -241,6 +241,7 @@ describe("CareerComparisonPage", () => {
       await waitFor(() => expect(document.activeElement).toBe(input));
       fireEvent.change(input, { target: { value: "Derecho" } });
       expect(within(dialog).getByRole("button", { name: /Derecho/ })).toBeInTheDocument();
+      expect(within(dialog).queryByText("033")).not.toBeInTheDocument();
       expect(within(dialog).queryByRole("button", { name: /Ingeniería/ })).not.toBeInTheDocument();
       fireEvent.click(within(dialog).getByRole("button", { name: "Limpiar búsqueda" }));
       expect(input).toHaveValue("");

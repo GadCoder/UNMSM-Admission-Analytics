@@ -672,7 +672,6 @@
   font-size: 0.82rem;
   font-weight: 700;
 }
-.searchResults button small,
 .noResults {
   color: var(--color-muted);
   font-size: 0.72rem;
