@@ -8,6 +8,7 @@ from contextlib import contextmanager
 from contextvars import ContextVar
 
 from django.core.cache import cache
+from opentelemetry import trace
 
 from config.observability import CACHE_FAILURES, CACHE_LOOKUPS
 
@@ -44,20 +45,31 @@ def _key(view_name, params):
 
 
 def get_or_compute(view_name, params, compute):
+    with trace.get_tracer(__name__).start_as_current_span(
+        "analytics.cache", attributes={"analytics.view": view_name}
+    ):
+        return _get_or_compute(view_name, params, compute)
+
+
+def _get_or_compute(view_name, params, compute):
     """Return a cached JSON-safe public response, bypassing cache on backend errors."""
     try:
         key = _key(view_name, params)
         value = cache.get(key)
     except Exception:
         CACHE_FAILURES.labels("read").inc()
+        trace.get_current_span().set_attribute("cache.outcome", "bypass")
         CACHE_LOOKUPS.labels(view_name, "bypass").inc()
         logger.warning("Analytics cache read failed; computing response", exc_info=True)
         return compute()
     if value is not None:
+        trace.get_current_span().set_attribute("cache.outcome", "hit")
         CACHE_LOOKUPS.labels(view_name, "hit").inc()
         return value
+    trace.get_current_span().set_attribute("cache.outcome", "miss")
     CACHE_LOOKUPS.labels(view_name, "miss").inc()
-    value = compute()
+    with trace.get_tracer(__name__).start_as_current_span("analytics.compute"):
+        value = compute()
     if value is None:
         return None
     try:
