@@ -28,6 +28,7 @@ type CareerComparisonHistoryProps = {
   loading?: boolean;
   failed?: boolean;
   expectedCareers?: Array<{ id: number | string; label: string }>;
+  periodLabel?: string;
 };
 
 const HEIGHT = 300;
@@ -43,6 +44,7 @@ export function CareerComparisonHistory({
   loading = false,
   failed = false,
   expectedCareers = [],
+  periodLabel,
 }: CareerComparisonHistoryProps) {
   const [view, setView] = useState<"chart" | "table">("chart");
   const chartHostRef = useRef<HTMLDivElement>(null);
@@ -186,7 +188,10 @@ export function CareerComparisonHistory({
       <div className={styles.heading}>
         <div>
           <h2 id="career-history-heading">Evolución histórica</h2>
-          <p>Compara cómo han cambiado los resultados entre procesos de admisión.</p>
+          <p>
+            Compara cómo han cambiado los resultados entre procesos de admisión.
+            {periodLabel ? ` Periodo histórico: ${periodLabel}.` : ""}
+          </p>
         </div>
         <SelectField
           label="Métrica"

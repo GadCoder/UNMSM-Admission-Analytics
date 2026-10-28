@@ -14,7 +14,6 @@ import { DashboardControls } from "../components/DashboardControls";
 import { SelectField } from "../components/SelectField";
 import { CareerComparisonHistory } from "../components/CareerComparisonHistory";
 import { CareerComparisonScores } from "../components/CareerComparisonScores";
-import { PageBanner } from "../components/PageBanner";
 import { CareerSearch } from "../components/CareerSearch";
 import {
   buildComparisonInsights,
@@ -268,54 +267,39 @@ export function CareerComparisonPage() {
 
   return (
     <div className={styles.page}>
-      <PageBanner
-        eyebrow="Compara tus opciones"
-        title="Compara carreras"
-        titleId="comparison-page-title"
-        description="Compara tasas de ingreso, demanda y puntajes históricos entre tus opciones."
-        filters={
-          <section className={styles.controls} aria-label="Controles de comparación">
-            <div className={styles.selectors}>
-              <DashboardControls
-                processes={processes}
-                primaryId={processId}
-                onChange={(id) => setContext("process", id)}
-              />
-              <SelectField
-                label="Modalidad"
-                value={resolvedModalityId}
-                onChange={(event) => setContext("modality", event.target.value)}
-              >
-                {modalities.map((item) => (
-                  <option key={item.id} value={String(item.id)}>
-                    {formatAdmissionModalityLabel(item.name)}
-                  </option>
-                ))}
-              </SelectField>
-            </div>
-            {selectedProcess && historyProcesses.length > 0 && (
-              <p className={styles.period}>
-                Periodo histórico: {formatProcessLabel(historyProcesses[0])}–
-                {formatProcessLabel(historyProcesses.at(-1)!)}
-              </p>
-            )}
-          </section>
-        }
-      />
-
       <section className={styles.selectionPanel} aria-label="Espacio de comparación">
-        <header className={styles.workspaceHeader}>
-          <div>
-            <h2>Compara carreras</h2>
-            <p>{url.careerIds.length} de 4 carreras seleccionadas</p>
-          </div>
+        <header className={styles.selectionHeader}>
+          <h1 id="comparison-page-title">Compara carreras</h1>
+          <p
+            className={styles.selectionCount}
+            aria-label={`${url.careerIds.length} de 4 carreras seleccionadas`}
+          >
+            {url.careerIds.length} de 4
+          </p>
         </header>
-        <p className={styles.selectionHelp}>
-          <span className={styles.desktopHelp}>
-            Selecciona entre 2 y 4 carreras para comparar sus resultados.
-          </span>
-          <span className={styles.mobileHelp}>Selecciona entre 2 y 4 carreras.</span>
-        </p>
+        <section className={styles.controls} aria-label="Controles de comparación">
+          <div className={styles.selectors}>
+            <DashboardControls
+              processes={processes}
+              primaryId={processId}
+              onChange={(id) => setContext("process", id)}
+            />
+            <SelectField
+              label="Modalidad"
+              value={resolvedModalityId}
+              onChange={(event) => setContext("modality", event.target.value)}
+            >
+              {modalities.map((item) => (
+                <option key={item.id} value={String(item.id)}>
+                  {formatAdmissionModalityLabel(item.name)}
+                </option>
+              ))}
+            </SelectField>
+          </div>
+        </section>
+        {url.careerIds.length < 2 && (
+          <p className={styles.selectionHelp}>Selecciona entre 2 y 4 carreras para comparar.</p>
+        )}
         <div className={styles.chipRow} aria-label="Carreras seleccionadas">
           {selected.map(({ id, item }) => (
             <span className={styles.chip} key={id}>
@@ -338,29 +322,27 @@ export function CareerComparisonPage() {
           >
             Añadir carrera
           </button>
+          <button
+            type="button"
+            className={styles.reset}
+            onClick={() => {
+              const next = new URLSearchParams(params);
+              next.delete("careers");
+              next.delete("metric");
+              updateParams(next);
+            }}
+          >
+            Limpiar selección
+          </button>
         </div>
         <span id="selection-limit" className={styles.srOnly} aria-live="polite">
           {url.careerIds.length >= MAX_COMPARISON_CAREERS
             ? "Puedes comparar hasta cuatro carreras."
             : `${MAX_COMPARISON_CAREERS - url.careerIds.length} espacios disponibles.`}
         </span>
-        {url.careerIds.length >= MAX_COMPARISON_CAREERS && (
-          <p className={styles.limit} role="status">
-            Ya seleccionaste cuatro carreras. Quita una para añadir otra.
-          </p>
-        )}
-        <button
-          type="button"
-          className={styles.reset}
-          onClick={() => {
-            const next = new URLSearchParams(params);
-            next.delete("careers");
-            next.delete("metric");
-            updateParams(next);
-          }}
-        >
-          Reiniciar comparación
-        </button>
+        <footer className={styles.selectionFooter}>
+          <p>{url.careerIds.length} de 4 carreras seleccionadas</p>
+        </footer>
       </section>
 
       {(url.malformedCareerIds.length > 0 || url.tooManyCareers || url.invalidMetric) && (
@@ -427,9 +409,6 @@ export function CareerComparisonPage() {
         </section>
       )}
 
-      {url.careerIds.length === 1 && (
-        <p className={styles.prompt}>Agrega otra carrera para ver comparaciones y conclusiones.</p>
-      )}
       {url.careerIds.length > 0 &&
         !url.tooManyCareers &&
         url.malformedCareerIds.length === 0 &&
@@ -663,6 +642,13 @@ function ComparisonResults(props: {
             id,
             label: item?.name ?? `Carrera ${id}`,
           }))}
+          periodLabel={
+            props.historyProcesses.length > 0
+              ? `${formatProcessLabel(props.historyProcesses[0])}–${formatProcessLabel(
+                  props.historyProcesses.at(-1)!,
+                )}`
+              : undefined
+          }
           insightsEnabled={
             !isPending && !hasFailure && props.mergedSeries.length === selected.length
           }
