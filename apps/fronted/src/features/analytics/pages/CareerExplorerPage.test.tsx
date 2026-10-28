@@ -208,6 +208,16 @@ describe("CareerExplorerPage route integration", () => {
     expect(api.useFaculties).toHaveBeenCalledWith(false);
   });
 
+  it("shows a concise selected modality while keeping the full option label", () => {
+    renderExplorer("/carreras/42?process=24&modality=1");
+    expect(screen.getByText("EBR y EBA")).toBeInTheDocument();
+    expect(
+      within(screen.getByLabelText("Modalidad")).getByRole("option", {
+        name: "Educación Básica Regular (EBR) y Alternativa (EBA)",
+      }),
+    ).toBeInTheDocument();
+  });
+
   it("syncs area and faculty choices to the URL and constrains faculties by area", async () => {
     const user = userEvent.setup();
     renderExplorer();

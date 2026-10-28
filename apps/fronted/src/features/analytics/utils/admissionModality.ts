@@ -30,3 +30,8 @@ export function formatAdmissionModalityLabel(value: string): string {
     value.charAt(0).toLocaleUpperCase("es-PE") + value.slice(1).toLocaleLowerCase("es-PE");
   return sentence.replace(/\b(ebr|eba|unmsm|cepre)\b/gi, (acronym) => acronym.toUpperCase());
 }
+
+export function compactAdmissionModalityLabel(value: string): string {
+  const fullLabel = formatAdmissionModalityLabel(value);
+  return /\bEBR\b/i.test(fullLabel) && /\bEBA\b/i.test(fullLabel) ? "EBR y EBA" : fullLabel;
+}
