@@ -1,0 +1,236 @@
+.root {
+  min-width: 0;
+}
+.subtitle {
+  margin: 0 0 0.9rem;
+  color: var(--color-muted);
+  font-size: 0.82rem;
+}
+.tableWrap {
+  max-width: 100%;
+  overflow-x: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+.table,
+.mobileTable {
+  width: 100%;
+  border-collapse: collapse;
+}
+.table {
+  table-layout: fixed;
+}
+.careerColumn {
+  width: 25%;
+}
+.chartColumn {
+  width: 48%;
+}
+.numberColumn {
+  width: 9%;
+}
+.table th,
+.table td,
+.mobileTable th,
+.mobileTable td {
+  padding: 0.62rem 0.72rem;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 0.76rem;
+}
+.table thead th,
+.mobileTable thead th {
+  background: #f7f1f1;
+  color: var(--color-muted);
+  font-size: 0.69rem;
+  text-align: left;
+}
+.table tbody tr:last-child > *,
+.mobileTable tbody tr:last-child > * {
+  border-bottom: 0;
+}
+.career {
+  text-align: left;
+  overflow-wrap: anywhere;
+}
+.rangeHeading {
+  text-align: center !important;
+}
+.rangeHeading span {
+  display: block;
+}
+.rangeHeading svg {
+  display: block;
+  width: 100%;
+  height: 2rem;
+  overflow: visible;
+}
+.rangeHeading text {
+  fill: var(--color-muted);
+  font-size: 11px;
+  text-anchor: middle;
+}
+.rangeHeading line {
+  stroke: #b8a9aa;
+  stroke-width: 1;
+}
+.chartCell {
+  min-width: 0;
+}
+.chartCell svg {
+  display: block;
+  width: 100%;
+  height: 2rem;
+  overflow: visible;
+}
+.number {
+  padding-right: 0.4rem !important;
+  padding-left: 0.3rem !important;
+  text-align: right;
+  white-space: nowrap;
+  color: var(--color-muted);
+  font-variant-numeric: tabular-nums;
+}
+.table thead th:nth-child(n + 3) {
+  text-align: right;
+}
+.status {
+  color: var(--color-muted);
+}
+.inconsistent {
+  display: block;
+  max-width: 19rem;
+  color: var(--color-muted);
+  font-size: 0.66rem;
+  line-height: 1.35;
+}
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin: 0.8rem 0 0;
+  padding: 0;
+  list-style: none;
+  color: var(--color-muted);
+  font-size: 0.72rem;
+}
+.legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.legendRange {
+  position: relative;
+  width: 1.1rem;
+  height: 0.25rem;
+  border-radius: 1rem;
+  background: var(--color-primary);
+}
+.legendRange::before,
+.legendRange::after {
+  position: absolute;
+  top: 50%;
+  width: 0.34rem;
+  height: 0.34rem;
+  border: 1px solid white;
+  border-radius: 50%;
+  background: var(--color-primary);
+  content: "";
+  transform: translateY(-50%);
+}
+.legendRange::before {
+  left: -0.08rem;
+}
+.legendRange::after {
+  right: -0.08rem;
+}
+.legendAverage {
+  width: 0.55rem;
+  height: 0.55rem;
+  transform: rotate(45deg);
+  background: var(--color-primary);
+}
+.mobile {
+  display: none;
+}
+.population {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.45rem;
+  margin: 0.85rem 0 0;
+  color: var(--color-muted);
+  font-size: 0.75rem;
+  line-height: 1.45;
+}
+.population {
+  display: block;
+  margin-top: 0.3rem;
+}
+.modalityCaveat {
+  display: block;
+  margin-top: 0.2rem;
+}
+@media (max-width: 900px) {
+  .desktop {
+    display: none;
+  }
+  .mobile {
+    display: block;
+    max-width: 100%;
+  }
+  .mobileTable {
+    table-layout: fixed;
+    width: 100%;
+  }
+  .mobileTable thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+  }
+  .mobileTable th,
+  .mobileTable td {
+    padding: 0.5rem 0.35rem;
+    font-size: 0.72rem;
+    overflow-wrap: anywhere;
+  }
+  .mobileTable .mobileCareer {
+    width: auto;
+    padding: 0.75rem 0.35rem 0.35rem;
+    text-align: left;
+    overflow-wrap: anywhere;
+    border-bottom: 0;
+  }
+  .mobileTable tbody tr:nth-child(even) td {
+    width: 33.333%;
+    padding-top: 0.25rem;
+    text-align: center;
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+    border-bottom: 1px solid var(--color-border);
+  }
+  .mobileTable tbody tr:nth-child(even) td::before {
+    display: block;
+    margin-bottom: 0.2rem;
+    color: var(--color-muted);
+    content: attr(data-label);
+    font-size: 0.65rem;
+    font-weight: 600;
+    text-align: center;
+  }
+  .mobileTable tbody tr:nth-child(even) .mobileMinimum {
+    background: #faf6f2;
+  }
+  .mobileTable small {
+    display: block;
+    margin-top: 0.2rem;
+    color: var(--color-muted);
+    font-size: 0.65rem;
+    font-weight: 400;
+    line-height: 1.3;
+  }
+}

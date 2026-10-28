@@ -13,10 +13,10 @@ import type {
 import { DashboardControls } from "../components/DashboardControls";
 import { SelectField } from "../components/SelectField";
 import { CareerComparisonHistory } from "../components/CareerComparisonHistory";
+import { CareerComparisonScores } from "../components/CareerComparisonScores";
 import { PageBanner } from "../components/PageBanner";
 import { CareerSearch } from "../components/CareerSearch";
 import {
-  canCompareAdmittedScores,
   buildComparisonInsights,
   compareAdmissionProcesses,
   formatCareerComparisonMetric,
@@ -683,21 +683,16 @@ function ComparisonResults(props: {
       {enoughCareers && (
         <section className={styles.section} aria-labelledby="scores-title">
           <header className={styles.sectionHeader}>
-            <div>
-              <h2 id="scores-title">Puntajes de referencia</h2>
-              <p>Resultados históricos de ingresantes; no garantizan el ingreso en otro proceso.</p>
-            </div>
+            <h2 id="scores-title">Puntajes de referencia</h2>
           </header>
-          <p className={styles.muted}>
-            El mínimo es el menor puntaje válido registrado entre los ingresantes del proceso y
-            modalidad seleccionados. No es un puntaje oficial de corte ni una meta recomendada; se
-            excluyen registros sin puntaje válido.
-          </p>
-          <ScoreReferenceTable selected={selected} />
-          <p className={styles.note}>
-            Las estadísticas usan la población de ingresantes con puntajes válidos. Los valores
-            ausentes se muestran como —.
-          </p>
+          <CareerComparisonScores
+            selected={selected.map(({ id, item, current }) => ({
+              id,
+              label: item?.name ?? `Carrera ${id}`,
+              current,
+            }))}
+            seriesSlots={props.seriesSlots}
+          />
         </section>
       )}
 
@@ -961,70 +956,6 @@ function compactModalityLabel(modality: string) {
 function findCurrent(detail: MajorDetail, processId: string) {
   return [...(detail.selected_processes ?? []), ...(detail.history ?? [])].find(
     (item) => String(item.process.id) === processId,
-  );
-}
-
-function ScoreReferenceTable({ selected }: { selected: CareerResult[] }) {
-  const anchor = selected
-    .map(({ current }) => current)
-    .find((record) => record && canCompareAdmittedScores(record, record));
-  return (
-    <div className={styles.scoreTableWrap}>
-      <table className={styles.scoreTable}>
-        <thead>
-          <tr>
-            <th scope="col">Carrera</th>
-            <th scope="col">Puntaje mínimo</th>
-            <th scope="col">Puntaje promedio</th>
-            <th scope="col">Puntaje máximo</th>
-          </tr>
-        </thead>
-        <tbody>
-          {selected.map(({ id, item, current }) => (
-            <tr key={id}>
-              <th scope="row">{item?.name ?? `Carrera ${id}`}</th>
-              {(["minimum_admitted_score", "average_score", "highest_score"] as const).map(
-                (metric) => {
-                  const hasKnownPopulation = Boolean(
-                    current && canCompareAdmittedScores(current, current),
-                  );
-                  const comparable = Boolean(
-                    current &&
-                    anchor &&
-                    hasKnownPopulation &&
-                    canCompareAdmittedScores(anchor, current),
-                  );
-                  const value =
-                    comparable && current ? getCareerComparisonMetricValue(current, metric) : null;
-                  return (
-                    <td
-                      key={metric}
-                      data-label={
-                        metric === "minimum_admitted_score"
-                          ? "Mínimo"
-                          : metric === "average_score"
-                            ? "Promedio"
-                            : "Máximo"
-                      }
-                    >
-                      {!current || current.total_results === 0
-                        ? "Sin datos"
-                        : !hasKnownPopulation
-                          ? "—"
-                          : !comparable
-                            ? "No comparable"
-                            : value === null
-                              ? "—"
-                              : formatCareerComparisonMetric(value, metric)}
-                    </td>
-                  );
-                },
-              )}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
   );
 }
 
