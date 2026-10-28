@@ -71,6 +71,18 @@ Future writers using `QuerySet.update()`, `bulk_update()`, or `bulk_create()` mu
 explicitly schedule `invalidate_analytics_cache` with `transaction.on_commit()`;
 those operations do not emit model save signals.
 
+## Public API HTTP caching
+
+Successful `GET` responses below `/api/v1/` advertise `Cache-Control: public,
+max-age=30, s-maxage=60`. Browsers may reuse a response for 30 seconds; shared
+caches such as a CDN may reuse it for up to 60 seconds. This includes public
+catalogs, processes, and analytics. Errors, health checks, and API documentation
+are not marked publicly cacheable. These headers allow a CDN to cache responses;
+they do not configure or purge a CDN. If a CDN is used, include the complete
+query string in its cache key so process, modality, area, and faculty filters
+cannot share a response. The 60-second shared TTL bounds how long cached data
+can remain visible after an import or publication change.
+
 ## API resources
 
 The API health check is available at `/health/`. Interactive API documentation is
