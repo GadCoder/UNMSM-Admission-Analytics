@@ -7,15 +7,17 @@
   width: 100%;
   min-width: 0;
 }
-.wrapper > .trigger {
-  display: none;
+.trigger {
   composes: action from "./ResultsControls.module.css";
+}
+.wrapper .trigger {
+  display: none;
 }
 @media (max-width: 600px) {
   .desktopContent {
     display: none;
   }
-  .wrapper > .trigger {
+  .wrapper .trigger {
     display: inline-flex;
     width: 100%;
   }
