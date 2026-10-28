@@ -1,7 +1,21 @@
 from django.utils.cache import patch_cache_control
 
 
-PUBLIC_API_PATH_PREFIX = "/api/v1/"
+PUBLIC_API_URL_NAMES = frozenset(
+    {
+        "api-root",
+        "academic-areas",
+        "faculties",
+        "majors",
+        "modalities",
+        "processes",
+        "process-detail",
+        "latest-overview",
+        "comparative-overview",
+        "process-history",
+        "major-detail",
+    }
+)
 PUBLIC_API_BROWSER_MAX_AGE = 30
 PUBLIC_API_SHARED_MAX_AGE = 60
 
@@ -17,7 +31,8 @@ class PublicApiCacheHeadersMiddleware:
 
         if (
             request.method == "GET"
-            and request.path.startswith(PUBLIC_API_PATH_PREFIX)
+            and request.resolver_match
+            and request.resolver_match.url_name in PUBLIC_API_URL_NAMES
             and response.status_code == 200
             and not response.cookies
             and "Cache-Control" not in response
