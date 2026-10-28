@@ -174,6 +174,25 @@ describe("CareerExplorerPage route integration", () => {
   });
   afterEach(cleanup);
 
+  it.each(["/carreras", "/carreras/42"])(
+    "only offers modalities with results in the selected process on %s",
+    async (route) => {
+      vi.mocked(api.usePublishedProcesses).mockReturnValue(
+        ready(
+          processes.map((process, index) => ({
+            ...process,
+            available_modality_ids: index === 0 ? [1] : [1, 2],
+          })),
+        ) as unknown as ReturnType<typeof api.usePublishedProcesses>,
+      );
+      const user = userEvent.setup();
+      renderExplorer(route);
+      expect(within(screen.getByLabelText("Modalidad")).getAllByRole("option")).toHaveLength(1);
+      await user.selectOptions(screen.getByLabelText("Proceso analizado"), "23");
+      expect(within(screen.getByLabelText("Modalidad")).getAllByRole("option")).toHaveLength(2);
+    },
+  );
+
   it("uses latest process and default modality before its initial overview request", async () => {
     renderExplorer();
     expect(api.useAnalyticsOverview).toHaveBeenCalledWith(

@@ -37,6 +37,7 @@ import {
   formatAdmissionModalityLabel,
   modalityNameFromParam,
   modalityUrlValue,
+  modalitiesForProcess,
   resolveAdmissionModality,
 } from "../utils/admissionModality";
 import { formatProcessLabel } from "../utils/processLabels";
@@ -62,16 +63,16 @@ export function CareerComparisonPage() {
   const facultyQuery = api.useFaculties();
   const url = useMemo(() => parseCareerComparisonUrl(location.search), [location.search]);
   const processes = processQuery.data ?? EMPTY_PROCESSES;
-  const modalities = modalityQuery.data ?? [];
   const catalog = catalogQuery.data ?? [];
   const processParam = params.get("process");
   const processId = processParam ?? (processes[0] ? String(processes[0].id) : "");
   const selectedProcess = processes.find((item) => String(item.id) === processId);
+  const modalities = modalitiesForProcess(modalityQuery.data, selectedProcess);
   const modalityParam = params.get("modality");
   const defaultModalityId = modalityUrlValue(resolveAdmissionModality(undefined), modalities);
   const resolvedModalityId = modalityParam !== null ? modalityParam : (defaultModalityId ?? "");
   const modality = resolvedModalityId
-    ? modalityNameFromParam(resolvedModalityId, modalities)
+    ? modalityNameFromParam(resolvedModalityId, modalityQuery.data)
     : undefined;
   const metric = url.metric as CareerComparisonMetricKey;
   const catalogReady = Boolean(catalogQuery.data);

@@ -33,8 +33,15 @@ def test_catalog_processes_are_published_and_newest_first(client):
             "year": 2026,
             "sequence": "26-1",
             "name": "",
+            "available_modality_ids": [],
         },
-        {"id": old.id, "year": 2025, "sequence": "25-2", "name": ""},
+        {
+            "id": old.id,
+            "year": 2025,
+            "sequence": "25-2",
+            "name": "",
+            "available_modality_ids": [],
+        },
     ]
 
 
@@ -83,3 +90,47 @@ def test_modalities_endpoint_excludes_inactive_records(client):
     assert client.get("/api/v1/modalities/").json() == [
         {"id": active.id, "name": "General"}
     ]
+
+
+@pytest.mark.django_db
+def test_process_modalities_only_include_active_modalities_with_results(
+    client, major, django_assert_num_queries
+):
+    newest = AdmissionProcess.objects.create(year=2027, sequence="1")
+    older = AdmissionProcess.objects.create(year=2026, sequence="2")
+    hidden = AdmissionProcess.objects.create(
+        year=2028, sequence="1", is_published=False
+    )
+    general = AdmissionModality.objects.create(name="General")
+    special = AdmissionModality.objects.create(name="Especial")
+    inactive = AdmissionModality.objects.create(name="Inactive", is_active=False)
+    AdmissionModality.objects.create(name="Unused")
+    for index, (process, modality) in enumerate(
+        [
+            (newest, general),
+            (newest, general),
+            (newest, inactive),
+            (older, general),
+            (older, special),
+            (hidden, special),
+            (newest, None),
+        ]
+    ):
+        AdmissionResult.objects.create(
+            process=process,
+            major=major,
+            modality=modality,
+            candidate_code=str(index),
+            last_names="DOE",
+            given_names="JANE",
+            status=AdmissionResult.Status.ABSENT,
+        )
+
+    with django_assert_num_queries(2):
+        response = client.get("/api/v1/processes/")
+
+    assert response.status_code == 200
+    assert {item["id"]: item["available_modality_ids"] for item in response.json()} == {
+        newest.id: [general.id],
+        older.id: [general.id, special.id],
+    }

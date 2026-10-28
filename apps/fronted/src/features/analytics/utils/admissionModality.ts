@@ -1,4 +1,12 @@
-import type { Modality } from "../api/analytics.types";
+import type { AdmissionProcess, Modality } from "../api/analytics.types";
+
+export function modalitiesForProcess(
+  modalities: Modality[] = [],
+  process?: AdmissionProcess,
+): Modality[] {
+  const ids = process?.available_modality_ids;
+  return ids === undefined ? modalities : modalities.filter((item) => ids.includes(item.id));
+}
 
 export const DEFAULT_ADMISSION_MODALITY =
   "EDUCACIÓN BÁSICA REGULAR (EBR) Y EDUCACIÓN BÁSICA ALTERNATIVA (EBA)";

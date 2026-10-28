@@ -182,6 +182,24 @@ describe("DashboardPage", () => {
       isError: false,
     } as unknown as ReturnType<typeof api.useProcessHistory>);
   });
+  it("only offers modalities with results in the selected process", async () => {
+    vi.mocked(api.usePublishedProcesses).mockReturnValue({
+      data: processes.map((process, index) => ({
+        ...process,
+        available_modality_ids: index === 0 ? [1] : [1, 2],
+      })),
+      isPending: false,
+      isError: false,
+    } as unknown as ReturnType<typeof api.usePublishedProcesses>);
+    const user = userEvent.setup();
+    renderPage();
+    const select = screen.getByLabelText("Modalidad");
+    expect(within(select).getAllByRole("option")).toHaveLength(1);
+    expect(select).toHaveValue(DEFAULT_ADMISSION_MODALITY);
+    await user.selectOptions(screen.getByLabelText("Proceso analizado"), "2");
+    expect(within(screen.getByLabelText("Modalidad")).getAllByRole("option")).toHaveLength(2);
+  });
+
   it("defaults to latest process and renders KPIs", async () => {
     renderPage();
     expect(screen.getByText("Proceso", { selector: "label" })).toBeInTheDocument();
