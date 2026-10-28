@@ -1,11 +1,14 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
+import { trackUsage } from "../../../shared/telemetry/usage";
+
 import { SelectField } from "../components/SelectField";
 import {
   formatAdmissionModalityLabel,
   modalityNameFromParam,
   modalityUrlValue,
+  modalitiesForProcess,
   resolveAdmissionModality,
 } from "../utils/admissionModality";
 import * as api from "../api/analytics";
@@ -38,6 +41,10 @@ export function DashboardPage() {
   const areasQuery = api.useAcademicAreas();
   const facultiesQuery = api.useFaculties();
   const modalitiesQuery = api.useModalities();
+  const latest = processes[0];
+  const primaryId = params.get("process") ?? (latest ? String(latest.id) : "");
+  const selectedProcess = processes.find((process) => String(process.id) === primaryId);
+  const modalities = modalitiesForProcess(modalitiesQuery.data, selectedProcess);
   const modalityParam = params.get("modality");
   const modalityName = modalityParam
     ? modalityNameFromParam(modalityParam, modalitiesQuery.data)
@@ -53,8 +60,6 @@ export function DashboardPage() {
         savedView.filters.modality,
     ),
   };
-  const latest = processes[0];
-  const primaryId = params.get("process") ?? (latest ? String(latest.id) : "");
   const comparisonParam = params.get("compare");
   const primaryIndex = processes.findIndex((process) => String(process.id) === primaryId);
   const previousProcess = primaryIndex >= 0 ? processes[primaryIndex + 1] : undefined;
@@ -121,12 +126,31 @@ export function DashboardPage() {
   const primary = selected.find((item) => String(item.process.id) === primaryId);
   const previous = selected.find((item) => String(item.process.id) === previousId);
   const updateSelection = (process: string) => {
+    trackUsage("filter_changed", { page: "processes", filter: "process", value: process });
     const next = new URLSearchParams(process ? { process } : {});
     setParams(next);
   };
 
   const updateFilters = useCallback(
     (nextFilters: { academicArea: string; faculty: string; modality: string }) => {
+      if (nextFilters.academicArea !== filters.academicArea)
+        trackUsage("filter_changed", {
+          page: "processes",
+          filter: "academicArea",
+          value: nextFilters.academicArea,
+        });
+      if (nextFilters.faculty !== filters.faculty)
+        trackUsage("filter_changed", {
+          page: "processes",
+          filter: "faculty",
+          value: nextFilters.faculty,
+        });
+      if (nextFilters.modality !== filters.modality)
+        trackUsage("filter_changed", {
+          page: "processes",
+          filter: "modality",
+          value: nextFilters.modality,
+        });
       const next = new URLSearchParams(primaryId ? { process: primaryId } : {});
       const nextView = {
         filters: { ...nextFilters, modality: resolveAdmissionModality(nextFilters.modality) },
@@ -135,7 +159,7 @@ export function DashboardPage() {
       saveDashboardView(nextView);
       setParams(next);
     },
-    [primaryId, setParams],
+    [primaryId, setParams, filters.academicArea, filters.faculty, filters.modality],
   );
 
   const returnParams = new URLSearchParams({ process: primaryId });
@@ -184,12 +208,7 @@ export function DashboardPage() {
                   aria-description={filters.modality}
                   onChange={(event) => updateFilters({ ...filters, modality: event.target.value })}
                 >
-                  {!(modalitiesQuery.data ?? []).some((item) => item.name === filters.modality) && (
-                    <option value={filters.modality}>
-                      {formatAdmissionModalityLabel(filters.modality)}
-                    </option>
-                  )}
-                  {(modalitiesQuery.data ?? []).map((item) => (
+                  {modalities.map((item) => (
                     <option key={item.id} value={item.name} title={item.name}>
                       {formatAdmissionModalityLabel(item.name)}
                     </option>
@@ -200,7 +219,7 @@ export function DashboardPage() {
                 <DashboardFilterControls
                   areas={areasQuery.data ?? []}
                   faculties={facultiesQuery.data ?? []}
-                  modalities={modalitiesQuery.data ?? []}
+                  modalities={modalities}
                   filters={filters}
                   onChange={updateFilters}
                   onReset={resetFilters}

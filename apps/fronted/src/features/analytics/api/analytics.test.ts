@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import {
   getAnalyticsOverview,
   getMajorDetail,
@@ -7,15 +7,17 @@ import {
 } from "./analytics";
 
 describe("analytics API", () => {
+  afterEach(() => vi.restoreAllMocks());
   it("fetches published processes", async () => {
     const fetchMock = vi.spyOn(globalThis, "fetch").mockResolvedValue(new Response("[]"));
     await getPublishedProcesses();
     expect(fetchMock).toHaveBeenCalledWith(
       "http://localhost:8000/api/v1/processes/",
       expect.objectContaining({
-        headers: { Accept: "application/json" },
+        headers: expect.any(Headers),
       }),
     );
+    expect(new Headers(fetchMock.mock.calls[0][1]?.headers).get("Accept")).toBe("application/json");
     fetchMock.mockRestore();
   });
 

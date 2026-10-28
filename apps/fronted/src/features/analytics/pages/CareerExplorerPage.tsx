@@ -1,6 +1,8 @@
 import { useEffect } from "react";
 import { Link, useLocation, useParams, useSearchParams } from "react-router-dom";
 
+import { trackUsage } from "../../../shared/telemetry/usage";
+
 import * as api from "../api/analytics";
 import { DashboardControls } from "../components/DashboardControls";
 import { SelectField } from "../components/SelectField";
@@ -9,6 +11,7 @@ import {
   formatAdmissionModalityLabel,
   modalityNameFromParam,
   modalityUrlValue,
+  modalitiesForProcess,
   resolveAdmissionModality,
 } from "../utils/admissionModality";
 import dashboardStyles from "./DashboardPage.module.css";
@@ -28,9 +31,10 @@ export function CareerExplorerPage() {
   const facultiesQuery = api.useFaculties(!majorId);
   const processes = processesQuery.data ?? [];
   const processId = params.get("process") ?? (processes[0] ? String(processes[0].id) : "");
-  const modalities = modalitiesQuery.data ?? [];
+  const selectedProcess = processes.find((process) => String(process.id) === processId);
+  const modalities = modalitiesForProcess(modalitiesQuery.data, selectedProcess);
   const rawModality = params.get("modality");
-  const resolvedModality = modalityNameFromParam(rawModality, modalities);
+  const resolvedModality = modalityNameFromParam(rawModality, modalitiesQuery.data);
   const modality =
     resolvedModality ?? (rawModality ? undefined : resolveAdmissionModality(undefined));
   const modalityParam = modality ? modalityUrlValue(modality, modalities) : (rawModality ?? "");
@@ -45,6 +49,11 @@ export function CareerExplorerPage() {
   }, [location.state, modalityParam, params, processId, setParams]);
 
   const updateContext = (name: "process" | "modality", value: string) => {
+    trackUsage("filter_changed", {
+      page: majorId ? "career_detail" : "careers",
+      filter: name,
+      value,
+    });
     const next = new URLSearchParams(params);
     next.set(name, value);
     setParams(next, { preventScrollReset: true });
@@ -53,7 +62,7 @@ export function CareerExplorerPage() {
   const discoveryParams = new URLSearchParams(params);
   if (processId) discoveryParams.set("process", processId);
   if (modalityParam) discoveryParams.set("modality", modalityParam);
-  const discoveryHref = `/carreras?${discoveryParams}`;
+  const discoveryHref = `/majors?${discoveryParams}`;
   const origin = params.get("returnTo");
   const processOrigin = origin?.startsWith("/?") ? origin : undefined;
   const comparisonOrigin = isValidComparisonReturnTo(origin) ? origin : undefined;
@@ -147,9 +156,6 @@ export function CareerExplorerPage() {
                 displayValue={compactAdmissionModalityLabel(modality)}
                 onChange={(event) => updateContext("modality", event.target.value)}
               >
-                {!modalities.some((item) => item.name === modality) && (
-                  <option value={modalityParam}>{formatAdmissionModalityLabel(modality)}</option>
-                )}
                 {modalities.map((item) => (
                   <option key={item.id} value={String(item.id)}>
                     {formatAdmissionModalityLabel(item.name)}
@@ -188,6 +194,7 @@ export function CareerExplorerPage() {
           areasQuery={areasQuery}
           facultiesQuery={facultiesQuery}
           modalitiesQuery={modalitiesQuery}
+          modalities={modalities}
           processes={processes}
           processId={processId}
           onSelectProcess={(id) => updateContext("process", id)}

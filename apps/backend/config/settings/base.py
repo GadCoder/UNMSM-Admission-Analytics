@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from urllib.parse import urlparse
 
+from corsheaders.defaults import default_headers
 from django.core.exceptions import ImproperlyConfigured
 
 BASE_DIR = Path(__file__).resolve().parents[2]
@@ -175,3 +176,6 @@ LOGGING = {
         "django": {"handlers": ["console"], "level": "INFO", "propagate": False}
     },
 }
+
+# Allow W3C context from the separately hosted frontend; no baggage propagation.
+CORS_ALLOW_HEADERS = (*default_headers, "traceparent", "tracestate")

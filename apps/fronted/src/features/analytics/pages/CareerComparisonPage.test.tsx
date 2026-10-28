@@ -68,7 +68,7 @@ function detail(id: number): MajorDetail {
   };
 }
 
-function renderPage(entry = "/comparar-carreras?careers=11,22&process=2&modality=1") {
+function renderPage(entry = "/compare-majors?majors=11,22&process=2&modality=1") {
   const client = new QueryClient({
     defaultOptions: { queries: { retry: false, staleTime: Infinity } },
   });
@@ -76,7 +76,7 @@ function renderPage(entry = "/comparar-carreras?careers=11,22&process=2&modality
     <QueryClientProvider client={client}>
       <MemoryRouter initialEntries={[entry]}>
         <Routes>
-          <Route path="/comparar-carreras" element={<CareerComparisonPage />} />
+          <Route path="/compare-majors" element={<CareerComparisonPage />} />
         </Routes>
       </MemoryRouter>
     </QueryClientProvider>,
@@ -125,8 +125,24 @@ describe("CareerComparisonPage", () => {
   });
   afterEach(cleanup);
 
+  it("only offers modalities with results in the selected process", () => {
+    vi.mocked(api.usePublishedProcesses).mockReturnValue({
+      data: processes.map((process, index) => ({
+        ...process,
+        available_modality_ids: index === 0 ? [1] : [1, 2],
+      })),
+      isPending: false,
+      isError: false,
+      refetch: vi.fn(),
+    } as never);
+    renderPage();
+    expect(within(screen.getByLabelText("Modalidad")).getAllByRole("option")).toHaveLength(1);
+    fireEvent.change(screen.getByLabelText("Proceso analizado"), { target: { value: "1" } });
+    expect(within(screen.getByLabelText("Modalidad")).getAllByRole("option")).toHaveLength(2);
+  });
+
   it("shows setup guidance for zero careers without comparative sections", () => {
-    renderPage("/comparar-carreras?process=2&modality=1");
+    renderPage("/compare-majors?process=2&modality=1");
     expect(screen.getByRole("heading", { name: "Compara carreras" })).toBeInTheDocument();
     expect(screen.getByText("Compara tus opciones")).toBeInTheDocument();
     expect(screen.getByText("Compara resultados de admisión entre carreras.")).toBeInTheDocument();
@@ -168,7 +184,7 @@ describe("CareerComparisonPage", () => {
     ["11,22,33", 3],
     ["11,22,33,44", 4],
   ] as const)("keeps the selected count beside the career heading for %s", (careerIds, count) => {
-    renderPage(`/comparar-carreras?careers=${careerIds}&process=2&modality=1`);
+    renderPage(`/compare-majors?majors=${careerIds}&process=2&modality=1`);
     const selectionPanel = screen.getByRole("region", { name: "Panel de selección de carreras" });
     const heading = within(selectionPanel).getByRole("heading", { name: "Carreras seleccionadas" });
     const countLabel = screen.getByText(`${count} de 4`);
@@ -181,7 +197,7 @@ describe("CareerComparisonPage", () => {
   });
 
   it("shows available single-career data and places Añadir carrera after the selected career", async () => {
-    renderPage("/comparar-carreras?careers=11&process=2&modality=1");
+    renderPage("/compare-majors?majors=11&process=2&modality=1");
     const selectionRow = screen.getByLabelText("Carreras seleccionadas");
     expect(within(selectionRow).getByText("Medicina")).toBeInTheDocument();
     const selectionPanel = screen.getByRole("region", { name: "Panel de selección de carreras" });
@@ -203,7 +219,7 @@ describe("CareerComparisonPage", () => {
   });
 
   it("caps selection at four, keeps order, and does not request a fifth career from an excessive URL", async () => {
-    renderPage("/comparar-carreras?careers=44,33,22,11,55&process=2&modality=1");
+    renderPage("/compare-majors?majors=44,33,22,11,55&process=2&modality=1");
     expect(
       await screen.findByRole("heading", { name: "Revisa los datos del enlace" }),
     ).toBeInTheDocument();
@@ -231,7 +247,7 @@ describe("CareerComparisonPage", () => {
       },
     });
     try {
-      renderPage("/comparar-carreras?process=2&modality=1");
+      renderPage("/compare-majors?process=2&modality=1");
       const selectionPanel = screen.getByRole("region", { name: "Panel de selección de carreras" });
       const opener = within(selectionPanel).getByRole("button", { name: "Añadir carrera" });
       fireEvent.click(opener);
@@ -278,7 +294,7 @@ describe("CareerComparisonPage", () => {
       },
     });
     try {
-      renderPage("/comparar-carreras?process=2&modality=1");
+      renderPage("/compare-majors?process=2&modality=1");
       const selectionPanel = screen.getByRole("region", { name: "Panel de selección de carreras" });
       const persistentAddButton = within(selectionPanel).getByRole("button", {
         name: "Añadir carrera",
@@ -309,7 +325,7 @@ describe("CareerComparisonPage", () => {
   });
 
   it("recovers malformed ids and deduplicates valid ids before any request", async () => {
-    renderPage("/comparar-carreras?careers=11,broken,11&process=2&modality=1");
+    renderPage("/compare-majors?majors=11,broken,11&process=2&modality=1");
     expect(await screen.findByText(/formato no válido/)).toBeInTheDocument();
     expect(api.getMajorDetail).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Quitar selecciones no válidas" }));
@@ -377,7 +393,7 @@ describe("CareerComparisonPage", () => {
   });
 
   it("recovers an explicitly unavailable process or modality without silently changing it", async () => {
-    renderPage("/comparar-carreras?careers=11,22&process=999&modality=1");
+    renderPage("/compare-majors?majors=11,22&process=999&modality=1");
     expect(screen.getByRole("heading", { name: "Proceso no disponible" })).toBeInTheDocument();
     expect(api.getMajorDetail).not.toHaveBeenCalled();
   });
@@ -508,7 +524,7 @@ describe("CareerComparisonPage", () => {
       isPending: false,
       isError: false,
     } as never);
-    renderPage("/comparar-carreras?careers=11,22&process=2");
+    renderPage("/compare-majors?majors=11,22&process=2");
     expect(screen.getByRole("heading", { name: "Modalidad no disponible" })).toBeInTheDocument();
     expect(api.getMajorDetail).not.toHaveBeenCalled();
   });

@@ -15,8 +15,8 @@ type AppNavigationOptions = {
 type AppPage = "processes" | "careers" | "comparison";
 
 const pageByPath = (pathname: string): AppPage => {
-  if (pathname === "/comparar-carreras") return "comparison";
-  if (pathname.startsWith("/carreras")) return "careers";
+  if (pathname === "/compare-majors") return "comparison";
+  if (pathname.startsWith("/majors")) return "careers";
   return "processes";
 };
 
@@ -34,7 +34,7 @@ const pageNavigation = {
   comparison: {
     defaultModality: DEFAULT_ADMISSION_MODALITY,
     discoveryParams: [],
-    comparisonParams: ["careers", "metric"],
+    comparisonParams: ["majors", "metric"],
   },
 } satisfies Record<
   AppPage,
@@ -85,7 +85,7 @@ export function buildAppNavigation({
   return {
     page,
     processHref: `/${processQuery}`,
-    discoveryHref: `/carreras${discoveryParams.size ? `?${discoveryParams.toString()}` : ""}`,
-    comparisonHref: `/comparar-carreras${comparisonParams.size ? `?${comparisonParams.toString()}` : ""}`,
+    discoveryHref: `/majors${discoveryParams.size ? `?${discoveryParams.toString()}` : ""}`,
+    comparisonHref: `/compare-majors${comparisonParams.size ? `?${comparisonParams.toString()}` : ""}`,
   };
 }

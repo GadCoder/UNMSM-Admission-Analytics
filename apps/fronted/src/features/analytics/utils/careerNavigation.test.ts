@@ -18,10 +18,10 @@ describe("career comparison navigation", () => {
   it("rejects external, lookalike, over-limit, and malformed return paths", () => {
     for (const value of [
       "https://example.com/",
-      "//example.com/comparar-carreras",
-      "/comparar-carreras-elsewhere",
-      "/comparar-carreras?careers=1,2,3,4,5",
-      "/comparar-carreras?careers=1,nope",
+      "//example.com/compare-majors",
+      "/compare-majors-elsewhere",
+      "/compare-majors?majors=1,2,3,4,5",
+      "/compare-majors?majors=1,nope",
     ]) {
       expect(isValidComparisonReturnTo(value)).toBe(false);
     }
@@ -30,6 +30,6 @@ describe("career comparison navigation", () => {
   it("keeps an ordered valid career list in a comparison URL", () => {
     expect(
       buildCareerComparisonHref({ careerIds: [12, 34, 56], processId: "9", modalityId: "1" }),
-    ).toBe("/comparar-carreras?careers=12%2C34%2C56&process=9&modality=1");
+    ).toBe("/compare-majors?majors=12%2C34%2C56&process=9&modality=1");
   });
 });

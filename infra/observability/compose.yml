@@ -36,6 +36,18 @@ services:
         target: /etc/prometheus/prometheus.yml
     networks: [telemetry, dokploy-network]
 
+  tempo:
+    image: grafana/tempo:3.1.1
+    restart: unless-stopped
+    mem_limit: 768m
+    command: [-config.file=/etc/tempo/config.yml, -target=all]
+    volumes:
+      - tempo_data:/var/tempo
+    configs:
+      - source: tempo
+        target: /etc/tempo/config.yml
+    networks: [telemetry]
+
   loki:
     image: grafana/loki:3.7.9
     restart: unless-stopped
@@ -61,13 +73,17 @@ services:
     environment:
       LOG_PROJECT_REGEX: ${LOG_PROJECT_REGEX:-.+}
       LOG_SWARM_SERVICE_REGEX: ${LOG_SWARM_SERVICE_REGEX:-.+}
+      FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:-http://localhost:5173}
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - alloy_data:/var/lib/alloy/data
     configs:
       - source: alloy
         target: /etc/alloy/config.alloy
-    networks: [telemetry]
+    networks:
+      telemetry:
+      dokploy-network:
+        aliases: [unmsm-otel]
 
   node-exporter:
     image: prom/node-exporter:v1.12.1
@@ -95,6 +111,7 @@ volumes:
   prometheus_data:
   loki_data:
   alloy_data:
+  tempo_data:
 
 configs:
   datasources:
@@ -108,12 +125,32 @@ configs:
           url: http://prometheus:9090
           isDefault: true
           editable: false
+        - name: Tempo
+          uid: tempo
+          type: tempo
+          access: proxy
+          url: http://tempo:3200
+          editable: false
+          jsonData:
+            tracesToLogsV2:
+              datasourceUid: loki
+              spanStartTimeShift: '-5m'
+              spanEndTimeShift: '5m'
+              customQuery: true
+              query: '{job="docker"} | json | trace_id="$${__trace.traceId}"'
         - name: Loki
           uid: loki
           type: loki
           access: proxy
           url: http://loki:3100
           editable: false
+          jsonData:
+            derivedFields:
+              - name: TraceID
+                matcherRegex: '"trace_id"\s*:\s*"([a-f0-9]{32})"'
+                datasourceUid: tempo
+                url: '$${__value.raw}'
+
 
   prometheus:
     content: |
@@ -137,9 +174,38 @@ configs:
         - job_name: loki
           static_configs:
             - targets: ["loki:3100"]
+        - job_name: tempo
+          static_configs:
+            - targets: ["tempo:3200"]
         - job_name: alloy
           static_configs:
             - targets: ["alloy:12345"]
+
+  tempo:
+    content: |
+      stream_over_http_enabled: true
+      server:
+        http_listen_port: 3200
+      distributor:
+        receivers:
+          otlp:
+            protocols:
+              grpc:
+                endpoint: 0.0.0.0:4317
+      storage:
+        trace:
+          backend: local
+          wal:
+            path: /var/tempo/wal
+          local:
+            path: /var/tempo/blocks
+      backend_scheduler:
+        provider:
+          compaction:
+            compaction:
+              block_retention: 24h
+      usage_report:
+        reporting_enabled: false
 
   loki:
     content: |
@@ -182,6 +248,78 @@ configs:
 
   alloy:
     content: |
+      otelcol.receiver.otlp "backend" {
+        http {
+          endpoint = "0.0.0.0:4318"
+          max_request_body_size = "1MiB"
+        }
+        output {
+          traces = [otelcol.processor.transform.privacy.input]
+        }
+      }
+      otelcol.processor.transform "privacy" {
+        error_mode = "ignore"
+        trace_statements {
+          context = "span"
+          statements = [
+            `delete_key(attributes, "http.url")`,
+            `delete_key(attributes, "url.full")`,
+            `delete_key(attributes, "url.query")`,
+            `delete_key(attributes, "http.target")`,
+            `delete_key(attributes, "db.statement")`,
+            `delete_key(attributes, "db.query.text")`,
+          ]
+        }
+        trace_statements {
+          context = "spanevent"
+          statements = [
+            `delete_key(attributes, "exception.message")`,
+            `delete_key(attributes, "exception.stacktrace")`,
+          ]
+        }
+        output {
+          traces = [otelcol.processor.batch.traces.input]
+        }
+      }
+      otelcol.processor.batch "traces" {
+        timeout = "1s"
+        send_batch_size = 64
+        send_batch_max_size = 128
+        output {
+          traces = [otelcol.exporter.otlp.tempo.input]
+        }
+      }
+      otelcol.exporter.otlp "tempo" {
+        client {
+          endpoint = "tempo:4317"
+          tls {
+            insecure = true
+          }
+        }
+      }
+      faro.receiver "frontend" {
+        log_format = "json"
+        extra_log_labels = { job = "frontend", app = "unmsm-frontend" }
+        server {
+          listen_address = "0.0.0.0"
+          listen_port = 12347
+          cors_allowed_origins = [sys.env("FRONTEND_ORIGIN")]
+          max_allowed_payload_size = "256KiB"
+          rate_limiting {
+            enabled = true
+            rate = 10
+            burst_size = 20
+          }
+        }
+        // Browser input is untrusted; never fetch client-supplied sourcemaps.
+        sourcemaps {
+          download = false
+        }
+        output {
+          logs = [loki.write.local.receiver]
+          traces = [otelcol.processor.transform.privacy.input]
+        }
+      }
       logging {
         level = "info"
       }

@@ -3,6 +3,9 @@ import { useQueries, type UseQueryResult } from "@tanstack/react-query";
 import type { MouseEvent } from "react";
 import { Link, useLocation, useSearchParams } from "react-router-dom";
 
+import { trackUsage } from "../../../shared/telemetry/usage";
+import { useSearchUsage } from "../../../shared/telemetry/hooks";
+
 import * as api from "../api/analytics";
 import type {
   AdmissionProcess,
@@ -34,6 +37,7 @@ import {
   formatAdmissionModalityLabel,
   modalityNameFromParam,
   modalityUrlValue,
+  modalitiesForProcess,
   resolveAdmissionModality,
 } from "../utils/admissionModality";
 import { formatProcessLabel } from "../utils/processLabels";
@@ -59,16 +63,16 @@ export function CareerComparisonPage() {
   const facultyQuery = api.useFaculties();
   const url = useMemo(() => parseCareerComparisonUrl(location.search), [location.search]);
   const processes = processQuery.data ?? EMPTY_PROCESSES;
-  const modalities = modalityQuery.data ?? [];
   const catalog = catalogQuery.data ?? [];
   const processParam = params.get("process");
   const processId = processParam ?? (processes[0] ? String(processes[0].id) : "");
   const selectedProcess = processes.find((item) => String(item.id) === processId);
+  const modalities = modalitiesForProcess(modalityQuery.data, selectedProcess);
   const modalityParam = params.get("modality");
   const defaultModalityId = modalityUrlValue(resolveAdmissionModality(undefined), modalities);
   const resolvedModalityId = modalityParam !== null ? modalityParam : (defaultModalityId ?? "");
   const modality = resolvedModalityId
-    ? modalityNameFromParam(resolvedModalityId, modalities)
+    ? modalityNameFromParam(resolvedModalityId, modalityQuery.data)
     : undefined;
   const metric = url.metric as CareerComparisonMetricKey;
   const catalogReady = Boolean(catalogQuery.data);
@@ -97,14 +101,20 @@ export function CareerComparisonPage() {
   const updateParams = (next: URLSearchParams, replace = false) =>
     setParams(next, { replace, preventScrollReset: true });
   const setContext = (key: "process" | "modality", value: string) => {
+    trackUsage("filter_changed", { page: "comparison", filter: key, value });
     const next = new URLSearchParams(params);
     next.set(key, value);
     updateParams(next);
   };
   const writeCareerIds = (ids: number[]) => {
+    trackUsage("comparison_updated", {
+      major_ids: ids.join(","),
+      process_id: processId,
+      modality: resolvedModalityId,
+    });
     const next = new URLSearchParams(params);
-    if (ids.length) next.set("careers", ids.join(","));
-    else next.delete("careers");
+    if (ids.length) next.set("majors", ids.join(","));
+    else next.delete("majors");
     updateParams(next);
   };
   const chooseMetric = (nextMetric: CareerComparisonMetricKey) => {
@@ -201,6 +211,12 @@ export function CareerComparisonPage() {
     const needle = search.trim().toLocaleLowerCase("es-PE");
     return !needle || `${item.name} ${item.code}`.toLocaleLowerCase("es-PE").includes(needle);
   });
+  useSearchUsage(
+    search,
+    filteredCareers.length,
+    catalogReady && !catalogQuery.isFetching,
+    "comparison",
+  );
   const openDialog = (event: MouseEvent<HTMLButtonElement>) => {
     if (url.careerIds.length >= MAX_COMPARISON_CAREERS) return;
     dialogOpenerRef.current = event.currentTarget;
@@ -373,7 +389,7 @@ export function CareerComparisonPage() {
                 className={styles.reset}
                 onClick={() => {
                   const next = new URLSearchParams(params);
-                  next.delete("careers");
+                  next.delete("majors");
                   next.delete("metric");
                   updateParams(next);
                 }}

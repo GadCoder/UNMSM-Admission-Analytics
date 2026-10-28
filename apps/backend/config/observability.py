@@ -11,6 +11,7 @@ from secrets import compare_digest
 
 from django.conf import settings
 from django.http import HttpResponse
+from opentelemetry import trace
 from prometheus_client import (
     CONTENT_TYPE_LATEST,
     REGISTRY,
@@ -52,6 +53,10 @@ class JsonFormatter(logging.Formatter):
             "request_id": request_id_context.get(),
             "release": settings.APP_RELEASE,
         }
+        span = trace.get_current_span().get_span_context()
+        if span.is_valid:
+            data["trace_id"] = format(span.trace_id, "032x")
+            data["span_id"] = format(span.span_id, "016x")
         for key in ("method", "route", "status", "duration_ms"):
             if hasattr(record, key):
                 data[key] = getattr(record, key)
