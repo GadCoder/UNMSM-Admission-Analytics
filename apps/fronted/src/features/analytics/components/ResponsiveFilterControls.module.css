@@ -7,7 +7,7 @@
   width: 100%;
   min-width: 0;
 }
-.trigger {
+.wrapper > .trigger {
   display: none;
   composes: action from "./ResultsControls.module.css";
 }
@@ -15,7 +15,7 @@
   .desktopContent {
     display: none;
   }
-  .trigger {
+  .wrapper > .trigger {
     display: inline-flex;
     width: 100%;
   }
