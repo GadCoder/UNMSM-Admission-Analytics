@@ -34,7 +34,7 @@ services:
     configs:
       - source: prometheus
         target: /etc/prometheus/prometheus.yml
-    networks: [telemetry]
+    networks: [telemetry, dokploy-network]
 
   loki:
     image: grafana/loki:3.7.9
@@ -120,6 +120,13 @@ configs:
         scrape_interval: 30s
         evaluation_interval: 30s
       scrape_configs:
+        - job_name: unmsm-backend
+          metrics_path: /metrics/
+          authorization:
+            type: Bearer
+            credentials: ${BACKEND_METRICS_TOKEN:?Set the backend scrape token}
+          static_configs:
+            - targets: ["unmsm-api-metrics:8000"]
         - job_name: prometheus
           static_configs:
             - targets: ["prometheus:9090"]
