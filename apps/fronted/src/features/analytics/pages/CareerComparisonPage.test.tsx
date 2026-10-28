@@ -127,7 +127,11 @@ describe("CareerComparisonPage", () => {
 
   it("shows setup guidance for zero careers without comparative sections", () => {
     renderPage("/comparar-carreras?process=2&modality=1");
-    expect(screen.getByRole("heading", { name: "Carreras para comparar" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Compara carreras" })).toBeInTheDocument();
+    expect(screen.getByText("Compara tus opciones")).toBeInTheDocument();
+    expect(
+      screen.getByText("Compara tasas de ingreso, demanda y puntajes entre carreras."),
+    ).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Resumen rápido" })).not.toBeInTheDocument();
     const selectionPanel = screen.getByRole("region", { name: "Panel de selección de carreras" });
     expect(within(selectionPanel).getAllByRole("button", { name: "Añadir carrera" })).toHaveLength(

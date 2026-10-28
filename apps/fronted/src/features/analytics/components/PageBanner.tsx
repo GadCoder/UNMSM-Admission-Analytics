@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 
 import styles from "./PageBanner.module.css";
+import { PageBannerHeading } from "./PageBannerHeading";
 
 type PageBannerProps = {
   eyebrow: string;
@@ -21,13 +22,12 @@ export function PageBanner({
 }: PageBannerProps) {
   return (
     <section className={styles.banner} aria-labelledby={titleId}>
-      <div className={styles.heading}>
-        <div>
-          <p className={styles.eyebrow}>{eyebrow}</p>
-          <h1 id={titleId}>{title}</h1>
-          {description && <p className={styles.description}>{description}</p>}
-        </div>
-      </div>
+      <PageBannerHeading
+        eyebrow={eyebrow}
+        title={title}
+        titleId={titleId}
+        description={description}
+      />
       {filters}
       {children}
     </section>
