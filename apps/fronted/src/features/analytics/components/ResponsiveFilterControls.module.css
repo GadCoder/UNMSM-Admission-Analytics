@@ -8,14 +8,16 @@
   min-width: 0;
 }
 .trigger {
-  display: none;
   composes: action from "./ResultsControls.module.css";
+}
+.wrapper .trigger {
+  display: none;
 }
 @media (max-width: 600px) {
   .desktopContent {
     display: none;
   }
-  .trigger {
+  .wrapper .trigger {
     display: inline-flex;
     width: 100%;
   }
