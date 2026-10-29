@@ -150,7 +150,9 @@ describe("CareerComparisonPage", () => {
     expect(screen.getByLabelText("Filtros activos")).toHaveTextContent("Proceso: 2026-II");
     expect(screen.getByLabelText("Filtros activos")).toHaveTextContent("Modalidad: EBR");
     expect(screen.getByLabelText("Filtros activos").tagName).toBe("P");
-    expect(screen.queryByRole("heading", { name: "Resumen rápido" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "Comparación de carreras" }),
+    ).not.toBeInTheDocument();
     const selectionPanel = screen.getByRole("region", { name: "Panel de selección de carreras" });
     const selectionHeading = within(selectionPanel).getByRole("heading", {
       name: "Carreras seleccionadas",
@@ -215,7 +217,9 @@ describe("CareerComparisonPage", () => {
     expect(screen.getByText("1 de 4")).toBeInTheDocument();
     expect(screen.getByLabelText("Filtros activos")).toHaveTextContent("Proceso: 2026-II");
     expect(screen.getAllByRole("button", { name: "Añadir carrera" })).toHaveLength(1);
-    expect(screen.queryByRole("heading", { name: "Resumen rápido" })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole("heading", { name: "Comparación de carreras" }),
+    ).not.toBeInTheDocument();
   });
 
   it("caps selection at four, keeps order, and does not request a fifth career from an excessive URL", async () => {
@@ -329,40 +333,53 @@ describe("CareerComparisonPage", () => {
     expect(await screen.findByText(/formato no válido/)).toBeInTheDocument();
     expect(api.getMajorDetail).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole("button", { name: "Quitar selecciones no válidas" }));
-    expect(await screen.findByRole("heading", { name: "Medicina" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("button", { name: "Quitar Medicina de la comparación" }),
+    ).toBeInTheDocument();
+    expect(
+      screen.queryByRole("region", { name: "Comparación de carreras" }),
+    ).not.toBeInTheDocument();
     expect(api.getMajorDetail).toHaveBeenCalledTimes(1);
   });
 
   it("renders current metrics, tie-safe summaries, and score references", async () => {
     renderPage();
-    const summary = await screen.findByRole("region", { name: "Resumen rápido" });
-    expect(await within(summary).findByText("Menor tasa de ingreso")).toBeInTheDocument();
-    expect(within(summary).getByText("Menor tasa de ingreso").parentElement).toHaveTextContent(
-      "Ingeniería",
-    );
-    expect(within(summary).getByText("Mayor demanda registrada").parentElement).toHaveTextContent(
-      "Medicina",
-    );
+    const summary = await screen.findByRole("region", { name: "Comparación de carreras" });
     expect(
-      within(summary).getByText("Puntaje mínimo de ingreso más alto").parentElement,
-    ).toHaveTextContent("Ingeniería");
+      await within(summary).findByText(
+        "Ingeniería registró una tasa de ingreso de 10%, frente al 25% de Medicina: una diferencia de 15 puntos porcentuales.",
+      ),
+    ).toBeInTheDocument();
+    expect(
+      within(summary).getByText(
+        "Medicina registró la mayor demanda, con 100 postulantes, frente a 80 en Ingeniería.",
+      ),
+    ).toBeInTheDocument();
     expect(screen.getByRole("heading", { name: "Puntajes de referencia" })).toBeInTheDocument();
     const scoreSection = screen.getByRole("region", { name: "Puntajes de referencia" });
-    const scoreTable = within(scoreSection).getByRole("table");
-    expect(await within(scoreTable).findByText("750")).toBeInTheDocument();
+    const scoreTables = within(scoreSection).getAllByRole("table");
+    expect(scoreTables).toHaveLength(2);
+    for (const scoreTable of scoreTables) {
+      expect(within(scoreTable).getAllByText("750").length).toBeGreaterThan(0);
+    }
     expect(screen.queryByRole("link", { name: "Explorar carreras" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Explorar más carreras" })).not.toBeInTheDocument();
   });
 
-  it("reports tied rates once and keeps zero-result careers out of rate rankings", async () => {
+  it("suppresses conclusions for tied metrics and keeps zero-result careers out of rate rankings", async () => {
     vi.mocked(api.getMajorDetail).mockImplementation(async (id) => {
       const result = detail(Number(id));
       return { ...result, selected_processes: [row(processes[0], 100, 10)] };
     });
     renderPage();
-    const summary = await screen.findByRole("region", { name: "Resumen rápido" });
-    expect(await within(summary).findByText("Misma tasa de ingreso")).toBeInTheDocument();
-    expect(within(summary).queryByText("Menor tasa de ingreso")).not.toBeInTheDocument();
+    const summary = await screen.findByRole("region", { name: "Comparación de carreras" });
+    expect(
+      await within(summary).findByText(
+        "No hay diferencias destacables en los datos disponibles para resumir.",
+      ),
+    ).toBeInTheDocument();
+    expect(within(summary).getAllByText("10%", { selector: "strong" })).toHaveLength(2);
+    expect(within(summary).queryByText(/una tasa de ingreso de/)).not.toBeInTheDocument();
 
     cleanup();
     vi.mocked(api.getMajorDetail).mockImplementation(async (id) => {
@@ -377,7 +394,7 @@ describe("CareerComparisonPage", () => {
     renderPage();
     const noDataCard = await screen.findByText("Sin datos para este proceso y modalidad.");
     expect(noDataCard.closest("article")).toHaveTextContent("Ingeniería");
-    expect(screen.queryByText("Misma tasa de ingreso")).not.toBeInTheDocument();
+    expect(screen.queryByText(/una tasa de ingreso de/)).not.toBeInTheDocument();
   });
 
   it("keeps successful chart data on partial failure and suppresses comparative conclusions", async () => {
@@ -414,9 +431,9 @@ describe("CareerComparisonPage", () => {
         history: [row(processes[1], id === 11 ? 100 : 200, id === 11 ? 1 : 20)],
       });
     }
-    const summary = await screen.findByRole("region", { name: "Resumen rápido" });
-    expect(await within(summary).findByText("1%", { selector: "small" })).toBeInTheDocument();
-    expect(within(summary).queryByText("90%", { selector: "small" })).not.toBeInTheDocument();
+    const summary = await screen.findByRole("region", { name: "Comparación de carreras" });
+    expect(await within(summary).findByText("1%", { selector: "strong" })).toBeInTheDocument();
+    expect(within(summary).queryByText("90%", { selector: "strong" })).not.toBeInTheDocument();
     expect(api.getMajorDetail).toHaveBeenCalledTimes(2);
   });
 
@@ -469,7 +486,9 @@ describe("CareerComparisonPage", () => {
     expect(requests.slice(0, 2).every(({ signal }) => signal.aborted)).toBe(true);
     expect(requests.slice(2).every(({ signal }) => !signal.aborted)).toBe(true);
     requests.slice(2).forEach(({ resolve, id }) => resolve(detail(id)));
-    expect(await screen.findByRole("region", { name: "Resumen rápido" })).toBeInTheDocument();
+    expect(
+      await screen.findByRole("region", { name: "Comparación de carreras" }),
+    ).toBeInTheDocument();
     expect(screen.queryByText(/No pudimos cargar algunas carreras/)).not.toBeInTheDocument();
   });
 
@@ -513,9 +532,9 @@ describe("CareerComparisonPage", () => {
       selected_processes: [row(processes[0], 1000, 900)],
       history: [],
     });
-    const summary = await screen.findByRole("region", { name: "Resumen rápido" });
-    expect(await within(summary).findByText("1%", { selector: "small" })).toBeInTheDocument();
-    expect(within(summary).queryByText("90%", { selector: "small" })).not.toBeInTheDocument();
+    const summary = await screen.findByRole("region", { name: "Comparación de carreras" });
+    expect(await within(summary).findByText("1%", { selector: "strong" })).toBeInTheDocument();
+    expect(within(summary).queryByText("90%", { selector: "strong" })).not.toBeInTheDocument();
   });
 
   it("does not silently use the first modality when the EBR/EBA default is absent", async () => {

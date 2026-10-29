@@ -239,8 +239,8 @@ describe("DashboardPage", () => {
       "Postulantes ausentes",
       "Ingresantes",
       "Porcentaje de ingresantes",
-      "Puntaje máximo",
       "Puntaje promedio*",
+      "Puntaje máximo",
     ]);
     expect(screen.getByRole("table")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Encuentra tu carrera" })).not.toBeInTheDocument();
