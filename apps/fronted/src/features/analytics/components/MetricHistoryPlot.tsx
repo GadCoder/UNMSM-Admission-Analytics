@@ -71,7 +71,11 @@ export function MetricHistoryPlot({ items, metric, selectedProcessId }: MetricHi
     1,
     (fraction <= 1 ? 1 : fraction <= 2 ? 2 : fraction <= 5 ? 5 : 10) * magnitude,
   );
-  const domainMin = isScoreMetric ? Math.floor(paddedMin / roundedStep) * roundedStep : paddedMin;
+  // Counts and rates cannot be negative, even when sparse history would otherwise
+  // make the padded chart domain extend below zero.
+  const domainMin = isScoreMetric
+    ? Math.floor(paddedMin / roundedStep) * roundedStep
+    : Math.max(0, paddedMin);
   const domainMax = isScoreMetric ? Math.ceil(paddedMax / roundedStep) * roundedStep : paddedMax;
   const left = 62;
   const right = Math.max(left + 1, chartWidth - 18);
