@@ -31,7 +31,11 @@ it("only forwards allowed fields and rejects oversized attributes", async () => 
     url: "https://example.com/?secret",
   });
   await vi.waitFor(() =>
-    expect(sendUsage).toHaveBeenCalledWith("career_viewed", { major_id: "11", process_id: "2" }),
+    expect(sendUsage).toHaveBeenCalledWith("career_viewed", {
+      major_id: "11",
+      process_id: "2",
+      visit_session_id: expect.any(String),
+    }),
   );
 });
 it("does not throw when telemetry delivery fails", async () => {
