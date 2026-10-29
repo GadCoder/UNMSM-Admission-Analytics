@@ -46,8 +46,8 @@ describe("KpiGrid", () => {
       "Postulantes ausentes",
       "Ingresantes",
       "Porcentaje de ingresantes",
-      "Puntaje máximo",
       "Puntaje promedio*",
+      "Puntaje máximo",
     ]);
     expect(
       within(metric("Puntaje máximo")).getByLabelText("Subió: +10 pts").parentElement?.className,

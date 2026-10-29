@@ -80,6 +80,9 @@
   background: rgb(255 255 255 / 14%);
   color: #fff;
 }
+.headerNav a svg {
+  display: none;
+}
 .menuButton {
   display: none;
 }
@@ -218,6 +221,7 @@
     color: #7f454b;
   }
   .headerNav a svg {
+    display: block;
     width: 1.35rem;
     height: 1.35rem;
     flex: none;
