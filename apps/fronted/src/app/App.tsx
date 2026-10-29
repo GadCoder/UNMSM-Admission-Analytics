@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { Link, NavLink, Outlet, useLocation } from "react-router-dom";
 
+import { navigationAttributes } from "../shared/telemetry/navigation";
 import { trackUsage, type UsagePage } from "../shared/telemetry/usage";
 
 import * as api from "../features/analytics/api/analytics";
@@ -40,8 +41,8 @@ export function App() {
             ? "comparison"
             : "not_found";
   useEffect(() => {
-    trackUsage("page_viewed", { page });
-  }, [page]);
+    trackUsage("page_viewed", { page, ...navigationAttributes(pathname, search) });
+  }, [page, pathname, search]);
 
   const navigation = buildAppNavigation({
     pathname,
